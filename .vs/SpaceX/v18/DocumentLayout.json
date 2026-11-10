@@ -1,0 +1,1599 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Administrator\\Desktop\\Nget\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmlogin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmlogin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\systemcleaner.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\systemcleaner.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\clsmain.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:clsmain.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|C:\\Users\\Administrator\\Desktop\\Nget\\app_framework\\optopns.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\optopns.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus.ircommdll\\playwright_automation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus.ircommdll\\playwright_automation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|C:\\Users\\Administrator\\Desktop\\Nget\\app_framework\\form2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\form2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|C:\\Users\\Administrator\\Desktop\\Nget\\app_framework\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|C:\\Users\\Administrator\\Desktop\\Nget\\app_framework\\frmlogin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmlogin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:properties\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\hitman.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:hitman.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\clspostdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:clspostdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\hitman.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:hitman.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|C:\\Users\\Administrator\\Desktop\\Nget\\app_framework\\frmmain.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmmain.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\class47.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\class47.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\ircommdll\\bank.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:ircommdll\\bank.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus.app_framework\\mailnet.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus.app_framework\\mailnet.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\loginvalidateresponsebody.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\loginvalidateresponsebody.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\ircommdll\\ircomm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:ircommdll\\ircomm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\header.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\header.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus.app_framework\\frmtoken.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus.app_framework\\frmtoken.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus.ircommdll\\frmshowqr.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus.ircommdll\\frmshowqr.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmserch_train.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmserch_train.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\frmsbi.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\frmsbi.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmsbi.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmsbi.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\booking\\frmrecaptcha.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:booking\\frmrecaptcha.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmproxysetting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmproxysetting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmpaytmb.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmpaytmb.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\frmpayment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:frmpayment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\frmnewsbi.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\frmnewsbi.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmmanageticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmmanageticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\booking\\frmdownloadotp.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:booking\\frmdownloadotp.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmcomplaint.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmcomplaint.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmcombine.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmcombine.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\frmcaptcha.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:frmcaptcha.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\frmcap.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:frmcap.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmbypasssbi.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmbypasssbi.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmbypasshdfc.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmbypasshdfc.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus.ircommdll\\frmadharotp.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus.ircommdll\\frmadharotp.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmaddtkt.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmaddtkt.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmaddid.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmaddid.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus.app_framework\\frmaddaadhar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus.app_framework\\frmaddaadhar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\fetchotpresponsestatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\fetchotpresponsestatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\fetchotpresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\fetchotpresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\fetchdatetimeresponsebody.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\fetchdatetimeresponsebody.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\enablehighsecurityserviceresponsebody.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\enablehighsecurityserviceresponsebody.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\enablehighsecurityconfirmserviceresponsebody.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\enablehighsecurityconfirmserviceresponsebody.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\embeddedassembly.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:embeddedassembly.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus.ircommdll\\edgetaskbarhider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus.ircommdll\\edgetaskbarhider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus.ircommdll\\devtoolskiller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus.ircommdll\\devtoolskiller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus.booking\\classstationdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus.booking\\classstationdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\classsetwallpaper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\classsetwallpaper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\booking\\class32.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:booking\\class32.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\booking\\class31_rail.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:booking\\class31_rail.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\booking\\class31_hdfc.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:booking\\class31_hdfc.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\booking\\class31_air.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:booking\\class31_air.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\booking\\class31.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:booking\\class31.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\claims_token.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\claims_token.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus.app_framework\\chromeresetrunner.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus.app_framework\\chromeresetrunner.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus.ircommdll\\browsermanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus.ircommdll\\browsermanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\body.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\body.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\baseresponsebodystatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\baseresponsebodystatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\baseresponsebody.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\baseresponsebody.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\baserequestbody.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\baserequestbody.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\ircommdll\\banknewhdfc.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:ircommdll\\banknewhdfc.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus\\authserviceresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus\\authserviceresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\booking\\alert.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:booking\\alert.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmshowhistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmshowhistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus.ircommdll\\humanmouse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus.ircommdll\\humanmouse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\form2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\form2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\nexus.app_framework\\frmnpci.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:nexus.app_framework\\frmnpci.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmbypass.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmbypass.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\statclass.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\statclass.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmprocessticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmprocessticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmbackup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmbackup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\tcntrl.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\tcntrl.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\tabirctcid.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\tabirctcid.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\frmmain.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmmain.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\freecharge.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\freecharge.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|C:\\Users\\Administrator\\Desktop\\Nget\\app_framework\\freecharge.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\freecharge.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|C:\\Users\\Administrator\\Desktop\\Nget\\app_framework\\tabirctcid.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\tabirctcid.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|C:\\Users\\Administrator\\Desktop\\Nget\\app_framework\\frmbypass.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmbypass.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\ircommdll\\sbiupi.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:ircommdll\\sbiupi.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\formbookinghistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:formbookinghistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\bookingcard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:bookingcard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\root.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:root.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\tabmobikwsetting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\tabmobikwsetting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\irctcticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:irctcticket.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|C:\\Users\\Administrator\\Desktop\\Nget\\app_framework\\tcntrl.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\tcntrl.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|C:\\Users\\Administrator\\Desktop\\Nget\\app_framework\\frmshowhistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\frmshowhistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\class28.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\class28.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\app_framework\\tabhdfcsetting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:app_framework\\tabhdfcsetting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\class21.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:class21.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|c:\\users\\administrator\\desktop\\nget\\ircommdll\\qrpay.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:ircommdll\\qrpay.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|C:\\Users\\Administrator\\Desktop\\Nget\\ircommdll\\qrpay.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:ircommdll\\qrpay.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|C:\\Users\\Administrator\\Desktop\\Nget\\ircommdll\\frmqr.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|Hitman.csproj|solutionrelative:ircommdll\\frmqr.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|SpaceX.csproj|C:\\Users\\Administrator\\Desktop\\Nget\\app_framework\\frmmain.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{53C42740-83B4-4CE1-B51F-72B50C54A61D}|SpaceX.csproj|solutionrelative:app_framework\\frmmain.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Administrator\\Desktop\\Nget\\bookingdialog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:bookingdialog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 6,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "clsPostData.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\clsPostData.cs",
+              "RelativeDocumentMoniker": "clsPostData.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\clsPostData.cs",
+              "RelativeToolTip": "clsPostData.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-15T05:02:30.796Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "optopns.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\optopns.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\optopns.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\optopns.cs [Design]",
+              "RelativeToolTip": "APP_FRAMEWORK\\optopns.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-14T04:18:03.762Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "frmLogin.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmLogin.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmLogin.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmLogin.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmLogin.cs",
+              "ViewState": "AgIAAN4HAAAAAAAAAAAawOIHAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-04T18:19:30.456Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "clsMain.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\clsMain.cs",
+              "RelativeDocumentMoniker": "clsMain.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\clsMain.cs",
+              "RelativeToolTip": "clsMain.cs",
+              "ViewState": "AgIAAGdfAQAAAAAAAAAlwGtfAQAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-12T18:50:34.602Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Playwright_Automation.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.IRCommDLL\\Playwright_Automation.cs",
+              "RelativeDocumentMoniker": "NEXUS.IRCommDLL\\Playwright_Automation.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.IRCommDLL\\Playwright_Automation.cs",
+              "RelativeToolTip": "NEXUS.IRCommDLL\\Playwright_Automation.cs",
+              "ViewState": "AgIAACQDAAAAAAAAAAAgwCoDAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-31T04:16:50.062Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "SystemCleaner.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\SystemCleaner.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\SystemCleaner.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\SystemCleaner.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\SystemCleaner.cs",
+              "ViewState": "AgIAAFoAAAAAAAAAAAA5wGUAAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-01T04:28:40.415Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Program.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\Program.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Program.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\Program.cs",
+              "ViewState": "AgIAABsBAAAAAAAAAAAwwCcBAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-24T07:17:26.635Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Form1.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Form1.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\Form1.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Form1.cs [Design]",
+              "RelativeToolTip": "APP_FRAMEWORK\\Form1.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-14T04:17:43.574Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Hitman",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\Hitman.csproj",
+              "RelativeDocumentMoniker": "Hitman.csproj",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\Hitman.csproj",
+              "RelativeToolTip": "Hitman.csproj",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-09-13T04:16:38.929Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "MailNet.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.APP_FRAMEWORK\\MailNet.cs",
+              "RelativeDocumentMoniker": "NEXUS.APP_FRAMEWORK\\MailNet.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.APP_FRAMEWORK\\MailNet.cs",
+              "RelativeToolTip": "NEXUS.APP_FRAMEWORK\\MailNet.cs",
+              "ViewState": "AgIAAJcAAAAAAAAAAAAgwJ0AAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:16:22.127Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Form2.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Form2.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\Form2.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Form2.cs [Design]",
+              "RelativeToolTip": "APP_FRAMEWORK\\Form2.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-07T02:47:52.571Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "frmLogin.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmLogin.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmLogin.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmLogin.cs [Design]",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmLogin.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-01T17:31:54.791Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Class47.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Class47.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\Class47.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Class47.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\Class47.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAOsCAABDAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:17.274Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "AssemblyInfo.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\Properties\\AssemblyInfo.cs",
+              "RelativeDocumentMoniker": "Properties\\AssemblyInfo.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\Properties\\AssemblyInfo.cs",
+              "RelativeToolTip": "Properties\\AssemblyInfo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:31:48.106Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Hitman.csproj",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\Hitman.csproj",
+              "RelativeDocumentMoniker": "Hitman.csproj",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\Hitman.csproj",
+              "RelativeToolTip": "Hitman.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-09-13T04:19:23.467Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Bank.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\IRCommDLL\\Bank.cs",
+              "RelativeDocumentMoniker": "IRCommDLL\\Bank.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\IRCommDLL\\Bank.cs",
+              "RelativeToolTip": "IRCommDLL\\Bank.cs",
+              "ViewState": "AgIAAJpjAAAAAAAAAAAAwKpjAACNAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:12:57.571Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "frmMain.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmMain.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmMain.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmMain.cs [Design]",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmMain.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-25T17:17:08.789Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "LoginValidateResponseBody.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\LoginValidateResponseBody.cs",
+              "RelativeDocumentMoniker": "NEXUS\\LoginValidateResponseBody.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\LoginValidateResponseBody.cs",
+              "RelativeToolTip": "NEXUS\\LoginValidateResponseBody.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:16:20.213Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "IRComm.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\IRCommDLL\\IRComm.cs",
+              "RelativeDocumentMoniker": "IRCommDLL\\IRComm.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\IRCommDLL\\IRComm.cs",
+              "RelativeToolTip": "IRCommDLL\\IRComm.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAAAAUAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:16:15.335Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "Header.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\Header.cs",
+              "RelativeDocumentMoniker": "NEXUS\\Header.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\Header.cs",
+              "RelativeToolTip": "NEXUS\\Header.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:46.467Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "frmToken.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.APP_FRAMEWORK\\frmToken.cs",
+              "RelativeDocumentMoniker": "NEXUS.APP_FRAMEWORK\\frmToken.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.APP_FRAMEWORK\\frmToken.cs",
+              "RelativeToolTip": "NEXUS.APP_FRAMEWORK\\frmToken.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAAAA0AAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:43.624Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "frmShowQR.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.IRCommDLL\\frmShowQR.cs",
+              "RelativeDocumentMoniker": "NEXUS.IRCommDLL\\frmShowQR.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.IRCommDLL\\frmShowQR.cs",
+              "RelativeToolTip": "NEXUS.IRCommDLL\\frmShowQR.cs",
+              "ViewState": "AgIAAJ0AAAAAAAAAAAAQwKIAAAB8AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:41.56Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "frmSerch_Train.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmSerch_Train.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmSerch_Train.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmSerch_Train.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmSerch_Train.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAAAAgAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:40.109Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "frmSBI.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\frmSBI.cs",
+              "RelativeDocumentMoniker": "NEXUS\\frmSBI.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\frmSBI.cs",
+              "RelativeToolTip": "NEXUS\\frmSBI.cs",
+              "ViewState": "AgIAAHIKAAAAAAAAAAAwwH4KAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:22.193Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "frmSBI.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmSBI.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmSBI.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmSBI.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmSBI.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAAABMAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:21.128Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "frmRecaptcha.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\frmRecaptcha.cs",
+              "RelativeDocumentMoniker": "Booking\\frmRecaptcha.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\frmRecaptcha.cs",
+              "RelativeToolTip": "Booking\\frmRecaptcha.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAAAkAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:19.968Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "frmProxySetting.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmProxySetting.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmProxySetting.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmProxySetting.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmProxySetting.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAAAA0AAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:19.023Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "frmPaytmB.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmPaytmB.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmPaytmB.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmPaytmB.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmPaytmB.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAAABMAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:17.179Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "frmPayment.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\frmPayment.cs",
+              "RelativeDocumentMoniker": "frmPayment.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\frmPayment.cs",
+              "RelativeToolTip": "frmPayment.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAAAAgAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:15.773Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "frmNewSBI.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\frmNewSBI.cs",
+              "RelativeDocumentMoniker": "NEXUS\\frmNewSBI.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\frmNewSBI.cs",
+              "RelativeToolTip": "NEXUS\\frmNewSBI.cs",
+              "ViewState": "AgIAAHwAAAAAAAAAAAAAwIwAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:09.43Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "frmManageTicket.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmManageTicket.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmManageTicket.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmManageTicket.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmManageTicket.cs",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAAAAoAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:08.03Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "frmDownloadOTP.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\frmDownloadOTP.cs",
+              "RelativeDocumentMoniker": "Booking\\frmDownloadOTP.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\frmDownloadOTP.cs",
+              "RelativeToolTip": "Booking\\frmDownloadOTP.cs",
+              "ViewState": "AgIAAGgAAAAAAAAAAAAAAGgAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:06.81Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "frmComplaint.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmComplaint.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmComplaint.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmComplaint.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmComplaint.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAAAkAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:05.754Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "frmCombine.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmCombine.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmCombine.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmCombine.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmCombine.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAYAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:15:04.258Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "frmCaptcha.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\frmCaptcha.cs",
+              "RelativeDocumentMoniker": "frmCaptcha.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\frmCaptcha.cs",
+              "RelativeToolTip": "frmCaptcha.cs",
+              "ViewState": "AgIAAGEHAAAAAAAAAAAAwHEHAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:59.242Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "frmCAP.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\frmCAP.cs",
+              "RelativeDocumentMoniker": "frmCAP.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\frmCAP.cs",
+              "RelativeToolTip": "frmCAP.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAAABMAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:58.163Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "frmByPassSBI.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmByPassSBI.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmByPassSBI.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmByPassSBI.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmByPassSBI.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAABIAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:56.429Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 37,
+              "Title": "frmByPassHDFC.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmByPassHDFC.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmByPassHDFC.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmByPassHDFC.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmByPassHDFC.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:54.195Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 38,
+              "Title": "frmAdharOTP.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.IRCommDLL\\frmAdharOTP.cs",
+              "RelativeDocumentMoniker": "NEXUS.IRCommDLL\\frmAdharOTP.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.IRCommDLL\\frmAdharOTP.cs",
+              "RelativeToolTip": "NEXUS.IRCommDLL\\frmAdharOTP.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAA8AAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:50.945Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 39,
+              "Title": "frmAddTkt.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmAddTkt.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmAddTkt.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmAddTkt.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmAddTkt.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:47.93Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 40,
+              "Title": "frmAddID.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmAddID.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmAddID.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmAddID.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmAddID.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAAAAUAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:46.367Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 41,
+              "Title": "frmAddAadhar.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.APP_FRAMEWORK\\frmAddAadhar.cs",
+              "RelativeDocumentMoniker": "NEXUS.APP_FRAMEWORK\\frmAddAadhar.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.APP_FRAMEWORK\\frmAddAadhar.cs",
+              "RelativeToolTip": "NEXUS.APP_FRAMEWORK\\frmAddAadhar.cs",
+              "ViewState": "AgIAAOUAAAAAAAAAAAAAwPUAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:39.605Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 42,
+              "Title": "FetchOTPResponseStatus.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\FetchOTPResponseStatus.cs",
+              "RelativeDocumentMoniker": "NEXUS\\FetchOTPResponseStatus.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\FetchOTPResponseStatus.cs",
+              "RelativeToolTip": "NEXUS\\FetchOTPResponseStatus.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:38.35Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 43,
+              "Title": "FetchOTPResponse.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\FetchOTPResponse.cs",
+              "RelativeDocumentMoniker": "NEXUS\\FetchOTPResponse.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\FetchOTPResponse.cs",
+              "RelativeToolTip": "NEXUS\\FetchOTPResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:37.18Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 44,
+              "Title": "FetchDateTimeResponseBody.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\FetchDateTimeResponseBody.cs",
+              "RelativeDocumentMoniker": "NEXUS\\FetchDateTimeResponseBody.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\FetchDateTimeResponseBody.cs",
+              "RelativeToolTip": "NEXUS\\FetchDateTimeResponseBody.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:35.914Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 45,
+              "Title": "EnableHighSecurityServiceResponseBody.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\EnableHighSecurityServiceResponseBody.cs",
+              "RelativeDocumentMoniker": "NEXUS\\EnableHighSecurityServiceResponseBody.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\EnableHighSecurityServiceResponseBody.cs",
+              "RelativeToolTip": "NEXUS\\EnableHighSecurityServiceResponseBody.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:33.528Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 46,
+              "Title": "EnableHighSecurityConfirmServiceResponseBody.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\EnableHighSecurityConfirmServiceResponseBody.cs",
+              "RelativeDocumentMoniker": "NEXUS\\EnableHighSecurityConfirmServiceResponseBody.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\EnableHighSecurityConfirmServiceResponseBody.cs",
+              "RelativeToolTip": "NEXUS\\EnableHighSecurityConfirmServiceResponseBody.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:32.68Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 47,
+              "Title": "EmbeddedAssembly.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\EmbeddedAssembly.cs",
+              "RelativeDocumentMoniker": "EmbeddedAssembly.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\EmbeddedAssembly.cs",
+              "RelativeToolTip": "EmbeddedAssembly.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAAAAwCQAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:16.836Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 48,
+              "Title": "EdgeTaskbarHider.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.IRCommDLL\\EdgeTaskbarHider.cs",
+              "RelativeDocumentMoniker": "NEXUS.IRCommDLL\\EdgeTaskbarHider.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.IRCommDLL\\EdgeTaskbarHider.cs",
+              "RelativeToolTip": "NEXUS.IRCommDLL\\EdgeTaskbarHider.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAYAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:15.814Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 49,
+              "Title": "DevToolsKiller.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.IRCommDLL\\DevToolsKiller.cs",
+              "RelativeDocumentMoniker": "NEXUS.IRCommDLL\\DevToolsKiller.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.IRCommDLL\\DevToolsKiller.cs",
+              "RelativeToolTip": "NEXUS.IRCommDLL\\DevToolsKiller.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAAAAUAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:14.758Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 50,
+              "Title": "ClassStationData.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.Booking\\ClassStationData.cs",
+              "RelativeDocumentMoniker": "NEXUS.Booking\\ClassStationData.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.Booking\\ClassStationData.cs",
+              "RelativeToolTip": "NEXUS.Booking\\ClassStationData.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAYAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:14:12.977Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 51,
+              "Title": "ClassSetWallpaper.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\ClassSetWallpaper.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\ClassSetWallpaper.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\ClassSetWallpaper.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\ClassSetWallpaper.cs",
+              "ViewState": "AgIAAFEAAAAAAAAAAAAAAFEAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:19.539Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 52,
+              "Title": "Class32.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\Class32.cs",
+              "RelativeDocumentMoniker": "Booking\\Class32.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\Class32.cs",
+              "RelativeToolTip": "Booking\\Class32.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAABIAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:16.125Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 53,
+              "Title": "Class31_Rail.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\Class31_Rail.cs",
+              "RelativeDocumentMoniker": "Booking\\Class31_Rail.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\Class31_Rail.cs",
+              "RelativeToolTip": "Booking\\Class31_Rail.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAAAAABEAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:15.087Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 54,
+              "Title": "Class31_Hdfc.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\Class31_Hdfc.cs",
+              "RelativeDocumentMoniker": "Booking\\Class31_Hdfc.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\Class31_Hdfc.cs",
+              "RelativeToolTip": "Booking\\Class31_Hdfc.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAABIAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:13.868Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 55,
+              "Title": "Class31_Air.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\Class31_Air.cs",
+              "RelativeDocumentMoniker": "Booking\\Class31_Air.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\Class31_Air.cs",
+              "RelativeToolTip": "Booking\\Class31_Air.cs",
+              "ViewState": "AgIAABkAAAAAAAAAAAAAABkAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:11.789Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 56,
+              "Title": "Class31.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\Class31.cs",
+              "RelativeDocumentMoniker": "Booking\\Class31.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\Class31.cs",
+              "RelativeToolTip": "Booking\\Class31.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAAAAABEAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:09.618Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 57,
+              "Title": "Claims_Token.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\Claims_Token.cs",
+              "RelativeDocumentMoniker": "NEXUS\\Claims_Token.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\Claims_Token.cs",
+              "RelativeToolTip": "NEXUS\\Claims_Token.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:07.868Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 58,
+              "Title": "ChromeResetRunner.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.APP_FRAMEWORK\\ChromeResetRunner.cs",
+              "RelativeDocumentMoniker": "NEXUS.APP_FRAMEWORK\\ChromeResetRunner.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.APP_FRAMEWORK\\ChromeResetRunner.cs",
+              "RelativeToolTip": "NEXUS.APP_FRAMEWORK\\ChromeResetRunner.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAAAAcAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:06.961Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 59,
+              "Title": "BrowserManager.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.IRCommDLL\\BrowserManager.cs",
+              "RelativeDocumentMoniker": "NEXUS.IRCommDLL\\BrowserManager.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.IRCommDLL\\BrowserManager.cs",
+              "RelativeToolTip": "NEXUS.IRCommDLL\\BrowserManager.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAAAA0AAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:05.91Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 60,
+              "Title": "Body.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\Body.cs",
+              "RelativeDocumentMoniker": "NEXUS\\Body.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\Body.cs",
+              "RelativeToolTip": "NEXUS\\Body.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:04.899Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 61,
+              "Title": "BaseResponseBodyStatus.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\BaseResponseBodyStatus.cs",
+              "RelativeDocumentMoniker": "NEXUS\\BaseResponseBodyStatus.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\BaseResponseBodyStatus.cs",
+              "RelativeToolTip": "NEXUS\\BaseResponseBodyStatus.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:03.849Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 62,
+              "Title": "BaseResponseBody.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\BaseResponseBody.cs",
+              "RelativeDocumentMoniker": "NEXUS\\BaseResponseBody.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\BaseResponseBody.cs",
+              "RelativeToolTip": "NEXUS\\BaseResponseBody.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:02.837Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 63,
+              "Title": "BaseRequestBody.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\BaseRequestBody.cs",
+              "RelativeDocumentMoniker": "NEXUS\\BaseRequestBody.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\BaseRequestBody.cs",
+              "RelativeToolTip": "NEXUS\\BaseRequestBody.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:01.993Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 64,
+              "Title": "BankNewHDFC.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\IRCommDLL\\BankNewHDFC.cs",
+              "RelativeDocumentMoniker": "IRCommDLL\\BankNewHDFC.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\IRCommDLL\\BankNewHDFC.cs",
+              "RelativeToolTip": "IRCommDLL\\BankNewHDFC.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAAwAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:13:00.863Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 65,
+              "Title": "AuthServiceResponse.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\AuthServiceResponse.cs",
+              "RelativeDocumentMoniker": "NEXUS\\AuthServiceResponse.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS\\AuthServiceResponse.cs",
+              "RelativeToolTip": "NEXUS\\AuthServiceResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:12:55.743Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 66,
+              "Title": "alert.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\alert.cs",
+              "RelativeDocumentMoniker": "Booking\\alert.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\Booking\\alert.cs",
+              "RelativeToolTip": "Booking\\alert.cs",
+              "ViewState": "AgIAAF0AAAAAAAAAAAAAAF0AAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:12:54.415Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 67,
+              "Title": "frmShowHistory.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmShowHistory.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmShowHistory.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmShowHistory.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmShowHistory.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAAAkAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-13T04:12:51.838Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 73,
+              "Title": "frmProcessTicket.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmProcessTicket.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmProcessTicket.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmProcessTicket.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmProcessTicket.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAAAAwAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-01T17:31:09.531Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 72,
+              "Title": "StatClass.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\StatClass.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\StatClass.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\StatClass.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\StatClass.cs",
+              "ViewState": "AgIAAHICAAAAAAAAAAAgwHgCAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-14T07:10:01.682Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 71,
+              "Title": "frmBypass.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmBypass.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmBypass.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmBypass.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmBypass.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-16T09:32:00.39Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 70,
+              "Title": "frmNPCI.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.APP_FRAMEWORK\\frmNPCI.cs",
+              "RelativeDocumentMoniker": "NEXUS.APP_FRAMEWORK\\frmNPCI.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.APP_FRAMEWORK\\frmNPCI.cs",
+              "RelativeToolTip": "NEXUS.APP_FRAMEWORK\\frmNPCI.cs",
+              "ViewState": "AgIAACUAAAAAAAAAAAAgwCsAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-20T08:19:38.212Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 69,
+              "Title": "Form2.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Form2.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\Form2.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Form2.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\Form2.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAABgAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-07T02:47:54.596Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 68,
+              "Title": "HumanMouse.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.IRCommDLL\\HumanMouse.cs",
+              "RelativeDocumentMoniker": "NEXUS.IRCommDLL\\HumanMouse.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\NEXUS.IRCommDLL\\HumanMouse.cs",
+              "RelativeToolTip": "NEXUS.IRCommDLL\\HumanMouse.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAABIAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-25T06:27:26.494Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 74,
+              "Title": "frmBackup.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmBackup.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmBackup.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmBackup.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmBackup.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAAAA0AAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-26T02:14:11.583Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 75,
+              "Title": "TCntrl.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\TCntrl.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\TCntrl.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\TCntrl.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\TCntrl.cs",
+              "ViewState": "AgIAAAIAAAAAAAAAAAAwwA4AAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-17T16:15:45.656Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 76,
+              "Title": "tabIrctcId.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\tabIrctcId.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\tabIrctcId.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\tabIrctcId.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\tabIrctcId.cs",
+              "ViewState": "AgIAAAIAAAAAAAAAAAAwwA4AAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-04T12:28:20.298Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 77,
+              "Title": "frmMain.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmMain.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmMain.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmMain.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmMain.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAgwBgAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-20T14:43:26.787Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 78,
+              "Title": "Freecharge.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Freecharge.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\Freecharge.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Freecharge.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\Freecharge.cs",
+              "ViewState": "AgIAAO8KAAAAAAAAAAAgwPUKAABSAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-16T09:33:02.912Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 79,
+              "Title": "Microsoft.Common.CurrentVersion.targets",
+              "DocumentMoniker": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\Program Files\\Microsoft Visual Studio\\18\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
+              "ToolTip": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
+              "RelativeToolTip": "..\\..\\..\\..\\Program Files\\Microsoft Visual Studio\\18\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
+              "ViewState": "AgIAAI0JAAAAAAAAAAASwJQJAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003801|",
+              "WhenOpened": "2026-09-04T19:33:36.052Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 80,
+              "Title": "Freecharge.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Freecharge.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\Freecharge.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Freecharge.cs [Design]",
+              "RelativeToolTip": "APP_FRAMEWORK\\Freecharge.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-04T17:21:59.677Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 81,
+              "Title": "tabIrctcId.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\tabIrctcId.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\tabIrctcId.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\tabIrctcId.cs [Design]",
+              "RelativeToolTip": "APP_FRAMEWORK\\tabIrctcId.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-04T12:28:17.789Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 82,
+              "Title": "frmBypass.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmBypass.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmBypass.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmBypass.cs [Design]",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmBypass.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-16T09:32:24.569Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 83,
+              "Title": "sbiupi.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\IRCommDLL\\sbiupi.cs",
+              "RelativeDocumentMoniker": "IRCommDLL\\sbiupi.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\IRCommDLL\\sbiupi.cs",
+              "RelativeToolTip": "IRCommDLL\\sbiupi.cs",
+              "ViewState": "AgIAANsAAAAAAAAAAAAAwOgAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-20T08:19:50.444Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 85,
+              "Title": "BookingCard.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\BookingCard.cs",
+              "RelativeDocumentMoniker": "BookingCard.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\BookingCard.cs",
+              "RelativeToolTip": "BookingCard.cs",
+              "ViewState": "AgIAAF0AAAAAAAAAAADgv24AAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-04T12:49:53.856Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 84,
+              "Title": "FormBookingHistory.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\FormBookingHistory.cs",
+              "RelativeDocumentMoniker": "FormBookingHistory.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\FormBookingHistory.cs",
+              "RelativeToolTip": "FormBookingHistory.cs",
+              "ViewState": "AgIAADkAAAAAAAAAAADgv0sAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-04T12:52:44.135Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 86,
+              "Title": "Root.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\Root.cs",
+              "RelativeDocumentMoniker": "Root.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\Root.cs",
+              "RelativeToolTip": "Root.cs",
+              "ViewState": "AgIAACEAAAAAAAAAAAAxwCUAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-04T17:44:26.213Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 87,
+              "Title": "tabMobikwSetting.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\tabMobikwSetting.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\tabMobikwSetting.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\tabMobikwSetting.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\tabMobikwSetting.cs",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAuwA8AAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-04T10:30:29.477Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 88,
+              "Title": "IrctcTicket.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\IrctcTicket.cs",
+              "RelativeDocumentMoniker": "IrctcTicket.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\IrctcTicket.cs",
+              "RelativeToolTip": "IrctcTicket.cs",
+              "ViewState": "AgIAAD8AAAAAAAAAAAA7wFMAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-04T08:58:33.446Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 98,
+              "Title": "BookingDialog.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\BookingDialog.cs",
+              "RelativeDocumentMoniker": "BookingDialog.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\BookingDialog.cs [Design]",
+              "RelativeToolTip": "BookingDialog.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-04T06:40:10.312Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 89,
+              "Title": "TCntrl.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\TCntrl.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\TCntrl.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\TCntrl.cs [Design]",
+              "RelativeToolTip": "APP_FRAMEWORK\\TCntrl.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-10T09:03:34.545Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 90,
+              "Title": "frmShowHistory.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmShowHistory.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmShowHistory.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmShowHistory.cs [Design]",
+              "RelativeToolTip": "APP_FRAMEWORK\\frmShowHistory.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-28T17:26:08.732Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 91,
+              "Title": "Class28.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Class28.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\Class28.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\Class28.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\Class28.cs",
+              "ViewState": "AgIAAKcAAAAAAAAAAAAhwLUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-26T07:33:36.413Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 92,
+              "Title": "tabHdfcSetting.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\tabHdfcSetting.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\tabHdfcSetting.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\tabHdfcSetting.cs",
+              "RelativeToolTip": "APP_FRAMEWORK\\tabHdfcSetting.cs",
+              "ViewState": "AgIAAPYAAAAAAAAAAAAwwAIBAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-26T02:07:14.189Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 93,
+              "Title": "Class21.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\Class21.cs",
+              "RelativeDocumentMoniker": "Class21.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\Class21.cs",
+              "RelativeToolTip": "Class21.cs",
+              "ViewState": "AgIAAFMCAAAAAAAAAAAYwGECAAACAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-25T06:43:23.728Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 95,
+              "Title": "QrPay.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\IRCommDLL\\QrPay.cs",
+              "RelativeDocumentMoniker": "IRCommDLL\\QrPay.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\IRCommDLL\\QrPay.cs [Design]",
+              "RelativeToolTip": "IRCommDLL\\QrPay.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-22T08:30:27.869Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 96,
+              "Title": "FrmQr.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\IRCommDLL\\FrmQr.cs",
+              "RelativeDocumentMoniker": "IRCommDLL\\FrmQr.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\IRCommDLL\\FrmQr.cs [Design]",
+              "RelativeToolTip": "IRCommDLL\\FrmQr.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-22T07:20:46.672Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 94,
+              "Title": "QrPay.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\IRCommDLL\\QrPay.cs",
+              "RelativeDocumentMoniker": "IRCommDLL\\QrPay.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Desktop\\Nget\\IRCommDLL\\QrPay.cs",
+              "RelativeToolTip": "IRCommDLL\\QrPay.cs",
+              "ViewState": "AgIAAOYAAAAAAAAAAAAswOwAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-22T07:59:37.007Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 97,
+              "Title": "frmMain.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Desktop\\Nget\\APP_FRAMEWORK\\frmMain.cs",
+              "RelativeDocumentMoniker": "APP_FRAMEWORK\\frmMain.cs",
+              "ToolTip": "C:\\Users\\NTC COMP\\Desktop\\Nget\\APP_FRAMEWORK\\frmMain.cs [Design]",
+              "RelativeToolTip": "..\\..\\..\\NTC COMP\\Desktop\\Nget\\APP_FRAMEWORK\\frmMain.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-02T07:54:13.779Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

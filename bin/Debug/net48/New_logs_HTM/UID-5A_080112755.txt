@@ -1,0 +1,3 @@
+https://www.irctc.co.in/eticketing/protected/mapps1/altAvlEnq/TC
+{"concessionBooking":false,"srcStn":"LTT","destStn":"BST","jrnyClass":"3A","jrnyDate":"20261124","quotaCode":"GN","currentBooking":"false","flexiFlag":false,"handicapFlag":false,"ticketType":"E","loyaltyRedemptionBooking":false,"ftBooking":false}
+Thread was being aborted.
