@@ -1,0 +1,13 @@
+.vs/
+bin/
+obj/
+*.user
+*.log
+Database.db
+IRLOG/
+Logs/
+New_logs/
+New_logs_ByteNova/
+New_logs_HTM/
+Wrong Captcha/
+*.pdb*.bak

@@ -4139,7 +4139,7 @@ internal class TCntrl : UserControl
         this.lblBrand.Name = "lblBrand";
         this.lblBrand.Size = new System.Drawing.Size(268, 45);
         this.lblBrand.TabIndex = 1195;
-        this.lblBrand.Text = "  ByteNova  ";
+        this.lblBrand.Text = "  Express  ";
         // 
         // btnDish
         // 

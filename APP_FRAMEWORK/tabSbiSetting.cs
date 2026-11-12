@@ -1421,7 +1421,7 @@ internal class tabSbiSetting : UserControl
 
 	private void C3AA0_Click(object sender, EventArgs e)
 	{
-		string fileName = "http://103.148.67.81/api/API/sbi_help.php";
+		string fileName = "https://expressts.co.in/api/API/sbi_help.php";
 		Process.Start(fileName);
 	}
 

@@ -2086,7 +2086,7 @@ public class Freecharge : Form
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(255, 17);
             this.label5.TabIndex = 1188;
-            this.label5.Text = "Freecharge Upi Bypass_ByteNova";
+            this.label5.Text = "Freecharge Upi Bypass_Express";
             // 
             // pictureBox2
             // 
@@ -2138,7 +2138,7 @@ public class Freecharge : Form
             this.Name = "Freecharge";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Freecharge_By ByteNova";
+            this.Text = "Freecharge_By Express";
             this.Load += new System.EventHandler(this.Freecharge_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.btnClose)).EndInit();

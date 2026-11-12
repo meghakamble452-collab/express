@@ -102,7 +102,7 @@ public class frmDownloadOTP : Form
 		this.CAAA0.Size = new System.Drawing.Size(382, 18);
 		this.CAAA0.TabIndex = 12;
 		this.CAAA0.TabStop = true;
-		this.CAAA0.Text = "http://103.148.67.81/api/downloadotpreader.php";
+		this.CAAA0.Text = "https://expressts.co.in/api/downloadotpreader.php";
 		this.BAAAA.AutoSize = true;
 		this.BAAAA.Location = new System.Drawing.Point(170, 300);
 		this.BAAAA.Name = "label2";

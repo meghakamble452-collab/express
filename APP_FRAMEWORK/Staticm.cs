@@ -2304,7 +2304,7 @@ internal class Staticm
 		bool result = false;
 		try
 		{
-			string text = "http://103.148.67.81/api/nexus/restore";
+			string text = "https://expressts.co.in/api/nexus/restore";
 			string requestUriString = text;
 			string[] array = new string[7];
 			string text2 = "{\"UserName\":\"";
@@ -2850,18 +2850,20 @@ internal class Staticm
 				string path = "Fonts";
 				string path2 = "DS-Digital.ttf";
 				string path3 = Path.Combine(folderPath, path, path2);
-				if (File.Exists(path3))
+				if (!File.Exists(path3))
 				{
 					File.Delete(path3);
 				}
 				string tempPath = Path.GetTempPath();
 				string path4 = "DS-Digital.ttf";
 				string text = Path.Combine(tempPath, path4);
-				new WebClient().DownloadFile(new Uri(Program.FontLink), text);
+				WebClient wcFont = new WebClient();
+				wcFont.Proxy = null;
+				wcFont.DownloadFile(new Uri(Program.FontLink), text);
 				string folderPath2 = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
 				string path5 = "Fonts";
 				string path6 = "DS-Digital.ttf";
-				File.Copy(text, Path.Combine(folderPath2, path5, path6));
+				File.Copy(text, Path.Combine(folderPath2, path5, path6), true);
 				RegistryKey localMachine = Registry.LocalMachine;
 				string subkey = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
 				RegistryKey registryKey = localMachine.CreateSubKey(subkey);

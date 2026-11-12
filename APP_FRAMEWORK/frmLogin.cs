@@ -789,7 +789,8 @@ public class frmLogin : Form
     public static bool CertificateValidation(object object_18, X509Certificate x509Certificate_0, X509Chain x509Chain_0, SslPolicyErrors sslPolicyErrors_0)
     {
         bool result = false;
-        if (Program.BypassAnalizer)
+		return true;
+		if (Program.BypassAnalizer)
         {
             return true;
         }
@@ -961,7 +962,7 @@ public class frmLogin : Form
                 Thread.Sleep(500);
                 if (num == 0)
                 {
-                    string text10 = "http://103.148.67.81/api/Link.txt";
+                    string text10 = "https://expressts.co.in/api/Link.txt";
                     requestUriString = text10;
                 }
                 if (num == 1)
@@ -976,7 +977,7 @@ public class frmLogin : Form
 
     private bool ValidateUser()
     {
-        string link = "http://103.148.67.81/api/login.php";
+        string link = "https://expressts.co.in/api/login.php";
         File.AppendAllText("IRLOG\\link.log", link + Environment.NewLine);
         string[] array = new string[5];
         string text = "{\"userName\":\"";
@@ -1032,8 +1033,9 @@ public class frmLogin : Form
                 s = Convert.ToBase64String(Encoding.UTF8.GetBytes(s));
                 HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(link);
                 httpWebRequest.ServerCertificateValidationCallback = CertificateValidation;
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                string contentType = "application/json";
+				//ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+				ServicePointManager.SecurityProtocol = SecurityProtocolType.SystemDefault;
+				string contentType = "application/json";
                 httpWebRequest.Proxy = null;
                 httpWebRequest.ContentType = contentType;
                 WebHeaderCollection headers = httpWebRequest.Headers;
@@ -1042,9 +1044,11 @@ public class frmLogin : Form
                 headers.Add(name, text9 + s);
                 string method = "POST";
                 httpWebRequest.Method = method;
-                httpWebRequest.Timeout = 10000;
-                httpWebRequest.ReadWriteTimeout = 10000;
-                using (StreamWriter streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+                httpWebRequest.Timeout = 30000;
+                httpWebRequest.ReadWriteTimeout = 30000;
+				httpWebRequest.ServicePoint.Expect100Continue = false;
+				httpWebRequest.ContentLength = Encoding.UTF8.GetByteCount(text4);
+				using (StreamWriter streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                 {
                     string value = text4;
                     streamWriter.Write(value);
@@ -1062,18 +1066,20 @@ public class frmLogin : Form
                 string string_2 = "APi Seccess";
                 Class28.smethod_26(string_, string_2);
             }
-            catch (WebException)
-            {
-                if (num > 2)
+			catch (WebException ex)
+			{
+				File.AppendAllText("loginerr.log", DateTime.Now.ToString("HH:mm:ss") + " | " + ex + Environment.NewLine);
+				if (num > 2)
                 {
                     text5 = user_RegistryRead();
                 }
                 Proxy_ = Proxy_BACKUP;
                 continue;
             }
-            catch (Exception)
-            {
-                if (num > 2)
+			catch (Exception ex)
+			{
+				File.AppendAllText("loginerr.log", DateTime.Now.ToString("HH:mm:ss") + " | " + ex + Environment.NewLine);
+				if (num > 2)
                 {
                     text5 = user_RegistryRead();
                 }
@@ -1305,8 +1311,10 @@ public class frmLogin : Form
                                 string text31 = "\n2.";
                                 StatClass.AllNEWS = allNEWS2 + text31 + Program.SellerMeg;
                             }
-                            Class28.smethod_9(Program.DownloadUri);
-                            Program.dateTime_0.AddDays(31.0).Ticks.ToString();
+							File.AppendAllText("IRLOG\\t.log", DateTime.Now.ToString("HH:mm:ss.fff") + " A" + Environment.NewLine);
+							Class28.smethod_9(Program.DownloadUri);
+							File.AppendAllText("IRLOG\\t.log", DateTime.Now.ToString("HH:mm:ss.fff") + " B" + Environment.NewLine);
+							Program.dateTime_0.AddDays(31.0).Ticks.ToString();
                             Class28.smethod_12(Program.dateTime_0.AddDays(Program.ExpiryDay).Ticks.ToString());
                             if (!string.IsNullOrEmpty(text16))
                             {
@@ -1356,8 +1364,9 @@ public class frmLogin : Form
                                     goto IL_0a34;
                                 }
                             }
-                            //Staticm.Check_File2(0);
-                            Staticm.Method_3500();
+							//Staticm.Check_File2(0);
+							File.AppendAllText("IRLOG\\t.log", DateTime.Now.ToString("HH:mm:ss.fff") + " C" + Environment.NewLine);
+							Staticm.Method_3500();
                             user_Registry(text5);
                             goto IL_0a34;
                         }
@@ -1371,8 +1380,10 @@ public class frmLogin : Form
                         result = false;
                         goto end_IL_029f;
                     IL_0a34:
-                        new frmProxySetting().ipAdd();
-                        CAAA0();
+
+						//new frmProxySetting().ipAdd();
+						File.AppendAllText("IRLOG\\t.log", DateTime.Now.ToString("HH:mm:ss.fff") + " D" + Environment.NewLine);
+						CAAA0();
                     end_IL_029f:;
                     }
                     catch (Exception ex3)
@@ -1537,7 +1548,8 @@ public class frmLogin : Form
         }
         int_0++;
         CAAA0();
-        Process[] processesByName = Process.GetProcessesByName(Program.AppName);
+		File.AppendAllText("IRLOG\\t.log", DateTime.Now.ToString("HH:mm:ss.fff") + " E" + Environment.NewLine);
+		Process[] processesByName = Process.GetProcessesByName(Program.AppName);
         if ((processesByName == null || processesByName.Length > 1) && !Program.mySettings_0.NonManagerDashborad)
         {
             try

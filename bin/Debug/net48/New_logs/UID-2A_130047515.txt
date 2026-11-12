@@ -1,2 +1,0 @@
-https://www.irctc.co.in/eticketing/protected/mapps1/boardingStationEnq
-{"clusterFlag":"N","onwardFlag":"N","cod":"false","reservationMode":"WS_TA_B2C","autoUpgradationSelected":false,"gnToCkOpted":false,"paymentType":1,"twoPhaseAuthRequired":false,"captureAddress":0,"alternateAvlInputDTO":[{"trainNo":"13401","destStn":"PNBE","srcStn":"RJPB","jrnyDate":"20261007","quotaCode":"GN","jrnyClass":"2S","concessionPassengers":false}],"passBooking":false,"journalistBooking":false,"returnJourney":false}

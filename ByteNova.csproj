@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <AssemblyName>Express</AssemblyName>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
@@ -11,7 +11,7 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>ByteNovaLogo.ico</ApplicationIcon>
+    <ApplicationIcon>ExpressLogo.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <RootNamespace />
   </PropertyGroup>
@@ -32,7 +32,7 @@
     <None Remove="NEXUS.Extention.XCaptchaRecog.dll" />
     <None Remove="NEXUS.Extention.NpciPay.dll" />
     <None Remove="NEXUS.Extention.FreeCharge.dll" />
-	  <Content Include="ByteNovaLogo.ico">
+	  <Content Include="ExpressLogo.ico">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="express-logo.png">
@@ -65,109 +65,109 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AngleSharp">
-      <HintPath>bin\Debug\net48\AngleSharp.dll</HintPath>
+      <HintPath>libs\AngleSharp.dll</HintPath>
     </Reference>
     <Reference Include="BhimAXIS">
-      <HintPath>bin\Debug\net48\BhimAXIS.dll</HintPath>
+      <HintPath>libs\BhimAXIS.dll</HintPath>
     </Reference>
     <Reference Include="BhimSBI">
-      <HintPath>bin\Debug\net48\BhimSBI.dll</HintPath>
+      <HintPath>libs\BhimSBI.dll</HintPath>
     </Reference>
     <Reference Include="BouncyCastle.Crypto">
-      <HintPath>bin\Debug\net48\BouncyCastle.Crypto.dll</HintPath>
+      <HintPath>libs\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
     <Reference Include="Bunifu_UI_v1.52">
-      <HintPath>bin\Debug\net48\Bunifu_UI_v1.52.dll</HintPath>
+      <HintPath>libs\Bunifu_UI_v1.52.dll</HintPath>
     </Reference>
     <Reference Include="EAGetMail">
-      <HintPath>bin\Debug\net48\EAGetMail.dll</HintPath>
+      <HintPath>libs\EAGetMail.dll</HintPath>
     </Reference>
     <Reference Include="FreeCharge">
-      <HintPath>bin\Debug\net48\FreeCharge.dll</HintPath>
+      <HintPath>libs\FreeCharge.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib">
-      <HintPath>bin\Debug\net48\ICSharpCode.SharpZipLib.dll</HintPath>
+      <HintPath>libs\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="Ionic.Zip.Reduced">
-      <HintPath>bin\Debug\net48\Ionic.Zip.Reduced.dll</HintPath>
+      <HintPath>libs\Ionic.Zip.Reduced.dll</HintPath>
     </Reference>
     <Reference Include="MailKit">
-      <HintPath>bin\Debug\net48\MailKit.dll</HintPath>
+      <HintPath>libs\MailKit.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces">
-      <HintPath>bin\Debug\net48\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+      <HintPath>libs\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Playwright">
-      <HintPath>bin\Debug\net48\Microsoft.Playwright.dll</HintPath>
+      <HintPath>libs\Microsoft.Playwright.dll</HintPath>
     </Reference>
     <Reference Include="MimeKit">
-      <HintPath>bin\Debug\net48\MimeKit.dll</HintPath>
+      <HintPath>libs\MimeKit.dll</HintPath>
     </Reference>
     <Reference Include="MsHtmlWeb">
-      <HintPath>bin\Debug\net48\MsHtmlWeb.dll</HintPath>
+      <HintPath>libs\MsHtmlWeb.dll</HintPath>
     </Reference>
     <Reference Include="MurmurHash">
-      <HintPath>bin\Debug\net48\MurmurHash.dll</HintPath>
+      <HintPath>libs\MurmurHash.dll</HintPath>
     </Reference>
     <Reference Include="MySql.Data">
-      <HintPath>bin\Debug\net48\MySql.Data.dll</HintPath>
+      <HintPath>libs\MySql.Data.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>bin\Debug\net48\Newtonsoft.Json.dll</HintPath>
+      <HintPath>libs\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NpciPay">
-      <HintPath>bin\Debug\net48\NpciPay.dll</HintPath>
+      <HintPath>libs\NpciPay.dll</HintPath>
     </Reference>
     <Reference Include="PDFService">
-      <HintPath>bin\Debug\net48\PDFService.dll</HintPath>
+      <HintPath>libs\PDFService.dll</HintPath>
     </Reference>
     <Reference Include="PhonePeCSharp">
-      <HintPath>bin\Debug\net48\PhonePeCSharp.dll</HintPath>
+      <HintPath>libs\PhonePeCSharp.dll</HintPath>
     </Reference>
     <Reference Include="QRCoder">
-      <HintPath>bin\Debug\net48\QRCoder.dll</HintPath>
+      <HintPath>libs\QRCoder.dll</HintPath>
     </Reference>
     <Reference Include="SeleniumExtras.WaitHelpers">
-      <HintPath>bin\Debug\net48\SeleniumExtras.WaitHelpers.dll</HintPath>
+      <HintPath>libs\SeleniumExtras.WaitHelpers.dll</HintPath>
     </Reference>
     <Reference Include="System.Buffers">
-      <HintPath>bin\Debug\net48\System.Buffers.dll</HintPath>
+      <HintPath>libs\System.Buffers.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Annotations">
-      <HintPath>bin\Debug\net48\System.ComponentModel.Annotations.dll</HintPath>
+      <HintPath>libs\System.ComponentModel.Annotations.dll</HintPath>
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.SQLite">
-      <HintPath>bin\Debug\net48\System.Data.SQLite.dll</HintPath>
+      <HintPath>libs\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.Management.Automation">
-      <HintPath>bin\Debug\net48\System.Management.Automation.dll</HintPath>
+      <HintPath>libs\System.Management.Automation.dll</HintPath>
     </Reference>
     <Reference Include="System.Memory">
-      <HintPath>bin\Debug\net48\System.Memory.dll</HintPath>
+      <HintPath>libs\System.Memory.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http.WinHttpHandler">
-      <HintPath>bin\Debug\net48\System.Net.Http.WinHttpHandler.dll</HintPath>
+      <HintPath>libs\System.Net.Http.WinHttpHandler.dll</HintPath>
     </Reference>
     <Reference Include="System.Numerics.Vectors">
-      <HintPath>bin\Debug\net48\System.Numerics.Vectors.dll</HintPath>
+      <HintPath>libs\System.Numerics.Vectors.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe">
-      <HintPath>bin\Debug\net48\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <HintPath>libs\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Text.Encodings.Web">
-      <HintPath>bin\Debug\net48\System.Text.Encodings.Web.dll</HintPath>
+      <HintPath>libs\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
     <Reference Include="System.Text.Json">
-      <HintPath>bin\Debug\net48\System.Text.Json.dll</HintPath>
+      <HintPath>libs\System.Text.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Channels">
-      <HintPath>bin\Debug\net48\System.Threading.Channels.dll</HintPath>
+      <HintPath>libs\System.Threading.Channels.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks.Extensions">
-      <HintPath>bin\Debug\net48\System.Threading.Tasks.Extensions.dll</HintPath>
+      <HintPath>libs\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.ServiceProcess" />
@@ -178,16 +178,16 @@
     <Reference Include="System.Management" />
     <Reference Include="System.Net.Http" />
     <Reference Include="UndetectedChromeDriver">
-      <HintPath>bin\Debug\net48\UndetectedChromeDriver.dll</HintPath>
+      <HintPath>libs\UndetectedChromeDriver.dll</HintPath>
     </Reference>
     <Reference Include="WebDriver">
-      <HintPath>bin\Debug\net48\WebDriver.dll</HintPath>
+      <HintPath>libs\WebDriver.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System.Web" />
     <Reference Include="zxing">
-      <HintPath>bin\Debug\net48\zxing.dll</HintPath>
+      <HintPath>libs\zxing.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

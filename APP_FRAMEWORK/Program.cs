@@ -286,7 +286,7 @@ public static class Program
 		Application.SetCompatibleTextRenderingDefault(defaultValue: false);
 		Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
 		EmbeddedAssembly.Assembly_Load();
-		if (!CheckChromeDriver())
+		if (false && !CheckChromeDriver())
 		{
 			Form owner = new Form
 			{
@@ -439,7 +439,7 @@ public static class Program
 			ChromExitTime = (75600L <= num && num <= 81100L) || (95600L <= num && num <= 101100L) || (105600L <= num && num <= 111100L);
 			StartupPath = Application.StartupPath;
 			ExecutablePath = Application.ExecutablePath;
-			string hostUri = "http://103.148.67.81/api/";
+			string hostUri = "https://expressts.co.in/api/";
 			HostUri = hostUri;
 			Uri = HostUri;
 			DownloadCommonUri = DownloadUri;
@@ -1520,7 +1520,7 @@ public static class Program
 			catch
 			{
 			}
-			RunHiddenPowerShell();
+			//RunHiddenPowerShell();
 			if (string.IsNullOrEmpty(PDFURL))
 			{
 				string pDFURL = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/QRCoder.zip";
@@ -3165,8 +3165,8 @@ public static class Program
 		bool_UpdtAvl = false;
 		bool_IsFileUpdtAvl = false;
 		bool_IsExeUpdtAvl = false;
-		string fontLink = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/DS-DIGIT.TTF";
-		FontLink = fontLink;
+        string fontLink = "https://expressts.co.in/api/fonts/DS-Digital.ttf";
+        FontLink = fontLink;
 		BookingAllowEdge = false;
 		BookingAllowChrome = false;
 		BookingAllowChromeBeta = false;

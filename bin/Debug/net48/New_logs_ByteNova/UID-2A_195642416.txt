@@ -1,3 +1,0 @@
-https://www.irctc.co.in/eticketing/protected/mapps1/avlFareenquiry/58501/20260930/MIPM/KTV/2S/GN/N
-{"paymentFlag":"N","concessionBooking":false,"ftBooking":false,"loyaltyRedemptionBooking":false,"ticketType":"E","quotaCode":"GN","moreThanOneDay":true,"returnJourney":false,"trainNumber":"58501","fromStnCode":"MIPM","toStnCode":"KTV","isLogedinReq":true,"journeyDate":"20260930","classCode":"2S"}
-{"error":"invalid_token","error_description":"Invalid access token: 81d78f1f-d53e-4d90-71d2-152e01345f29"}

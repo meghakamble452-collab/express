@@ -2553,7 +2553,7 @@ public class frmMain : Form
 
     private void btnClose_Click(object sender, EventArgs e)
     {
-        string text = "Kya AAP ByteNova Software Close Karna Chahte Ho.\r\n\r\nPress Yes To Close Othwise Press No?";
+        string text = "Kya AAP Express Software Close Karna Chahte Ho.\r\n\r\nPress Yes To Close Othwise Press No?";
         string caption = "Exit";
         if (MessageBox.Show(text, caption, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
         {

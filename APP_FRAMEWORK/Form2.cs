@@ -999,7 +999,7 @@ namespace APP_FRAMEWORK
                     {
                         TopMost = true
                     };
-                    string text5 = "1:- Aapke Chrome pe IP Block Fixer Extension Install Nahi hai\n2:- Sabse Pehle Chrome ke Extension Option me jake Devloper Mode ON karen\n3:- Load Unpack Extension per Click Karke\n4:- Desktop se ByteNova IP Block Fixer ka Folder Select kar len\nNote :- Agar Install hone ke baad bhi yeh Message Show Kare to Remove karke Dobara Install kar den";
+                    string text5 = "1:- Aapke Chrome pe IP Block Fixer Extension Install Nahi hai\n2:- Sabse Pehle Chrome ke Extension Option me jake Devloper Mode ON karen\n3:- Load Unpack Extension per Click Karke\n4:- Desktop se Express IP Block Fixer ka Folder Select kar len\nNote :- Agar Install hone ke baad bhi yeh Message Show Kare to Remove karke Dobara Install kar den";
                     string caption2 = "Express";
                     MessageBox.Show(owner2, text5, caption2, MessageBoxButtons.OK, MessageBoxIcon.Hand);
                     if (_cookieListener != null && _cookieListener.IsListening)
