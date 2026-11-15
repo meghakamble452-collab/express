@@ -420,7 +420,7 @@ internal class frmCaptcha : Form
         {
             clsMain clsMain3 = class28_0;
             string text3 = "ShowForm err=";
-            clsMain3.Lock(text3 + ex.Message);
+            clsMain3.Lock(text3 + ex.ToString());
         }
         try
         {
@@ -1127,7 +1127,7 @@ internal class frmCaptcha : Form
         {
             clsMain clsMain3 = class28_0;
             string text10 = "GetCaptcha ERR=";
-            clsMain3.Lock(text10 + ex.Message);
+            clsMain3.Lock(text10 + ex.ToString());
         }
     }
 
@@ -1389,7 +1389,7 @@ internal class frmCaptcha : Form
         {
             clsMain clsMain6 = class28_0;
             string text36 = "RecognizeRIP ERR=";
-            clsMain6.Lock(text36 + ex.Message);
+            clsMain6.Lock(text36 + ex.ToString());
         }
         finally
         {
@@ -1608,7 +1608,7 @@ internal class frmCaptcha : Form
             clsMain clsMain4 = class28_0;
             string text12 = "RecognizeDecaptcha out:";
             string text13 = "  Ex:";
-            clsMain4.method_74(text12 + text2 + text13, ex.Message);
+            clsMain4.method_74(text12 + text2 + text13, ex.ToString());
             return text;
         }
         finally
@@ -1844,7 +1844,7 @@ internal class frmCaptcha : Form
             {
                 clsMain clsMain4 = class28_0;
                 string string_6 = "RecognizeRumola";
-                clsMain4.method_74(string_6, ex.Message);
+                clsMain4.method_74(string_6, ex.ToString());
             }
             finally
             {
@@ -1943,7 +1943,7 @@ internal class frmCaptcha : Form
             catch (Exception ex)
             {
                 File.Delete(text3);
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.ToString());
             }
         }
         catch
@@ -2017,7 +2017,7 @@ internal class frmCaptcha : Form
             catch (Exception ex)
             {
                 File.Delete(text6);
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.ToString());
             }
         }
         catch (Exception)
@@ -2104,7 +2104,7 @@ internal class frmCaptcha : Form
             catch (Exception ex)
             {
                 File.Delete(text4);
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.ToString());
             }
         }
         catch
@@ -2241,7 +2241,7 @@ internal class frmCaptcha : Form
             catch (Exception ex)
             {
                 File.Delete(text4);
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.ToString());
             }
         }
         catch
@@ -2317,7 +2317,7 @@ internal class frmCaptcha : Form
             catch (Exception ex)
             {
                 File.Delete(text3);
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.ToString());
             }
         }
         catch
@@ -2393,7 +2393,7 @@ internal class frmCaptcha : Form
             catch (Exception ex)
             {
                 File.Delete(text3);
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.ToString());
             }
         }
         catch

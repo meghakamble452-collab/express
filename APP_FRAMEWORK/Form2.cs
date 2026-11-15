@@ -1,4 +1,4 @@
-﻿using Ionic.Zip;
+using Ionic.Zip;
 using Microsoft.Playwright;
 using Microsoft.VisualBasic;
 using Microsoft.Win32;
@@ -705,7 +705,7 @@ namespace APP_FRAMEWORK
                 catch (Exception ex)
                 {
                     File.Delete(text2);
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.ToString());
                 }
             }
             catch
@@ -882,7 +882,7 @@ namespace APP_FRAMEWORK
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine("Cookie Filter Error: " + ex.Message);
+                                Console.WriteLine("Cookie Filter Error: " + ex.ToString());
                             }
                             string startupPath = Application.StartupPath;
                             string path = "Chrome_irctc_cookies.json";
@@ -1334,7 +1334,7 @@ namespace APP_FRAMEWORK
             catch (Exception ex)
             {
                 string text = "Error processing data: ";
-                Console.WriteLine(text + ex.Message);
+                Console.WriteLine(text + ex.ToString());
             }
         }
 
@@ -1398,7 +1398,7 @@ namespace APP_FRAMEWORK
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.ToString());
             }
         }
         private void Form2_Load(object sender, EventArgs e)

@@ -390,7 +390,7 @@ public static class Program
 					}
 					catch (Exception ex)
 					{
-						MessageBox.Show(ex.Message);
+						MessageBox.Show(ex.ToString());
 					}
 				}
 				else
@@ -409,7 +409,7 @@ public static class Program
 		}
 		catch (Exception ex2)
 		{
-			MessageBox.Show(ex2.Message);
+			MessageBox.Show(ex2.ToString());
 		}
 		Class28.smethod_29d();
 		string thisprocessname = Process.GetCurrentProcess().ProcessName;
@@ -958,7 +958,7 @@ public static class Program
 		catch (Exception ex2)
 		{
 			string text = "[Cleanup Error]: ";
-			Console.WriteLine(text + ex2.Message);
+			Console.WriteLine(text + ex2.ToString());
 		}
 	}
 
@@ -998,7 +998,7 @@ public static class Program
 		catch (Exception ex)
 		{
 			string text2 = "[WMI Kill Error]: ";
-			Console.WriteLine(text2 + ex.Message);
+			Console.WriteLine(text2 + ex.ToString());
 		}
 	}
 
@@ -1129,12 +1129,12 @@ public static class Program
 			catch (IOException ex2)
 			{
 				string format2 = "IO exception deleting '{0}' (attempt {1}): {2}";
-				Console.WriteLine(string.Format(format2, dir, i, ex2.Message));
+				Console.WriteLine(string.Format(format2, dir, i, ex2.ToString()));
 			}
 			catch (UnauthorizedAccessException ex3)
 			{
 				string format3 = "Unauthorized deleting '{0}' (attempt {1}): {2}";
-				Console.WriteLine(string.Format(format3, dir, i, ex3.Message));
+				Console.WriteLine(string.Format(format3, dir, i, ex3.ToString()));
 			}
 			catch (Exception arg)
 			{
@@ -1342,7 +1342,7 @@ public static class Program
 				}
 				catch (Exception ex)
 				{
-					MessageBox.Show(ex.Message);
+					MessageBox.Show(ex.ToString());
 					goto IL_01ce;
 				}
 				string erPlce4 = "After Validation Complete-1";
@@ -1417,7 +1417,7 @@ public static class Program
 		}
 		catch (Exception ex2)
 		{
-			MessageBox.Show(ex2.Message);
+			MessageBox.Show(ex2.ToString());
 		}
 	}
 

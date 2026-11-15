@@ -405,7 +405,7 @@ internal class Class28
 		catch (Exception ex)
 		{
 			string string_9 = "GetKey";
-			smethod_26(string_9, ex.Message);
+			smethod_26(string_9, ex.ToString());
 		}
 	}
 
@@ -445,7 +445,7 @@ internal class Class28
 			catch (Exception ex)
 			{
 				string string_4 = "GetAnalyser";
-				smethod_26(string_4, ex.Message);
+				smethod_26(string_4, ex.ToString());
 			}
 			return result;
 		}
@@ -468,7 +468,7 @@ internal class Class28
 		catch (Exception ex)
 		{
 			string string_9 = "SetKey";
-			smethod_26(string_9, ex.Message);
+			smethod_26(string_9, ex.ToString());
 		}
 	}
 
@@ -517,7 +517,7 @@ internal class Class28
 		catch (Exception ex)
 		{
 			string string_2 = "GetAnalyser";
-			smethod_26(string_2, ex.Message);
+			smethod_26(string_2, ex.ToString());
 		}
 		return text;
 	}
@@ -543,7 +543,7 @@ internal class Class28
 		catch (Exception ex)
 		{
 			string string_9 = "SetKey";
-			smethod_26(string_9, ex.Message);
+			smethod_26(string_9, ex.ToString());
 		}
 	}
 
@@ -577,7 +577,7 @@ internal class Class28
 		catch (Exception ex)
 		{
 			string string_2 = "GetChance";
-			smethod_26(string_2, ex.Message);
+			smethod_26(string_2, ex.ToString());
 		}
 		return result;
 	}
@@ -598,7 +598,7 @@ internal class Class28
 		catch (Exception ex)
 		{
 			string string_9 = "SetChance";
-			smethod_26(string_9, ex.Message);
+			smethod_26(string_9, ex.ToString());
 		}
 	}
 
@@ -621,7 +621,7 @@ internal class Class28
 		catch (Exception ex)
 		{
 			string string_8 = "SetKey";
-			smethod_26(string_8, ex.Message);
+			smethod_26(string_8, ex.ToString());
 		}
 	}
 
@@ -715,14 +715,14 @@ internal class Class28
 					string string_ = "DSN Failed for Interface";
 					string description = networkInterface.Description;
 					string text2 = " Err=";
-					smethod_26(string_, description + text2 + ex.Message);
+					smethod_26(string_, description + text2 + ex.ToString());
 				}
 			}
 		}
 		catch (Exception ex2)
 		{
 			string string_2 = "SetDNS";
-			smethod_26(string_2, ex2.Message);
+			smethod_26(string_2, ex2.ToString());
 		}
 	}
 
@@ -760,7 +760,7 @@ internal class Class28
 		catch (Exception ex)
 		{
 			string string_4 = "ResetDNS";
-			smethod_26(string_4, ex.Message);
+			smethod_26(string_4, ex.ToString());
 		}
 	}
 
@@ -776,7 +776,7 @@ internal class Class28
 		catch (Exception ex)
 		{
 			string string_7 = "DNSAutoOrStatic";
-			smethod_26(string_7, ex.Message);
+			smethod_26(string_7, ex.ToString());
 		}
 		return true;
 	}

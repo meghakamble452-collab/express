@@ -326,7 +326,7 @@ internal class frmDownloasData : Form
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            MessageBox.Show(ex.ToString());
         }
     }
 
@@ -448,7 +448,7 @@ internal class frmDownloasData : Form
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.ToString());
                 string text4 = "Could not delete ZIP!";
                 MessageBox.Show(text4);
                 Environment.Exit(1);

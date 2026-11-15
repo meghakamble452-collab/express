@@ -957,7 +957,7 @@ public class frmLogin : Form
             catch (Exception ex)
             {
                 try { File.AppendAllText("IRLOG\\err.log", DateTime.Now + " | " + ex.ToString() + Environment.NewLine); } catch { }
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.ToString());
                 Application.DoEvents();
                 Thread.Sleep(500);
                 if (num == 0)
@@ -1390,7 +1390,7 @@ public class frmLogin : Form
                     }
                     catch (Exception ex3)
                     {
-                        MessageBox.Show(ex3.Message);
+                        MessageBox.Show(ex3.ToString());
                         result = false;
                         goto IL_0ab2;
                     }

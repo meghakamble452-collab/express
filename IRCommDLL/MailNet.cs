@@ -63,7 +63,7 @@ internal class MailNet
 		}
 		catch (Exception ex)
 		{
-			throw new Exception(ex.Message);
+			throw new Exception(ex.ToString());
 		}
 	}
 

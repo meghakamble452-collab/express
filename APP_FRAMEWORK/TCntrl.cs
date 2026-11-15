@@ -620,7 +620,7 @@ internal class TCntrl : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            MessageBox.Show(ex.ToString());
         }
     }
 
@@ -826,7 +826,7 @@ internal class TCntrl : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            MessageBox.Show(ex.ToString());
         }
     }
 
@@ -968,7 +968,7 @@ internal class TCntrl : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            MessageBox.Show(ex.ToString());
         }
     }
 
@@ -4686,7 +4686,7 @@ internal class TCntrl : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message);
+            MessageBox.Show(ex.ToString());
         }
     }
 

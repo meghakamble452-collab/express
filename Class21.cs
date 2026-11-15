@@ -416,8 +416,9 @@ internal class Class21
 	{
 		int num = int_0;
 		int_0++;
-		int num2 = int.Parse(string_1);
-		string text = "false";
+        int num2 = 0;
+        int.TryParse(string_1, out num2);
+        string text = "false";
 		string text2 = text;
 		string text3 = string_0;
 		string value = "-";
@@ -609,8 +610,9 @@ internal class Class21
 	public string method_3(int int_0, bool bool_0, bool bool_1, bool bool_2, string string_8, bool bool_3)
 	{
 		int num = 1;
-		int num2 = int.Parse(string_1);
-		string text = "false";
+        int num2 = 0;
+        int.TryParse(string_1, out num2);
+        string text = "false";
 		string text2 = text;
 		string text3 = "false";
 		string text4 = text3;
@@ -762,8 +764,9 @@ internal class Class21
 	public string method_3_app(int int_0, bool bool_0, bool bool_1, bool bool_2, string string_8, bool bool_3)
 	{
 		int num = 1;
-		int num2 = int.Parse(string_1);
-		string text = "false";
+        int num2 = 0;
+        int.TryParse(string_1, out num2);
+        string text = "false";
 		string text2 = text;
 		string text3 = "false";
 		string text4 = text3;
@@ -1134,8 +1137,9 @@ internal class Class21
 	public string method_3_Disha(int int_0, bool bool_0, bool bool_1, bool bool_2, string string_8, bool bool_3)
 	{
 		int num = 1;
-		int num2 = int.Parse(string_1);
-		string text = "false";
+        int num2 = 0;
+        int.TryParse(string_1, out num2);
+        string text = "false";
 		string text2 = text;
 		string text3 = "false";
 		string text4 = text3;

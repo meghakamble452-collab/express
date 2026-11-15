@@ -1294,7 +1294,7 @@ internal class Class47
 			catch (Exception ex)
 			{
 				string string_9 = "WebRequestPost";
-				Class28.smethod_26(string_9, ex.Message);
+				Class28.smethod_26(string_9, ex.ToString());
 			}
 			finally
 			{
@@ -1396,7 +1396,7 @@ internal class Class47
 			catch (Exception ex)
 			{
 				string string_9 = "WebRequestPost";
-				Class28.smethod_26(string_9, ex.Message);
+				Class28.smethod_26(string_9, ex.ToString());
 			}
 			finally
 			{

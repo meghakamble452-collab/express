@@ -355,7 +355,7 @@ internal class frmProcessTicket : Form
         catch (Exception ex)
         {
             string string_2 = "frmProcessTicket LoadTktControl";
-            Class28.smethod_26(string_2, ex.Message);
+            Class28.smethod_26(string_2, ex.ToString());
             Form owner2 = Program.TopMost_();
             string text12 = "Error Occured while  Processing Opening the Ticket";
             MessageBox.Show(owner2, text12);
@@ -498,7 +498,15 @@ internal class frmProcessTicket : Form
             string text6 = "TQ";
             if (text5 == text6)
             {
-                long ticks = new DateTime(int.Parse(class48_.string_6), int.Parse(class48_.string_5), int.Parse(class48_.string_4)).Ticks;
+                long ticks = 0;
+                try
+                {
+                    ticks = new DateTime(int.Parse(class48_.string_6), int.Parse(class48_.string_5), int.Parse(class48_.string_4)).Ticks;
+                }
+                catch
+                {
+                    return;
+                }
                 int year2 = DateTime.Now.Year;
                 int month2 = DateTime.Now.Month;
                 int day2 = DateTime.Now.Day;
@@ -1095,13 +1103,15 @@ internal class frmProcessTicket : Form
                     {
                         text28 = getslotIP(tCntrl.cboSlot.SelectedIndex);
                     }
+                    string acAvl = string.IsNullOrWhiteSpace(Program.mySettings_0.Ac_avl) ? "0" : Program.mySettings_0.Ac_avl;
+                    string slAvl = string.IsNullOrWhiteSpace(Program.mySettings_0.Sl_avl) ? "0" : Program.mySettings_0.Sl_avl;
                     string[] array3 = new string[5] { text28, null, null, null, null };
                     string text29 = "#";
                     array3[1] = text29;
-                    array3[2] = Program.mySettings_0.Ac_avl;
+                    array3[2] = acAvl;
                     string text30 = "#";
                     array3[3] = text30;
-                    array3[4] = Program.mySettings_0.Sl_avl;
+                    array3[4] = slAvl;
                     text28 = string.Concat(array3);
                     string text31 = "";
                     string string_2 = @class.string_23;
@@ -1404,7 +1414,7 @@ internal class frmProcessTicket : Form
         catch (Exception ex)
         {
             string text11 = "SetUpdatedStatus statusCode: ";
-            Class28.smethod_26(text11 + int_3, ex.Message);
+            Class28.smethod_26(text11 + int_3, ex.ToString());
         }
     }
 

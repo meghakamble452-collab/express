@@ -190,7 +190,7 @@ public class frmToken : Form
 		catch (Exception ex)
 		{
 			string text = "Error processing data: ";
-			Console.WriteLine(text + ex.Message);
+			Console.WriteLine(text + ex.ToString());
 		}
 	}
 
@@ -216,7 +216,7 @@ public class frmToken : Form
 		catch (Exception ex)
 		{
 			string text = "Error: ";
-			Console.WriteLine(text + ex.Message);
+			Console.WriteLine(text + ex.ToString());
 		}
 	}
 

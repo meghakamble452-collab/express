@@ -1134,7 +1134,7 @@ internal class HumanMouseClicker
         }
         catch (Exception ex3)
         {
-            Console.WriteLine("Error: " + ex3.Message);
+            Console.WriteLine("Error: " + ex3.ToString());
             return false;
         }
     }
@@ -1165,7 +1165,7 @@ internal class HumanMouseClicker
         }
         catch (Exception ex)
         {
-            Console.WriteLine("ScrollElementToCenter Error: " + ex.Message);
+            Console.WriteLine("ScrollElementToCenter Error: " + ex.ToString());
             return false;
         }
     }
@@ -1742,7 +1742,7 @@ internal class HumanMouseClicker
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Autocomplete attempt {i}/3: " + ex.Message);
+                Console.WriteLine($"Autocomplete attempt {i}/3: " + ex.ToString());
                 Thread.Sleep(rnd.Next(700, 1000));
             }
         }
@@ -1849,7 +1849,7 @@ internal class HumanMouseClicker
         catch (Exception ex)
         {
             Console.WriteLine(
-                "HumanLikeClickAndType_Play Error: " + ex.Message);
+                "HumanLikeClickAndType_Play Error: " + ex.ToString());
         }
     }
 

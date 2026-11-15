@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -109,7 +109,7 @@ namespace IRCommDLL
             }
             catch (Exception ex)
             {
-                MessageBox.Show("method_0 error: " + ex.Message);
+                MessageBox.Show("method_0 error: " + ex.ToString());
             }
         }
         internal void method_0(Control control_0, Rectangle rectangle_0)
@@ -179,7 +179,7 @@ namespace IRCommDLL
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message);
+                MessageBox.Show("Error: " + ex.ToString());
             }
         }
         internal void method_1AA(object string_5)
@@ -249,7 +249,7 @@ namespace IRCommDLL
             }
             catch (Exception ex)
             {
-                MessageBox.Show("method_1 error: " + ex.Message);
+                MessageBox.Show("method_1 error: " + ex.ToString());
                 return DialogResult.Cancel;
             }
         }

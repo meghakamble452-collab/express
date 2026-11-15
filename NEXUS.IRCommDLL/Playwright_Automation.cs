@@ -155,7 +155,7 @@ internal class Playwright_Automation
             catch (Exception ex)
             {
                 string text8 = "[CDP Resize Error]: ";
-                Console.WriteLine(text8 + ex.Message);
+                Console.WriteLine(text8 + ex.ToString());
             }
             CaptureIRCTCRequests(page);
             string path = "irctc_cookies.json";
@@ -172,7 +172,7 @@ internal class Playwright_Automation
         }
         catch (Exception ex2)
         {
-            MessageBox.Show(ex2.Message);
+            MessageBox.Show(ex2.ToString());
         }
         return page;
     }
@@ -207,7 +207,7 @@ internal class Playwright_Automation
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Registry Error : " + ex.Message);
+            Console.WriteLine("Registry Error : " + ex.ToString());
         }
 
         // COMMON PATHS
@@ -300,7 +300,7 @@ internal class Playwright_Automation
         catch (Exception ex)
         {
             string text2 = "Registry se Edge path nikalne mein error: ";
-            Console.WriteLine(text2 + ex.Message);
+            Console.WriteLine(text2 + ex.ToString());
         }
         string[] array = new string[2];
         string text3 = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
@@ -350,7 +350,7 @@ internal class Playwright_Automation
         catch (Exception ex)
         {
             string format = "Registry se {0} path nikalne mein error: {1}";
-            Console.WriteLine(string.Format(format, browser, ex.Message));
+            Console.WriteLine(string.Format(format, browser, ex.ToString()));
         }
         List<string> list = new List<string>();
         if (browser != 0)
@@ -400,7 +400,7 @@ internal class Playwright_Automation
         catch (Exception ex)
         {
             string text2 = "Registry se Chrome path nikalne mein error: ";
-            Console.WriteLine(text2 + ex.Message);
+            Console.WriteLine(text2 + ex.ToString());
         }
         string[] array = new string[3];
         string text3 = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
@@ -443,7 +443,7 @@ internal class Playwright_Automation
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Registry se Brave path nikalne mein error: " + ex.Message);
+            Console.WriteLine("Registry se Brave path nikalne mein error: " + ex.ToString());
         }
 
         // Default install locations
@@ -502,7 +502,7 @@ internal class Playwright_Automation
         }
         catch (Exception ex)
         {
-            Console.WriteLine("[Cleanup Error]: " + ex.Message);
+            Console.WriteLine("[Cleanup Error]: " + ex.ToString());
         }
     }
     private void KillOldEdgeByProfile(string profilePath)
@@ -586,7 +586,7 @@ internal class Playwright_Automation
         catch (Exception ex)
         {
             string text3 = "[Cleanup Error]: ";
-            Console.WriteLine(text3 + ex.Message);
+            Console.WriteLine(text3 + ex.ToString());
         }
     }
     private void KillOldCometByProfile(string profilePath)
@@ -698,7 +698,7 @@ internal class Playwright_Automation
         }
         catch (Exception ex)
         {
-            Console.WriteLine("[Cleanup Error]: " + ex.Message);
+            Console.WriteLine("[Cleanup Error]: " + ex.ToString());
         }
     }
     private void KillOldBrowserByProfile(string profilePath, TargetBrowser targetBrowser)
@@ -767,7 +767,7 @@ internal class Playwright_Automation
         catch (Exception ex)
         {
             string text7 = "[Cleanup Error]: ";
-            Console.WriteLine(text7 + ex.Message);
+            Console.WriteLine(text7 + ex.ToString());
         }
     }
     private void KillBraveProcesses()
@@ -805,7 +805,7 @@ internal class Playwright_Automation
         }
         catch (Exception ex)
         {
-            Console.WriteLine("KillBraveProcesses error: " + ex.Message);
+            Console.WriteLine("KillBraveProcesses error: " + ex.ToString());
         }
     }
     private void KillAllEdgeProcesses()
@@ -843,7 +843,7 @@ internal class Playwright_Automation
         }
         catch (Exception ex)
         {
-            Console.WriteLine("KillAllEdgeProcesses error: " + ex.Message);
+            Console.WriteLine("KillAllEdgeProcesses error: " + ex.ToString());
         }
     }
     private string GetOperaPath()
@@ -2443,7 +2443,7 @@ internal class Playwright_Automation
                 catch (Exception ex)
                 {
                     MessageBox.Show(
-                        ex.Message);
+                        ex.ToString());
                 }
 
                 // =====================================================
@@ -2994,7 +2994,7 @@ internal class Playwright_Automation
         }
         catch (Exception ex)
         {
-            Console.WriteLine("[Cleanup Error]: " + ex.Message);
+            Console.WriteLine("[Cleanup Error]: " + ex.ToString());
         }
     }
 
@@ -3044,7 +3044,7 @@ internal class Playwright_Automation
         }
         catch (Exception ex)
         {
-            Console.WriteLine("[Cleanup Error]: " + ex.Message);
+            Console.WriteLine("[Cleanup Error]: " + ex.ToString());
         }
     }
     internal IPage StartChromeAndConnect_NEW_BETA(ref string userDataDir, string directlogin, Rectangle rect, string tktname, ref IPage page)
@@ -3228,7 +3228,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Window bounds error: " + ex.Message);
+                    Console.WriteLine("Window bounds error: " + ex.ToString());
                 }
                 if (!string.Equals(directlogin, "True", StringComparison.OrdinalIgnoreCase))
                 {
@@ -3238,7 +3238,7 @@ internal class Playwright_Automation
                     }
                     catch (Exception ex2)
                     {
-                        Console.WriteLine("Cookie load error: " + ex2.Message);
+                        Console.WriteLine("Cookie load error: " + ex2.ToString());
                     }
                 }
                 try
@@ -3247,7 +3247,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex3)
                 {
-                    Console.WriteLine("Request capture error: " + ex3.Message);
+                    Console.WriteLine("Request capture error: " + ex3.ToString());
                 }
                 IResponse val2 = null;
                 try
@@ -3537,7 +3537,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Window bounds error: " + ex.Message);
+                    Console.WriteLine("Window bounds error: " + ex.ToString());
                 }
                 if (!string.Equals(directlogin, "True", StringComparison.OrdinalIgnoreCase))
                 {
@@ -3547,7 +3547,7 @@ internal class Playwright_Automation
                     }
                     catch (Exception ex2)
                     {
-                        Console.WriteLine("Cookie load error: " + ex2.Message);
+                        Console.WriteLine("Cookie load error: " + ex2.ToString());
                     }
                 }
                 try
@@ -3556,7 +3556,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex3)
                 {
-                    Console.WriteLine("Request capture error: " + ex3.Message);
+                    Console.WriteLine("Request capture error: " + ex3.ToString());
                 }
                 IResponse val2 = null;
                 try
@@ -4081,7 +4081,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Window bounds error: " + ex.Message);
+                    Console.WriteLine("Window bounds error: " + ex.ToString());
                 }
                 if (!string.Equals(directlogin, "True", StringComparison.OrdinalIgnoreCase))
                 {
@@ -4091,7 +4091,7 @@ internal class Playwright_Automation
                     }
                     catch (Exception ex2)
                     {
-                        Console.WriteLine("Cookie load error: " + ex2.Message);
+                        Console.WriteLine("Cookie load error: " + ex2.ToString());
                     }
                 }
                 try
@@ -4100,7 +4100,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex3)
                 {
-                    Console.WriteLine("Request capture error: " + ex3.Message);
+                    Console.WriteLine("Request capture error: " + ex3.ToString());
                 }
                 IResponse val2 = null;
                 try
@@ -4417,7 +4417,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Window bounds error: " + ex.Message);
+                    Console.WriteLine("Window bounds error: " + ex.ToString());
                 }
                     try
                     {
@@ -4425,7 +4425,7 @@ internal class Playwright_Automation
                     }
                     catch (Exception ex2)
                     {
-                        Console.WriteLine("Cookie load error: " + ex2.Message);
+                        Console.WriteLine("Cookie load error: " + ex2.ToString());
                     }
                 try
                 {
@@ -4433,7 +4433,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex3)
                 {
-                    Console.WriteLine("Request capture error: " + ex3.Message);
+                    Console.WriteLine("Request capture error: " + ex3.ToString());
                 }
                 IResponse val2 = null;
                 try
@@ -5210,7 +5210,7 @@ internal class Playwright_Automation
         catch (Exception ex)
         {
             Console.WriteLine(
-                "PrepareBraveProfile Error: " + ex.Message);
+                "PrepareBraveProfile Error: " + ex.ToString());
         }
     }
 
@@ -5687,7 +5687,7 @@ internal class Playwright_Automation
                         {
                             Console.WriteLine(
                                 "[Warning] HideFromTaskbar: " +
-                                ex.Message);
+                                ex.ToString());
                         }
                     }
                     else
@@ -5704,7 +5704,7 @@ internal class Playwright_Automation
                 {
                     Console.WriteLine(
                         "[Warning] Brave HWND detection: " +
-                        ex.Message);
+                        ex.ToString());
                 }
                 finally
                 {
@@ -5828,7 +5828,7 @@ internal class Playwright_Automation
                 {
                     Console.WriteLine(
                         "[Warning] Window position: " +
-                        ex.Message);
+                        ex.ToString());
                 }
 
 
@@ -6298,7 +6298,7 @@ internal class Playwright_Automation
                     {
                         Console.WriteLine(
                             "Brave window resize error: " +
-                            ex.Message);
+                            ex.ToString());
                     }
 
                     // =================================================
@@ -6360,7 +6360,7 @@ internal class Playwright_Automation
                         "Brave start attempt " +
                         (attempt + 1) +
                         " failed: " +
-                        ex.Message);
+                        ex.ToString());
 
                     try
                     {
@@ -6863,7 +6863,7 @@ internal class Playwright_Automation
         catch (Exception ex)
         {
             string text6 = "[Error] Cookies load karne mein problem: ";
-            Console.WriteLine(text6 + ex.Message);
+            Console.WriteLine(text6 + ex.ToString());
         }
     }
     public class BrowserCookie
@@ -6896,7 +6896,7 @@ internal class Playwright_Automation
         catch (Exception ex)
         {
             string text2 = "[Load Cookie Error]: ";
-            Console.WriteLine(text2 + ex.Message);
+            Console.WriteLine(text2 + ex.ToString());
         }
     }
     public class ChromeCookie11
@@ -6974,7 +6974,7 @@ internal class Playwright_Automation
         catch (Exception ex)
         {
             string text2 = "[Load Cookie Error]: ";
-            Console.WriteLine(text2 + ex.Message);
+            Console.WriteLine(text2 + ex.ToString());
         }
     }
 
@@ -7006,7 +7006,7 @@ internal class Playwright_Automation
         catch (Exception ex)
         {
             string text2 = "[Load Cookie Error]: ";
-            Console.WriteLine(text2 + ex.Message);
+            Console.WriteLine(text2 + ex.ToString());
         }
     }
 
@@ -7028,7 +7028,7 @@ internal class Playwright_Automation
         catch (Exception ex)
         {
             string text2 = "[Load Cookie Error]: ";
-            Console.WriteLine(text2 + ex.Message);
+            Console.WriteLine(text2 + ex.ToString());
         }
     }
 
@@ -7050,7 +7050,7 @@ internal class Playwright_Automation
         catch (Exception ex)
         {
             string text2 = "[Load Cookie Error]: ";
-            Console.WriteLine(text2 + ex.Message);
+            Console.WriteLine(text2 + ex.ToString());
         }
     }
 
@@ -7072,7 +7072,7 @@ internal class Playwright_Automation
         catch (Exception ex)
         {
             string text2 = "[Load Cookie Error]: ";
-            Console.WriteLine(text2 + ex.Message);
+            Console.WriteLine(text2 + ex.ToString());
         }
     }
 
@@ -7103,7 +7103,7 @@ internal class Playwright_Automation
                     {
                         Exception ex = ex2;
                         string text7 = "[ERROR READING BODY]: ";
-                        Console.WriteLine(text7 + ex.Message);
+                        Console.WriteLine(text7 + ex.ToString());
                     }
                 }
             }
@@ -7364,7 +7364,7 @@ internal class Playwright_Automation
               }
               catch (Exception ex)
               {
-                  Console.WriteLine("WS Error: " + ex.Message);
+                  Console.WriteLine("WS Error: " + ex.ToString());
               }
           });
     }
@@ -7538,7 +7538,7 @@ internal class Playwright_Automation
                     {
                         Exception ex = ex3;
                         string text6 = "[ValidateUser Error]: ";
-                        Console.WriteLine(text6 + ex.Message);
+                        Console.WriteLine(text6 + ex.ToString());
                     }
                 }
                 string valuec = "insurenceApplicable=";
@@ -7562,7 +7562,7 @@ internal class Playwright_Automation
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("Cookie read error: " + ex.Message);
+                        Console.WriteLine("Cookie read error: " + ex.ToString());
                     }
                 }
                 string url2 = response.Url;
@@ -7621,7 +7621,7 @@ internal class Playwright_Automation
                     {
                         Exception ex2 = ex3;
                         string text9 = "[WebToken Error]: ";
-                        Console.WriteLine(text9 + ex2.Message);
+                        Console.WriteLine(text9 + ex2.ToString());
                     }
                 }
             }
@@ -7782,7 +7782,7 @@ internal class Playwright_Automation
                     {
                         Exception ex = ex3;
                         string text6 = "[ValidateUser Error]: ";
-                        Console.WriteLine(text6 + ex.Message);
+                        Console.WriteLine(text6 + ex.ToString());
                     }
                 }
                 string valuec = "insurenceApplicable=";
@@ -7806,7 +7806,7 @@ internal class Playwright_Automation
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("Cookie read error: " + ex.Message);
+                        Console.WriteLine("Cookie read error: " + ex.ToString());
                     }
                 }
                 string url2 = response.Url;
@@ -7865,7 +7865,7 @@ internal class Playwright_Automation
                     {
                         Exception ex2 = ex3;
                         string text9 = "[WebToken Error]: ";
-                        Console.WriteLine(text9 + ex2.Message);
+                        Console.WriteLine(text9 + ex2.ToString());
                     }
                 }
             }

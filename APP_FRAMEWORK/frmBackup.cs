@@ -553,7 +553,7 @@ internal class frmBackup : Form
         catch (Exception ex)
         {
             string string_3 = "frmBackup.ProcessBackup";
-            Class28.smethod_26(string_3, ex.Message);
+            Class28.smethod_26(string_3, ex.ToString());
             string text3 = "Backup Failed";
             string caption2 = "Failed";
             MessageBox.Show(text3, caption2, MessageBoxButtons.OK, MessageBoxIcon.Hand);
@@ -1206,7 +1206,7 @@ internal class frmBackup : Form
         catch (Exception ex)
         {
             string string_2 = "frmBackup.ProcessRestore";
-            Class28.smethod_26(string_2, ex.Message);
+            Class28.smethod_26(string_2, ex.ToString());
             string text101 = "Restore Failed";
             string caption10 = "Failed";
             MessageBox.Show(text101, caption10, MessageBoxButtons.OK, MessageBoxIcon.Hand);
@@ -2641,7 +2641,7 @@ internal class frmBackup : Form
         catch (Exception ex)
         {
             string string_ = "frmBackup.ProcessBackup";
-            Class28.smethod_26(string_, ex.Message);
+            Class28.smethod_26(string_, ex.ToString());
             string text3 = "Backup Failed";
             string caption2 = "Failed";
             MessageBox.Show(text3, caption2, MessageBoxButtons.OK, MessageBoxIcon.Hand);

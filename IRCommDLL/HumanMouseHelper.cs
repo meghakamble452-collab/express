@@ -42,7 +42,7 @@ internal class HumanMouseHelper
 			catch (Exception ex)
 			{
 				string text2 = "ExecuteScript threw: ";
-				Console.WriteLine(text2 + ex.Message);
+				Console.WriteLine(text2 + ex.ToString());
 			}
 			if (obj == null)
 			{
@@ -55,7 +55,7 @@ internal class HumanMouseHelper
 				catch (Exception ex2)
 				{
 					string text3 = "Retry ExecuteScript also failed: ";
-					Console.WriteLine(text3 + ex2.Message);
+					Console.WriteLine(text3 + ex2.ToString());
 				}
 				if (obj == null)
 				{
@@ -185,7 +185,7 @@ internal class HumanMouseHelper
 				catch
 				{
 					string text2 = "Fallback click failed: ";
-					Console.WriteLine(text2 + ex.Message);
+					Console.WriteLine(text2 + ex.ToString());
 					return false;
 				}
 			}
@@ -201,7 +201,7 @@ internal class HumanMouseHelper
 		catch (Exception ex3)
 		{
 			string text3 = "ClickNextField error: ";
-			Console.WriteLine(text3 + ex3.Message);
+			Console.WriteLine(text3 + ex3.ToString());
 			return false;
 		}
 	}

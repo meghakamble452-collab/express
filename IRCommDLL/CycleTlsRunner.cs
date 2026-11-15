@@ -124,7 +124,7 @@ public class CycleTlsRunner
 			{
 				Exception ex = ex2;
 				string text2 = "Helper call failed: ";
-				return Tuple.Create(0, "", text2 + ex.Message);
+				return Tuple.Create(0, "", text2 + ex.ToString());
 			}
 		}
 		finally

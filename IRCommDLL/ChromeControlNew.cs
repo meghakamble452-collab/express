@@ -149,7 +149,7 @@ internal class ChromeControlNew
 			catch (Exception ex2)
 			{
 				string text8 = "An error occurred: ";
-				Console.WriteLine(text8 + ex2.Message);
+				Console.WriteLine(text8 + ex2.ToString());
 			}
 			finally
 			{

@@ -271,7 +271,7 @@ public class frmPaytmB : Form
 		catch (Exception ex)
 		{
 			string text2 = " OTPByPass: btnBrowse_Click";
-			Class28.smethod_26(string_23 + text2, ex.Message);
+			Class28.smethod_26(string_23 + text2, ex.ToString());
 			string text3 = "Error occured while processing request!";
 			string caption = "Error";
 			MessageBox.Show(text3, caption, MessageBoxButtons.OK, MessageBoxIcon.Hand);
@@ -1165,7 +1165,7 @@ public class frmPaytmB : Form
 					{
 						btnNew5.Visible = false;
 						string text230 = "PAYTMOTPByPass: btnSubmit_Click";
-						Class28.smethod_26(text230, ex.Message);
+						Class28.smethod_26(text230, ex.ToString());
 						string text231 = "Error occured while processing request!";
 						string caption = "Error";
 						MessageBox.Show(text231, caption, MessageBoxButtons.OK, MessageBoxIcon.Hand);

@@ -553,7 +553,7 @@ public class newCaptcha : Form
             catch (Exception ex)
             {
                 File.Delete(text2);
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.ToString());
             }
         }
         catch
@@ -625,7 +625,7 @@ public class newCaptcha : Form
             catch (Exception ex)
             {
                 File.Delete(text2);
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.ToString());
             }
         }
         catch

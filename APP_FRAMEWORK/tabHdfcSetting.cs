@@ -184,7 +184,7 @@ internal class tabHdfcSetting : UserControl
 		catch (Exception ex)
 		{
 			string text2 = " OTPByPass: btnBrowse_Click";
-			Class28.smethod_26(string_0 + text2, ex.Message);
+			Class28.smethod_26(string_0 + text2, ex.ToString());
 			string text3 = "Error occured while processing request!";
 			string caption = "Error";
 			MessageBox.Show(text3, caption, MessageBoxButtons.OK, MessageBoxIcon.Hand);

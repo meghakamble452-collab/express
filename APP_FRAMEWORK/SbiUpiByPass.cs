@@ -1412,7 +1412,7 @@ public class SbiUpiByPass : Form
 					}
 					catch (Exception ex)
 					{
-						MessageBox.Show(ex.Message);
+						MessageBox.Show(ex.ToString());
 						return;
 					}
 				}

@@ -1948,12 +1948,12 @@ internal class Staticm
 			catch (Exception ex)
 			{
 				File.Delete(text3);
-				MessageBox.Show(ex.Message);
+				MessageBox.Show(ex.ToString());
 			}
 		}
 		catch (Exception ex2)
 		{
-			MessageBox.Show(ex2.Message);
+			MessageBox.Show(ex2.ToString());
 		}
 	}
 
@@ -3000,7 +3000,7 @@ internal class Staticm
 		}
 		catch (Exception ex)
 		{
-			MessageBox.Show(ex.Message);
+			MessageBox.Show(ex.ToString());
 			result = false;
 		}
 		return result;
@@ -3124,7 +3124,7 @@ internal class Staticm
 					catch (Exception ex)
 					{
 						File.Delete(text4);
-						MessageBox.Show(ex.Message);
+						MessageBox.Show(ex.ToString());
 						result = false;
 					}
 				}
@@ -3132,7 +3132,7 @@ internal class Staticm
 		}
 		catch (Exception ex2)
 		{
-			MessageBox.Show(ex2.Message);
+			MessageBox.Show(ex2.ToString());
 			result = false;
 		}
 		return result;
@@ -3184,7 +3184,7 @@ internal class Staticm
 			catch (Exception ex)
 			{
 				File.Delete(text4);
-				MessageBox.Show(ex.Message);
+				MessageBox.Show(ex.ToString());
 			}
 		}
 		catch
@@ -3515,7 +3515,7 @@ internal class Staticm
 		}
 		catch (Exception ex)
 		{
-			MessageBox.Show(ex.Message);
+			MessageBox.Show(ex.ToString());
 			string text = "Source File not Fount";
 			MessageBox.Show(text);
 			Environment.Exit(0);

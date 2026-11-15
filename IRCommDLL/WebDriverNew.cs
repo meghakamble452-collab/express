@@ -1850,7 +1850,7 @@ internal class WebDriverNew
         catch (Exception ex)
         {
             string text4 = "HumanClickButton JS error: ";
-            Console.WriteLine(text4 + ex.Message);
+            Console.WriteLine(text4 + ex.ToString());
             try
             {
                 new Actions(driver).MoveToElement(webElement).Pause(TimeSpan.FromMilliseconds(random.Next(200, 450))).Click()
@@ -2734,7 +2734,7 @@ internal class WebDriverNew
         catch (Exception ex3)
         {
             string text6 = "Error: ";
-            Console.WriteLine(text6 + ex3.Message);
+            Console.WriteLine(text6 + ex3.ToString());
             return false;
         }
     }
@@ -5457,7 +5457,7 @@ internal class WebDriverNew
         }
         catch (Exception ex)
         {
-            Console.WriteLine("[Cleanup Error]: " + ex.Message);
+            Console.WriteLine("[Cleanup Error]: " + ex.ToString());
         }
     }
     private void KillOldBraveByProfile(string profilePath)
@@ -5501,7 +5501,7 @@ internal class WebDriverNew
         }
         catch (Exception ex)
         {
-            Console.WriteLine("[Cleanup Error]: " + ex.Message);
+            Console.WriteLine("[Cleanup Error]: " + ex.ToString());
         }
     }
     private void KillOldChromeByProfile(string profilePath)
@@ -5550,7 +5550,7 @@ internal class WebDriverNew
         }
         catch (Exception ex)
         {
-            Console.WriteLine("[Cleanup Error]: " + ex.Message);
+            Console.WriteLine("[Cleanup Error]: " + ex.ToString());
         }
     }
     public static void CopyDirectorySafe(string sourceDir, string targetDir)
@@ -6878,7 +6878,7 @@ internal class WebDriverNew
         catch (Exception ex2)
         {
             string text9 = "Error loading cookies in Selenium: ";
-            Console.WriteLine(text9 + ex2.Message);
+            Console.WriteLine(text9 + ex2.ToString());
         }
     }
 
@@ -6948,7 +6948,7 @@ internal class WebDriverNew
         catch (Exception ex2)
         {
             string text9 = "Error loading cookies in Selenium: ";
-            Console.WriteLine(text9 + ex2.Message);
+            Console.WriteLine(text9 + ex2.ToString());
         }
     }
 }

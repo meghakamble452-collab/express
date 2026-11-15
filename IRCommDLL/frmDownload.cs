@@ -173,7 +173,7 @@ public class frmDownload : Form
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show(ex.Message);
+				MessageBox.Show(ex.ToString());
 				string text3 = "Could not delete ZIP!";
 				MessageBox.Show(text3);
 				Environment.Exit(1);

@@ -1312,7 +1312,7 @@ internal class clsMain
         {
             Form owner = smethod_4();
             string text36 = "Support Class Initialization Fail!! \r\n";
-            MessageBox.Show(owner, text36 + ex2.Message);
+            MessageBox.Show(owner, text36 + ex2.ToString());
             throw ex2;
         }
         SbiOTP2 = new clsSbiOTP2();
@@ -1878,7 +1878,7 @@ internal class clsMain
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.ToString());
                 }
                 finally
                 {
@@ -4516,7 +4516,7 @@ internal class clsMain
         catch (Exception ex2)
         {
             string string_188 = "ProcessHDFCOTP";
-            method_74(string_188, ex2.Message);
+            method_74(string_188, ex2.ToString());
             result = false;
         }
         return result;
@@ -5916,7 +5916,7 @@ internal class clsMain
                 }
             }
             string text6 = "Exception: ";
-            Console.WriteLine(text6 + ex.Message);
+            Console.WriteLine(text6 + ex.ToString());
             return null;
         }
     }
@@ -6333,7 +6333,7 @@ internal class clsMain
                 catch (Exception ex)
                 {
                     string string_95 = "Creating Proxy";
-                    method_74(string_95, ex.Message);
+                    method_74(string_95, ex.ToString());
                     File.AppendAllText("IRLOG\\t.log", DateTime.Now.ToString("HH:mm:ss.fff") + " PXERR " + ex.ToString() + Environment.NewLine);
                     if (updTStatus != null)
                     {
@@ -6743,7 +6743,7 @@ internal class clsMain
                                 catch (Exception ex2)
                                 {
                                     string text81 = "[CDP GetPosition Error]: ";
-                                    Console.WriteLine(text81 + ex2.Message);
+                                    Console.WriteLine(text81 + ex2.ToString());
                                 }
                                 WindowSlots[num2] = point.ToString();
                             }
@@ -11861,7 +11861,7 @@ internal class clsMain
                 catch (Exception ex)
                 {
                     string string_95 = "Creating Proxy";
-                    method_74(string_95, ex.Message);
+                    method_74(string_95, ex.ToString());
                     if (updTStatus != null)
                     {
                         string status5 = "IP Issue, Try Another slot!";
@@ -12270,7 +12270,7 @@ internal class clsMain
                                 catch (Exception ex2)
                                 {
                                     string text75 = "[CDP GetPosition Error]: ";
-                                    Console.WriteLine(text75 + ex2.Message);
+                                    Console.WriteLine(text75 + ex2.ToString());
                                 }
                                 WindowSlots[num2] = point.ToString();
                             }
@@ -17980,7 +17980,7 @@ internal class clsMain
                 catch (Exception ex)
                 {
                     string string_95 = "Creating Proxy";
-                    method_74(string_95, ex.Message);
+                    method_74(string_95, ex.ToString());
                     if (updTStatus != null)
                     {
                         string status5 = "IP Issue, Try Another slot!";
@@ -18388,7 +18388,7 @@ internal class clsMain
                                 catch (Exception ex2)
                                 {
                                     string text75 = "[CDP GetPosition Error]: ";
-                                    Console.WriteLine(text75 + ex2.Message);
+                                    Console.WriteLine(text75 + ex2.ToString());
                                 }
                                 WindowSlots[num2] = point.ToString();
                             }
@@ -23001,7 +23001,7 @@ internal class clsMain
                 catch (Exception ex)
                 {
                     string string_95 = "Creating Proxy";
-                    method_74(string_95, ex.Message);
+                    method_74(string_95, ex.ToString());
                     if (updTStatus != null)
                     {
                         string status5 = "IP Issue, Try Another slot!";
@@ -23409,7 +23409,7 @@ internal class clsMain
                                 catch (Exception ex2)
                                 {
                                     string text75 = "[CDP GetPosition Error]: ";
-                                    Console.WriteLine(text75 + ex2.Message);
+                                    Console.WriteLine(text75 + ex2.ToString());
                                 }
                                 WindowSlots[num2] = point.ToString();
                             }
@@ -27995,7 +27995,7 @@ internal class clsMain
                 catch (Exception ex)
                 {
                     string string_95 = "Creating Proxy";
-                    method_74(string_95, ex.Message);
+                    method_74(string_95, ex.ToString());
                     if (updTStatus != null)
                     {
                         string status5 = "IP Issue, Try Another slot!";
@@ -28402,7 +28402,7 @@ internal class clsMain
                                 catch (Exception ex2)
                                 {
                                     string text75 = "[CDP GetPosition Error]: ";
-                                    Console.WriteLine(text75 + ex2.Message);
+                                    Console.WriteLine(text75 + ex2.ToString());
                                 }
                                 WindowSlots[num2] = point.ToString();
                             }
@@ -32873,7 +32873,7 @@ internal class clsMain
                 catch (Exception ex)
                 {
                     string string_95 = "Creating Proxy";
-                    method_74(string_95, ex.Message);
+                    method_74(string_95, ex.ToString());
                     if (updTStatus != null)
                     {
                         string status5 = "IP Issue, Try Another slot!";
@@ -33281,7 +33281,7 @@ internal class clsMain
                                 catch (Exception ex2)
                                 {
                                     string text75 = "[CDP GetPosition Error]: ";
-                                    Console.WriteLine(text75 + ex2.Message);
+                                    Console.WriteLine(text75 + ex2.ToString());
                                 }
                                 WindowSlots[num2] = point.ToString();
                             }
@@ -37922,7 +37922,7 @@ internal class clsMain
                 catch (Exception ex)
                 {
                     string string_95 = "Creating Proxy";
-                    method_74(string_95, ex.Message);
+                    method_74(string_95, ex.ToString());
                     if (updTStatus != null)
                     {
                         string status5 = "IP Issue, Try Another slot!";
@@ -38329,7 +38329,7 @@ internal class clsMain
                                 catch (Exception ex2)
                                 {
                                     string text75 = "[CDP GetPosition Error]: ";
-                                    Console.WriteLine(text75 + ex2.Message);
+                                    Console.WriteLine(text75 + ex2.ToString());
                                 }
                                 WindowSlots[num2] = point.ToString();
                             }
@@ -42733,7 +42733,7 @@ internal class clsMain
                 catch (Exception ex)
                 {
                     string string_95 = "Creating Proxy";
-                    method_74(string_95, ex.Message);
+                    method_74(string_95, ex.ToString());
                     if (updTStatus != null)
                     {
                         string status5 = "IP Issue, Try Another slot!";
@@ -43140,7 +43140,7 @@ internal class clsMain
                                 catch (Exception ex2)
                                 {
                                     string text75 = "[CDP GetPosition Error]: ";
-                                    Console.WriteLine(text75 + ex2.Message);
+                                    Console.WriteLine(text75 + ex2.ToString());
                                 }
                                 WindowSlots[num2] = point.ToString();
                             }
@@ -47549,7 +47549,7 @@ internal class clsMain
                 catch (Exception ex)
                 {
                     string string_95 = "Creating Proxy";
-                    method_74(string_95, ex.Message);
+                    method_74(string_95, ex.ToString());
                     if (updTStatus != null)
                     {
                         string status5 = "IP Issue, Try Another slot!";
@@ -47956,7 +47956,7 @@ internal class clsMain
                                 catch (Exception ex2)
                                 {
                                     string text75 = "[CDP GetPosition Error]: ";
-                                    Console.WriteLine(text75 + ex2.Message);
+                                    Console.WriteLine(text75 + ex2.ToString());
                                 }
                                 WindowSlots[num2] = point.ToString();
                             }
@@ -52067,7 +52067,7 @@ internal class clsMain
         catch (Exception ex)
         {
             string text = "[CDP SetPosition Error]: ";
-            Console.WriteLine(text + ex.Message);
+            Console.WriteLine(text + ex.ToString());
         }
     }
 
@@ -52158,7 +52158,7 @@ internal class clsMain
         catch (Exception ex)
         {
             string text5 = "Error writing log: ";
-            Console.WriteLine(text5 + ex.Message);
+            Console.WriteLine(text5 + ex.ToString());
         }
     }
 
@@ -52185,7 +52185,7 @@ internal class clsMain
         catch (Exception ex)
         {
             string text5 = "Error writing log: ";
-            Console.WriteLine(text5 + ex.Message);
+            Console.WriteLine(text5 + ex.ToString());
         }
     }
 
@@ -52591,7 +52591,7 @@ internal class clsMain
         {
             Exception ex = ex2;
             string text3 = "[C# EVALUATE ERROR]: ";
-            Console.WriteLine(text3 + ex.Message);
+            Console.WriteLine(text3 + ex.ToString());
             return null;
         }
     }
@@ -52658,7 +52658,7 @@ internal class clsMain
         {
             Exception ex = ex2;
             string text2 = "[Playwright POST Error]: ";
-            Console.WriteLine(text2 + ex.Message);
+            Console.WriteLine(text2 + ex.ToString());
             result = false;
         }
         return (Success: result, Response: _response);
@@ -52712,7 +52712,7 @@ internal class clsMain
                     string text5 = "[Cookie Error] ";
                     string name = item.Name;
                     string text6 = " skip ho gayi: ";
-                    Console.WriteLine(text5 + name + text6 + ex.Message);
+                    Console.WriteLine(text5 + name + text6 + ex.ToString());
                 }
             }
             string format = "[Success] Total {0} cookies Playwright se nikal li gayi hain.";
@@ -52721,7 +52721,7 @@ internal class clsMain
         catch (Exception ex2)
         {
             string text7 = "[Main Cookie Error]: ";
-            Console.WriteLine(text7 + ex2.Message);
+            Console.WriteLine(text7 + ex2.ToString());
         }
     }
     public void LoadCookiesFromJsonToBrowser6666(IBrowserContext context)
@@ -52885,8 +52885,8 @@ internal class clsMain
         catch (Exception ex)
         {
             string text3 = "[Wrapper Error]: ";
-            errorLog_R(url, body, ex.Message);
-            Console.WriteLine(text3 + ex.Message);
+            errorLog_R(url, body, ex.ToString());
+            Console.WriteLine(text3 + ex.ToString());
             result = false;
         }
         return result;
@@ -53005,8 +53005,8 @@ internal class clsMain
         catch (Exception ex)
         {
             string text3 = "[Wrapper Error]: ";
-            errorLog_R(url, body, ex.Message);
-            Console.WriteLine(text3 + ex.Message);
+            errorLog_R(url, body, ex.ToString());
+            Console.WriteLine(text3 + ex.ToString());
             result = false;
         }
         return result;
@@ -53168,7 +53168,7 @@ async (args) => {
         catch (Exception ex)
         {
             string text3 = "[Wrapper Error]: ";
-            Console.WriteLine(text3 + ex.Message);
+            Console.WriteLine(text3 + ex.ToString());
             flag = false;
         }
         try
@@ -53844,7 +53844,7 @@ async (args) => {
         catch (Exception ex)
         {
             string text9 = "[Playwright GET Error]: ";
-            Console.WriteLine(text9 + ex.Message);
+            Console.WriteLine(text9 + ex.ToString());
             result = false;
         }
         return result;
@@ -54873,7 +54873,7 @@ async (args) => {
                 catch (Exception ex)
                 {
                     string string_95 = "Creating Proxy";
-                    method_74(string_95, ex.Message);
+                    method_74(string_95, ex.ToString());
                     if (updTStatus != null)
                     {
                         string status5 = "IP Issue, Try Another slot!";
@@ -58843,7 +58843,7 @@ async (args) => {
                 catch (Exception ex)
                 {
                     string string_95 = "Creating Proxy";
-                    method_74(string_95, ex.Message);
+                    method_74(string_95, ex.ToString());
                     if (updTStatus != null)
                     {
                         string status5 = "IP Issue, Try Another slot!";
@@ -64838,7 +64838,7 @@ async (args) => {
                         catch (Exception ex2)
                         {
                             string text75 = "[CDP GetPosition Error]: ";
-                            Console.WriteLine(text75 + ex2.Message);
+                            Console.WriteLine(text75 + ex2.ToString());
                         }
                         WindowSlots[num2] = point.ToString();
                     }
@@ -72256,7 +72256,7 @@ async (args) => {
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Failed to fetch proxy: " + ex.Message);
+                    Console.WriteLine("Failed to fetch proxy: " + ex.ToString());
                     string_46 = null;
                 }
             }
@@ -75172,7 +75172,7 @@ async (args) => {
             }
             catch (WebException ex)
             {
-                Lock_Client(_url, ex.Message);
+                Lock_Client(_url, ex.ToString());
                 webExcep_ = ex;
                 string text85 = "";
                 string text86 = ex.Message;
@@ -75472,7 +75472,7 @@ async (args) => {
             }
             catch (Exception ex2)
             {
-                Lock_Client(_url, ex2.Message);
+                Lock_Client(_url, ex2.ToString());
                 try
                 {
                     if (!string.IsNullOrEmpty(ex2.InnerException.Message))
@@ -75826,7 +75826,7 @@ async (args) => {
             }
             catch (WebException ex)
             {
-                Lock_Client(_url, ex.Message);
+                Lock_Client(_url, ex.ToString());
                 webExcep_ = ex;
                 string text34 = "";
                 string text35 = ex.Message;
@@ -76128,7 +76128,7 @@ async (args) => {
             }
             catch (Exception ex2)
             {
-                Lock_Client(_url, ex2.Message);
+                Lock_Client(_url, ex2.ToString());
                 try
                 {
                     if (!string.IsNullOrEmpty(ex2.InnerException.Message))
@@ -76207,7 +76207,7 @@ async (args) => {
             string text11 = "Exception during SslStream handshake: ";
             string name = ex.GetType().Name;
             string text12 = " - ";
-            Console.WriteLine(text11 + name + text12 + ex.Message);
+            Console.WriteLine(text11 + name + text12 + ex.ToString());
             Console.WriteLine(ex);
         }
     }
@@ -76275,7 +76275,7 @@ async (args) => {
         catch (Exception ex)
         {
             string text10 = "  (error printing cert details) ";
-            Console.WriteLine(text10 + ex.Message);
+            Console.WriteLine(text10 + ex.ToString());
         }
     }
 
@@ -76580,7 +76580,7 @@ async (args) => {
             }
             catch (WebException ex)
             {
-                Lock_Client(_url, ex.Message);
+                Lock_Client(_url, ex.ToString());
                 webExcep_ = ex;
                 string text61 = "";
                 string text62 = ex.Message;
@@ -76881,7 +76881,7 @@ async (args) => {
             }
             catch (Exception ex2)
             {
-                Lock_Client(_url, ex2.Message);
+                Lock_Client(_url, ex2.ToString());
                 try
                 {
                     if (!string.IsNullOrEmpty(ex2.InnerException.Message))
@@ -79147,7 +79147,7 @@ async (args) => {
             }
             catch (WebException ex)
             {
-                Lock_Client(_url, ex.Message);
+                Lock_Client(_url, ex.ToString());
                 webExcep_ = ex;
                 string text48 = "";
                 string text49 = ex.Message;
@@ -79448,7 +79448,7 @@ async (args) => {
             }
             catch (Exception ex2)
             {
-                Lock_Client(_url, ex2.Message);
+                Lock_Client(_url, ex2.ToString());
                 try
                 {
                     if (!string.IsNullOrEmpty(ex2.InnerException.Message))
@@ -82747,7 +82747,7 @@ async (args) => {
             catch (Exception ex)
             {
                 string string_8 = "AirtelMoney";
-                method_74(string_8, ex.Message);
+                method_74(string_8, ex.ToString());
             }
         }
     }

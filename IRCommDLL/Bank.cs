@@ -972,7 +972,7 @@ internal class Bank
 		{
 			clsMain clsMain9 = this.clsMain;
 			string string_93 = "Process_PhonePay";
-			clsMain9.method_74(string_93, ex.Message);
+			clsMain9.method_74(string_93, ex.ToString());
 			string path = string_42;
 			string string_94 = class3_0.string_39;
 			string text104 = "|";
@@ -9122,7 +9122,7 @@ internal class Bank
 			{
 				clsMain clsMain34 = this.clsMain;
 				string string_143 = "ProcessHDFCNetBanking";
-				clsMain34.method_74(string_143, ex.Message);
+				clsMain34.method_74(string_143, ex.ToString());
 				return false;
 			}
 		}
@@ -12054,7 +12054,7 @@ internal class Bank
 			{
 				clsMain clsMain16 = this.clsMain;
 				string string_98 = "ProcessAxisNetBanking";
-				clsMain16.method_74(string_98, ex.Message);
+				clsMain16.method_74(string_98, ex.ToString());
 				result = false;
 			}
 			finally
@@ -12366,7 +12366,7 @@ internal class Bank
 				{
 					clsMain clsMain11 = this.clsMain;
 					string string_98 = "ProcessICICIDebit";
-					clsMain11.method_74(string_98, ex.Message);
+					clsMain11.method_74(string_98, ex.ToString());
 					result = false;
 				}
 				return result;
@@ -12536,7 +12536,7 @@ internal class Bank
 		{
 			clsMain clsMain14 = this.clsMain;
 			string string_103 = "ProcessICICIDebit";
-			clsMain14.method_74(string_103, ex.Message);
+			clsMain14.method_74(string_103, ex.ToString());
 			return false;
 		}
 	}
@@ -12717,7 +12717,7 @@ internal class Bank
 			{
 				clsMain clsMain10 = this.clsMain;
 				string string_104 = "ProcessSBIDebit";
-				clsMain10.method_74(string_104, ex.Message);
+				clsMain10.method_74(string_104, ex.ToString());
 				return false;
 			}
 		}
@@ -14101,7 +14101,7 @@ internal class Bank
 			{
 				clsMain clsMain34 = this.clsMain;
 				string string_144 = "ProcessHDFCNetBanking";
-				clsMain34.method_74(string_144, ex.Message);
+				clsMain34.method_74(string_144, ex.ToString());
 				return false;
 			}
 		}
@@ -15206,7 +15206,7 @@ internal class Bank
 			{
 				clsMain clsMain31 = this.clsMain;
 				string string_129 = "ProcessHDFCNetBanking";
-				clsMain31.method_74(string_129, ex.Message);
+				clsMain31.method_74(string_129, ex.ToString());
 				return false;
 			}
 		}
@@ -15417,7 +15417,7 @@ internal class Bank
 			{
 				clsMain clsMain10 = this.clsMain;
 				string string_104 = "ProcessHDFCDebit";
-				clsMain10.method_74(string_104, ex.Message);
+				clsMain10.method_74(string_104, ex.ToString());
 				return false;
 			}
 		}
@@ -16143,7 +16143,7 @@ internal class Bank
 			{
 				clsMain clsMain16 = this.clsMain;
 				string string_115 = "ProcessICICINetBanking";
-				clsMain16.method_74(string_115, ex.Message);
+				clsMain16.method_74(string_115, ex.ToString());
 				result = false;
 			}
 			return result;
@@ -16656,7 +16656,7 @@ internal class Bank
 			{
 				clsMain clsMain22 = this.clsMain;
 				string string_99 = "ProcessIDBINetBanking";
-				clsMain22.method_74(string_99, ex.Message);
+				clsMain22.method_74(string_99, ex.ToString());
 				num = 0;
 			}
 			return num != 0;
@@ -17011,7 +17011,7 @@ internal class Bank
 			{
 				clsMain clsMain14 = this.clsMain;
 				string string_101 = "ProcessIndianDebit";
-				clsMain14.method_74(string_101, ex.Message);
+				clsMain14.method_74(string_101, ex.ToString());
 			}
 			finally
 			{
@@ -17536,7 +17536,7 @@ internal class Bank
 			{
 				clsMain clsMain16 = this.clsMain;
 				string string_103 = "ProcessAxisDebit";
-				clsMain16.method_74(string_103, ex.Message);
+				clsMain16.method_74(string_103, ex.ToString());
 				result = false;
 			}
 			finally
@@ -17976,7 +17976,7 @@ internal class Bank
 			{
 				clsMain clsMain23 = this.clsMain;
 				string string_106 = "ProcessInduNetBanking";
-				clsMain23.method_74(string_106, ex.Message);
+				clsMain23.method_74(string_106, ex.ToString());
 				num = 0;
 			}
 			return num != 0;
@@ -18200,7 +18200,7 @@ internal class Bank
 			{
 				clsMain clsMain18 = this.clsMain;
 				string string_96 = "ProcessInduNetBanking";
-				clsMain18.method_74(string_96, ex.Message);
+				clsMain18.method_74(string_96, ex.ToString());
 				num = 0;
 			}
 			return num != 0;
@@ -18426,7 +18426,7 @@ internal class Bank
 			{
 				clsMain clsMain18 = this.clsMain;
 				string string_95 = "ProcessInduNetBanking";
-				clsMain18.method_74(string_95, ex.Message);
+				clsMain18.method_74(string_95, ex.ToString());
 				num = 0;
 			}
 			return num != 0;
@@ -18861,7 +18861,7 @@ internal class Bank
 			{
 				clsMain clsMain23 = this.clsMain;
 				string string_106 = "ProcessInduNetBanking";
-				clsMain23.method_74(string_106, ex.Message);
+				clsMain23.method_74(string_106, ex.ToString());
 				num = 0;
 			}
 			return num != 0;
@@ -19242,7 +19242,7 @@ internal class Bank
 			{
 				clsMain clsMain14 = this.clsMain;
 				string string_101 = "ProcessCanaraDebit";
-				clsMain14.method_74(string_101, ex.Message);
+				clsMain14.method_74(string_101, ex.ToString());
 			}
 			finally
 			{
@@ -19577,7 +19577,7 @@ internal class Bank
 			{
 				clsMain clsMain23 = this.clsMain;
 				string string_103 = "ProcessPNBDebit";
-				clsMain23.method_74(string_103, ex.Message);
+				clsMain23.method_74(string_103, ex.ToString());
 				result = false;
 			}
 			return result;
@@ -19890,7 +19890,7 @@ internal class Bank
 			{
 				clsMain clsMain20 = this.clsMain;
 				string string_107 = "ProcessBOIDebit";
-				clsMain20.method_74(string_107, ex.Message);
+				clsMain20.method_74(string_107, ex.ToString());
 				result = false;
 			}
 			return result;
@@ -20280,7 +20280,7 @@ internal class Bank
 			{
 				clsMain clsMain14 = this.clsMain;
 				string string_100 = "ProcessAndhraDebit";
-				clsMain14.method_74(string_100, ex.Message);
+				clsMain14.method_74(string_100, ex.ToString());
 			}
 			finally
 			{
@@ -21123,7 +21123,7 @@ internal class Bank
 			{
 				clsMain clsMain29 = this.clsMain;
 				string string_101 = "ProcessYesNetBanking";
-				clsMain29.method_74(string_101, ex.Message);
+				clsMain29.method_74(string_101, ex.ToString());
 				result = false;
 			}
 			return result;
@@ -21617,7 +21617,7 @@ internal class Bank
 			{
 				clsMain clsMain18 = this.clsMain;
 				string string_102 = "ProcessCBIDebit";
-				clsMain18.method_74(string_102, ex.Message);
+				clsMain18.method_74(string_102, ex.ToString());
 				result = false;
 			}
 			finally
@@ -21765,7 +21765,7 @@ internal class Bank
 			{
 				clsMain clsMain11 = this.clsMain;
 				string string_9 = "AirtelMoney";
-				clsMain11.method_74(string_9, ex.Message);
+				clsMain11.method_74(string_9, ex.ToString());
 			}
 		}
 	}
@@ -22635,7 +22635,7 @@ internal class Bank
 				{
 					clsMain clsMain30 = this.clsMain;
 					string string_118 = "AirtelMoney";
-					clsMain30.method_74(string_118, ex.Message);
+					clsMain30.method_74(string_118, ex.ToString());
 					num = 0;
 					goto IL_0d43;
 				}
@@ -23592,7 +23592,7 @@ internal class Bank
 			{
 				clsMain clsMain15 = this.clsMain;
 				string string_102 = "ProcessUnionDebit";
-				clsMain15.method_74(string_102, ex.Message);
+				clsMain15.method_74(string_102, ex.ToString());
 				result = false;
 			}
 			finally
@@ -24674,7 +24674,7 @@ internal class Bank
 		{
 			clsMain clsMain48 = this.clsMain;
 			string string_150 = "ProcessUnionNB";
-			clsMain48.method_74(string_150, ex.Message);
+			clsMain48.method_74(string_150, ex.ToString());
 		}
 		return false;
 	}
@@ -25098,7 +25098,7 @@ internal class Bank
 			{
 				clsMain clsMain21 = this.clsMain;
 				string string_166 = "ProcessCorpNB";
-				clsMain21.method_74(string_166, ex.Message);
+				clsMain21.method_74(string_166, ex.ToString());
 				return false;
 			}
 		}
@@ -25662,7 +25662,7 @@ internal class Bank
 				{
 					clsMain clsMain25 = this.clsMain;
 					string string_103 = "ProcessCC";
-					clsMain25.method_74(string_103, ex.Message);
+					clsMain25.method_74(string_103, ex.ToString());
 					result = false;
 				}
 				return result;
@@ -26149,7 +26149,7 @@ internal class Bank
 			{
 				clsMain clsMain24 = this.clsMain;
 				string string_99 = "ProcessCC_AxisPG";
-				clsMain24.method_74(string_99, ex.Message);
+				clsMain24.method_74(string_99, ex.ToString());
 				result = false;
 			}
 			return result;
@@ -29019,7 +29019,7 @@ internal class Bank
 		{
 			clsMain clsMain33 = this.clsMain;
 			string string_112 = "ProcessHDFCDebit";
-			clsMain33.method_74(string_112, ex.Message);
+			clsMain33.method_74(string_112, ex.ToString());
 			return false;
 		}
 	}
@@ -31148,7 +31148,7 @@ internal class Bank
 			frmUPI.payStart = false;
 			clsMain clsMain21 = this.clsMain;
 			string string_139 = "ProcessCC_PTM";
-			clsMain21.method_74(string_139, ex.Message);
+			clsMain21.method_74(string_139, ex.ToString());
 			return false;
 		}
 	}
@@ -33524,7 +33524,7 @@ internal class Bank
 		{
 			clsMain clsMain33 = this.clsMain;
 			string string_142 = "ProcessCC_PTM";
-			clsMain33.method_74(string_142, ex.Message);
+			clsMain33.method_74(string_142, ex.ToString());
 			result = false;
 		}
 		return result;
@@ -36652,7 +36652,7 @@ internal class Bank
         {
             clsMain clsMain17 = this.clsMain;
             string string_110 = "Process_PayUWeb";
-            clsMain17.method_74(string_110, ex.Message);
+            clsMain17.method_74(string_110, ex.ToString());
             return false;
         }
     }
@@ -37402,7 +37402,7 @@ internal class Bank
 		{
 			clsMain clsMain14 = this.clsMain;
 			string string_99 = "Process_RazorPay";
-			clsMain14.method_74(string_99, ex.Message);
+			clsMain14.method_74(string_99, ex.ToString());
 			return false;
 		}
 	}
@@ -37983,7 +37983,7 @@ internal class Bank
 		{
 			clsMain clsMain11 = this.clsMain;
 			string string_101 = "Process_RazorPay";
-			clsMain11.method_74(string_101, ex.Message);
+			clsMain11.method_74(string_101, ex.ToString());
 			return false;
 		}
 	}
@@ -38449,7 +38449,7 @@ internal class Bank
 		{
 			clsMain clsMain11 = this.clsMain;
 			string string_109 = "Process_RazorPay";
-			clsMain11.method_74(string_109, ex.Message);
+			clsMain11.method_74(string_109, ex.ToString());
 			return false;
 		}
 	}
@@ -40525,7 +40525,7 @@ internal class Bank
 		{
 			clsMain clsMain13 = this.clsMain;
 			string string_93 = "Process_PhonePay";
-			clsMain13.method_74(string_93, ex.Message);
+			clsMain13.method_74(string_93, ex.ToString());
 			string path = string_42;
 			string string_94 = class3_0.string_39;
 			string text191 = "|";
@@ -41763,7 +41763,7 @@ internal class Bank
 			{
 				clsMain clsMain10 = this.clsMain;
 				string string_108 = "ProcessHDFCDebit";
-				clsMain10.method_74(string_108, ex.Message);
+				clsMain10.method_74(string_108, ex.ToString());
 				return false;
 			}
 		}
@@ -42799,7 +42799,7 @@ internal class Bank
 		{
 			clsMain clsMain19 = this.clsMain;
 			string string_109 = "ProcessHDFCDebit";
-			clsMain19.method_74(string_109, ex.Message);
+			clsMain19.method_74(string_109, ex.ToString());
 			return false;
 		}
 	}
@@ -43634,7 +43634,7 @@ internal class Bank
 		{
 			clsMain clsMain19 = this.clsMain;
 			string string_105 = "ProcessHDFCDebit";
-			clsMain19.method_74(string_105, ex.Message);
+			clsMain19.method_74(string_105, ex.ToString());
 			return false;
 		}
 	}
@@ -43926,7 +43926,7 @@ internal class Bank
 		{
 			clsMain clsMain17 = this.clsMain;
 			string string_124 = "ProcessCC_CitiPG";
-			clsMain17.method_74(string_124, ex.Message);
+			clsMain17.method_74(string_124, ex.ToString());
 			return false;
 		}
 	}
@@ -45258,7 +45258,7 @@ internal class Bank
 				{
 					clsMain clsMain6 = this.clsMain;
 					string string_105 = "Process_HDFC,CC,DC";
-					clsMain6.method_74(string_105, ex.Message);
+					clsMain6.method_74(string_105, ex.ToString());
 					return false;
 				}
 			}
@@ -46112,7 +46112,7 @@ internal class Bank
 		{
 			clsMain clsMain4 = this.clsMain;
 			string string_115 = "Process_RazorPay";
-			clsMain4.method_74(string_115, ex2.Message);
+			clsMain4.method_74(string_115, ex2.ToString());
 		}
 		return false;
 	}
@@ -46563,7 +46563,7 @@ internal class Bank
 			{
 				clsMain clsMain15 = this.clsMain;
 				string string_102 = "ProcessIOBDebit";
-				clsMain15.method_74(string_102, ex.Message);
+				clsMain15.method_74(string_102, ex.ToString());
 				result = false;
 			}
 			finally
@@ -47093,10 +47093,10 @@ internal class Bank
 			{
 				clsMain clsMain27 = this.clsMain;
 				string text158 = "ProcessSBINepalNB: ";
-				clsMain27.Lock(text158 + ex.Message);
+				clsMain27.Lock(text158 + ex.ToString());
 				clsMain clsMain28 = this.clsMain;
 				string string_103 = "ProcessSBINepalNB";
-				clsMain28.method_74(string_103, ex.Message);
+				clsMain28.method_74(string_103, ex.ToString());
 				num = 0;
 			}
 			return num != 0;

@@ -388,7 +388,7 @@ internal class PemKeyUtils
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine(ex.Message);
+			Console.WriteLine(ex.ToString());
 			return null;
 		}
 		return memoryStream.ToArray();

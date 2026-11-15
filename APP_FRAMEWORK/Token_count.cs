@@ -1510,7 +1510,7 @@ public class Token_count : Form
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error saving sensor data: " + ex.Message);
+            Console.WriteLine("Error saving sensor data: " + ex.ToString());
         }
     }
 
@@ -1601,7 +1601,7 @@ public class Token_count : Form
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine("Error writing to file: " + ex.Message);
+                            Console.WriteLine("Error writing to file: " + ex.ToString());
                         }
                     }
                     catch
@@ -1747,7 +1747,7 @@ public class Token_count : Form
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine("Error writing to file: " + ex.Message);
+                            Console.WriteLine("Error writing to file: " + ex.ToString());
                         }
                     }
                     catch
@@ -1921,7 +1921,7 @@ public class Token_count : Form
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error during encryption: " + ex.Message);
+            Console.WriteLine("Error during encryption: " + ex.ToString());
             return null;
         }
     }

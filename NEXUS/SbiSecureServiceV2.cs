@@ -151,7 +151,7 @@ public class SbiSecureServiceV2
 		catch (Exception ex)
 		{
 			string text5 = "Error ";
-			Console.WriteLine(text5 + ex.Message);
+			Console.WriteLine(text5 + ex.ToString());
 			sbiPaymentRequest.currentStatus = false;
 			string currentMessage3 = "Something wrong ex";
 			sbiPaymentRequest.currentMessage = currentMessage3;
@@ -265,7 +265,7 @@ public class SbiSecureServiceV2
 		catch (Exception ex)
 		{
 			string text7 = "Error ";
-			Console.WriteLine(text7 + ex.Message);
+			Console.WriteLine(text7 + ex.ToString());
 			sbiPaymentRequest.currentStatus = false;
 			string currentMessage = "Something wrong fetchDateTimeRequest";
 			sbiPaymentRequest.currentMessage = currentMessage;

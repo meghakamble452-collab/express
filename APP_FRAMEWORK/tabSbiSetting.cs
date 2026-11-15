@@ -199,7 +199,7 @@ internal class tabSbiSetting : UserControl
 		catch (Exception ex)
 		{
 			string text2 = " OTPByPass: btnBrowse_Click";
-			Class28.smethod_26(string_0 + text2, ex.Message);
+			Class28.smethod_26(string_0 + text2, ex.ToString());
 			string text3 = "Error occured while processing request!";
 			string caption = "Error";
 			MessageBox.Show(text3, caption, MessageBoxButtons.OK, MessageBoxIcon.Hand);
@@ -793,7 +793,7 @@ internal class tabSbiSetting : UserControl
 			txtOTP1.Visible = false;
 			btnSubmit1.Visible = false;
 			string text2 = "SBIOTPByPass: btnSubmit_Click";
-			Class28.smethod_26(text2, ex.Message);
+			Class28.smethod_26(text2, ex.ToString());
 			string text3 = "Error occured while processing request!";
 			string caption2 = "Error";
 			MessageBox.Show(text3, caption2, MessageBoxButtons.OK, MessageBoxIcon.Hand);

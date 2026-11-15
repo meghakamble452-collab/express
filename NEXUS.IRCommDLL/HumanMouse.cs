@@ -832,12 +832,12 @@ internal class HumanMouse
             {
                 Console.WriteLine("Invalid XPath:");
                 Console.WriteLine(xpath);
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.ToString());
                 return false;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.ToString());
                 Thread.Sleep(500);
             }
         }

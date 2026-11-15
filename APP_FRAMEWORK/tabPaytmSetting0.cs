@@ -258,7 +258,7 @@ internal class tabPaytmSetting0 : UserControl
 		catch (Exception ex)
 		{
 			string text2 = " OTPByPass: btnBrowse_Click";
-			Class28.smethod_26(string_23 + text2, ex.Message);
+			Class28.smethod_26(string_23 + text2, ex.ToString());
 			string text3 = "Error occured while processing request!";
 			string caption = "Error";
 			MessageBox.Show(text3, caption, MessageBoxButtons.OK, MessageBoxIcon.Hand);
@@ -1208,7 +1208,7 @@ internal class tabPaytmSetting0 : UserControl
 									{
 										btnNew5.Visible = false;
 										string text226 = "PAYTMOTPByPass: btnSubmit_Click";
-										Class28.smethod_26(text226, ex.Message);
+										Class28.smethod_26(text226, ex.ToString());
 										string text227 = "Error occured while processing request!";
 										string caption = "Error";
 										MessageBox.Show(text227, caption, MessageBoxButtons.OK, MessageBoxIcon.Hand);

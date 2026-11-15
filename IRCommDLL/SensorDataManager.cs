@@ -60,7 +60,7 @@ public class SensorDataManager
 		catch (Exception ex)
 		{
 			string text3 = "Error extracting data: ";
-			Console.WriteLine(text3 + ex.Message);
+			Console.WriteLine(text3 + ex.ToString());
 		}
 		return result;
 	}
@@ -136,7 +136,7 @@ public class SensorDataManager
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error : " + ex.Message);
+            Console.WriteLine("Error : " + ex.ToString());
             return null;
         }
     }
@@ -170,7 +170,7 @@ public class SensorDataManager
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error : " + ex.Message);
+            Console.WriteLine("Error : " + ex.ToString());
         }
 
         return result;

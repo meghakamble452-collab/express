@@ -180,7 +180,7 @@ public class mySettings
 		}
 		catch (Exception ex)
 		{
-			MessageBox.Show(ex.Message);
+			MessageBox.Show(ex.ToString());
 		}
 	}
 
@@ -210,7 +210,9 @@ public class mySettings
 			mySettings mySettings5 = mySettings2;
 			string text2 = "4";
 			mySettings5.perIPlimit = text2;
-			mySettings mySettings6 = mySettings2;
+            mySettings2.Ac_avl = "0";
+            mySettings2.Sl_avl = "0";
+            mySettings mySettings6 = mySettings2;
 			string keepHistory = "30";
 			mySettings6.KeepHistory = keepHistory;
 			mySettings mySettings7 = mySettings2;
@@ -240,15 +242,17 @@ public class mySettings
 				string text7 = "\r\n";
 				array[0] = text7;
 				string[] array2 = text6.Split(array, StringSplitOptions.None);
-				if (array2.Length > 1)
-				{
-					mySettings2.userID = array2[0];
-					mySettings2.PrivateIP = array2[1];
-					mySettings2.Proxy_use = array2[2];
-					mySettings2.Ac_avl = array2[3];
-					mySettings2.Sl_avl = array2[4];
-					mySettings2.SpeedUP = Convert.ToBoolean(array2[5]);
-					if (array2.Length <= 6)
+                if (array2.Length > 1)
+                {
+                    mySettings2.userID = array2[0];
+                    mySettings2.PrivateIP = array2[1];
+                    mySettings2.Proxy_use = array2.Length > 2 ? array2[2] : "";
+                    mySettings2.Ac_avl = array2.Length > 3 ? array2[3] : "0";
+                    mySettings2.Sl_avl = array2.Length > 4 ? array2[4] : "0";
+                    mySettings2.SpeedUP = array2.Length > 5 && Convert.ToBoolean(array2[5]);
+                    if (string.IsNullOrWhiteSpace(mySettings2.Ac_avl)) mySettings2.Ac_avl = "0";
+                    if (string.IsNullOrWhiteSpace(mySettings2.Sl_avl)) mySettings2.Sl_avl = "0";
+                    if (array2.Length <= 6)
 					{
 						mySettings mySettings8 = mySettings2;
 						string text8 = "4";

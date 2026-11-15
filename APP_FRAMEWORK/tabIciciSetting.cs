@@ -279,7 +279,7 @@ internal class tabIciciSetting : UserControl
 		catch (Exception ex)
 		{
 			string text2 = " OTPByPass: btnBrowse_Click";
-			Class28.smethod_26(string_0 + text2, ex.Message);
+			Class28.smethod_26(string_0 + text2, ex.ToString());
 			string text3 = "Error occured while processing request!";
 			string caption = "Error";
 			MessageBox.Show(text3, caption, MessageBoxButtons.OK, MessageBoxIcon.Hand);
@@ -578,7 +578,7 @@ internal class tabIciciSetting : UserControl
 			B4AAA.Visible = false;
 			btnNew3.Visible = false;
 			string text27 = "ICICIOTPByPass: btnSubmit_Click";
-			Class28.smethod_26(text27, ex.Message);
+			Class28.smethod_26(text27, ex.ToString());
 			string text28 = "Error occured while processing request!";
 			string caption2 = "Error";
 			MessageBox.Show(text28, caption2, MessageBoxButtons.OK, MessageBoxIcon.Hand);

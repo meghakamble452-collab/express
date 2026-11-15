@@ -164,7 +164,7 @@ internal class BrowserManager
 			catch (Exception ex)
 			{
 				string text8 = "[Error] Launch Failed: ";
-				Console.WriteLine(text8 + ex.Message);
+				Console.WriteLine(text8 + ex.ToString());
 				return false;
 			}
 		}
@@ -203,7 +203,7 @@ internal class BrowserManager
 		catch (Exception ex)
 		{
 			string text2 = ">>> ⚠\ufe0f Close Error: ";
-			Console.WriteLine(text2 + ex.Message);
+			Console.WriteLine(text2 + ex.ToString());
 		}
 	}
 }

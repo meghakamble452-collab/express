@@ -448,7 +448,7 @@ internal class StatClass
 			catch (Exception ex)
 			{
 				File.Delete(text4);
-				MessageBox.Show(ex.Message);
+				MessageBox.Show(ex.ToString());
 			}
 		}
 		catch (Exception)
@@ -517,7 +517,7 @@ internal class StatClass
 			catch (Exception ex)
 			{
 				File.Delete(text4);
-				MessageBox.Show(ex.Message);
+				MessageBox.Show(ex.ToString());
 			}
 		}
 		catch
@@ -601,7 +601,7 @@ internal class StatClass
 			catch (Exception ex)
 			{
 				File.Delete(text4);
-				MessageBox.Show(ex.Message);
+				MessageBox.Show(ex.ToString());
 			}
 		}
 		catch
@@ -690,7 +690,7 @@ internal class StatClass
 			catch (Exception ex)
 			{
 				File.Delete(text6);
-				MessageBox.Show(ex.Message);
+				MessageBox.Show(ex.ToString());
 			}
 		}
 		catch

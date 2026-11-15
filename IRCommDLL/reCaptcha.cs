@@ -387,7 +387,7 @@ public class reCaptcha : Form
 				}
 				catch (Exception ex)
 				{
-					MessageBox.Show(ex.Message);
+					MessageBox.Show(ex.ToString());
 				}
 			}
 		}
@@ -418,7 +418,7 @@ public class reCaptcha : Form
 		}
 		catch (Exception ex)
 		{
-			MessageBox.Show(ex.Message);
+			MessageBox.Show(ex.ToString());
 			return result;
 		}
 	}
@@ -477,7 +477,7 @@ public class reCaptcha : Form
 		}
 		catch (Exception ex)
 		{
-			MessageBox.Show(ex.Message);
+			MessageBox.Show(ex.ToString());
 			return result;
 		}
 	}
@@ -501,7 +501,7 @@ public class reCaptcha : Form
 		}
 		catch (Exception ex)
 		{
-			MessageBox.Show(ex.Message);
+			MessageBox.Show(ex.ToString());
 			return result;
 		}
 	}
