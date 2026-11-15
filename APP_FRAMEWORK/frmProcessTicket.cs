@@ -218,7 +218,8 @@ internal class frmProcessTicket : Form
 
     private void method_0(bool bool_1, bool bool_2)
     {
-        new TimeSpan(Convert.ToInt32(Convert.ToInt16(this.string_2.Substring(0, 2))), Convert.ToInt32(Convert.ToInt16(this.string_2.Substring(3, 2))), Convert.ToInt32(Convert.ToInt16(this.string_2.Substring(6, 2))));
+        TimeSpan tsDummy;
+        TimeSpan.TryParse(this.string_2, out tsDummy);
         try
         {
             Class48 @class = new Class48();

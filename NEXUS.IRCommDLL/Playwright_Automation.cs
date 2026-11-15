@@ -1185,7 +1185,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.ToString());
                 }
                 CaptureIRCTCRequests(page);
                 if (directlogin != "True")
@@ -1367,7 +1367,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.ToString());
                 }
                 CaptureIRCTCRequests(page);
                 if (directlogin != "True")
@@ -1587,7 +1587,7 @@ internal class Playwright_Automation
             {
             }
 
-            MessageBox.Show(ex.Message);
+            MessageBox.Show(ex.ToString());
         }
     }
     private void DisableBravePasswordManager(
@@ -1780,7 +1780,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.ToString());
                 }
                 CaptureIRCTCRequests(page);
                 if (directlogin != "True")
@@ -1976,7 +1976,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.ToString());
                 }
                 CaptureIRCTCRequests(page);
                 IPage page2 = page;
@@ -2728,7 +2728,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.ToString());
                 }
                 CaptureIRCTCRequests(page);
                 if (directlogin != "True")
@@ -2926,7 +2926,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.ToString());
                 }
                 CaptureIRCTCRequests(page);
                 IPage page2 = page;
@@ -3814,7 +3814,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.ToString());
                 }
                 if (directlogin != "True")
                 {
@@ -4705,7 +4705,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.ToString());
                 }
                 if (directlogin != "True")
                 {
@@ -4934,7 +4934,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.ToString());
                 }
                 CaptureIRCTCRequests(page);
                 if (directlogin != "True")
@@ -5118,7 +5118,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.ToString());
                 }
                 CaptureIRCTCRequests(page);
                 if (directlogin != "True")
@@ -6588,7 +6588,7 @@ internal class Playwright_Automation
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.ToString());
                 }
                 CaptureIRCTCRequestsbrave(page);
                 IPage page2 = page;
@@ -6720,7 +6720,7 @@ internal class Playwright_Automation
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.ToString());
             }
             CaptureIRCTCRequestsbrave(page);
             for (int i = 0; i < 3; i++)
@@ -6752,7 +6752,7 @@ internal class Playwright_Automation
         }
         catch (Exception ex)
         {
-            MessageBox.Show("Error: " + ex.Message);
+            MessageBox.Show("Error: " + ex.ToString());
 
             if (process != null && !process.HasExited)
             {

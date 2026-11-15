@@ -515,7 +515,6 @@ public class frmProxySetting : Form
                         checkPrivate.Checked = true;
                     }
                     Program.int_WorkingIP = num * 2;
-                    Program.PrivateProxy = Proxy_;
                     File.AppendAllText("IRLOG\\t.log", DateTime.Now.ToString("HH:mm:ss.fff") + " PX-OK " + array2[0] + Environment.NewLine);
                     Program.PrivateProxy = Proxy_;
                     label12.BackColor = Color.LightCyan;

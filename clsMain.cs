@@ -6305,6 +6305,7 @@ internal class clsMain
                 try
                 {
                     ipAdd();
+                    if (Selected_IP - 1 < 0 || Selected_IP - 1 >= list_Proxy.Count) { Selected_IP = 1; }
                     empty = list_Proxy[Selected_IP - 1];
                     string text38 = empty;
                     string value4 = "FreeSlot";
@@ -6333,6 +6334,7 @@ internal class clsMain
                 {
                     string string_95 = "Creating Proxy";
                     method_74(string_95, ex.Message);
+                    File.AppendAllText("IRLOG\\t.log", DateTime.Now.ToString("HH:mm:ss.fff") + " PXERR " + ex.ToString() + Environment.NewLine);
                     if (updTStatus != null)
                     {
                         string status5 = "IP Issue, Try Another slot!";
@@ -6747,7 +6749,7 @@ internal class clsMain
                             }
                             catch (Exception ex3)
                             {
-                                MessageBox.Show(ex3.Message);
+                                MessageBox.Show(ex3.ToString());
                                 try
                                 {
                                     if (page != null)
