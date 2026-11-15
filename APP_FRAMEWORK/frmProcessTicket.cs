@@ -1167,7 +1167,52 @@ internal class frmProcessTicket : Form
                     string text41 = text28;
                     string text42 = "!";
                     int loginType = tCntrl.loginType;
-                    text28 = text41 + text42 + loginType + text42 + StatClass.stopipblock + text42 + StatClass.bookingmode1 + text42 + StatClass.bookingmode2 + text42 + StatClass.bookingmode3 + text42 + Program.availtime + text42 + StatClass.app1 + text42 + StatClass.directlogin + text42 + StatClass.unverifiedbook + text42 + StatClass.stopipblocknew;
+
+                    // availtime: panel se aata hai par empty ya "10:00-12:00" bhi ho sakta hai.
+                    // clsMain isko int.Parse karta hai, isliye yahan normalize kar rahe hain.
+                    int av1 = 0, av2 = 0, av3 = 0, av4 = 0;
+                    string avRaw = (Program.availtime ?? "").Trim();
+                    foreach (string avPart in avRaw.Split(new char[] { '|', ',', ';', '!' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        int avTmp;
+                        if (!int.TryParse(avPart.Trim(), out avTmp)) continue;
+                        if (av1 == 0) av1 = avTmp;
+                        else if (av2 == 0) av2 = avTmp;
+                        else if (av3 == 0) av3 = avTmp;
+                        else { av4 = avTmp; break; }
+                    }
+
+                    // clsMain allowalogin ko lowercase "true" se compare karta hai,
+                    // jabki panel "Yes"/"No" bhejta hai.
+                    string allowAlogin = (StatClass.stopipblock ?? "").Trim().ToLower();
+                    if (allowAlogin != "true") allowAlogin = "false";
+
+                    // clsMain 21 fields (index 0..20) expect karta hai. Kami rehne par
+                    // IndexOutOfRangeException aata hai, isliye poora format bhar rahe hain.
+                    text28 = string.Concat(new string[]
+                    {
+                        text41, text42,                              // 0  proxy#ac#sl
+                        loginType.ToString(), text42,                // 1  loginType
+                        allowAlogin, text42,                         // 2  allowalogin
+                        StatClass.bookingmode1.ToString(), text42,   // 3  bookingmode1
+                        StatClass.bookingmode2.ToString(), text42,   // 4  bookingmode2
+                        StatClass.bookingmode3.ToString(), text42,   // 5  bookingmode3
+                        av1.ToString(), text42,                      // 6  availtime1
+                        av2.ToString(), text42,                      // 7  availtime2
+                        av3.ToString(), text42,                      // 8  availtime3
+                        av4.ToString(), text42,                      // 9  availtime4
+                        "false", text42,                             // 10 validate
+                        "", text42,                                  // 11 bravewith
+                        "", text42,                                  // 12 chromewith
+                        "", text42,                                  // 13 edgewith
+                        "", text42,                                  // 14 cometwith
+                        "", text42,                                  // 15 operawith
+                        "0", text42,                                 // 16 (clsMain padhta nahi, sirf gap)
+                        StatClass.app1.ToString(), text42,           // 17 app1
+                        "True", text42,                              // 18 directlogin
+                        StatClass.unverifiedbook.ToString(), text42, // 19 unverifiedbook
+                        StatClass.stopipblocknew.ToString()          // 20 stopipblocknew
+                    });
                     int selectedIndex2 = tCntrl.cboID.SelectedIndex;
                     int selectedIndex3 = tCntrl.cboSlot.SelectedIndex;
                     int selectedIndex4 = tCntrl.cboGateway.SelectedIndex;
