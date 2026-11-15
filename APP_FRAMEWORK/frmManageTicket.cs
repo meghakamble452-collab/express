@@ -322,7 +322,7 @@ internal class frmManageTicket : Form
             {
                 Form owner2 = Program.TopMost_();
                 string text6 = "You cannot Open more Than ";
-                string text7 = Program.paidpair.ToString();
+                string text7 = (StatClass.int_MaxPair - 1).ToString();
                 string text8 = " Pairs at a time.";
                 string text9 = text6 + text7 + text8;
                 string caption = "Limitation";
@@ -332,7 +332,7 @@ internal class frmManageTicket : Form
             {
                 Form owner3 = Program.TopMost_();
                 string text10 = "You cannot Open more Than ";
-                string text11 = Program.paidpair.ToString();
+                string text11 = (StatClass.int_MaxPair - 1).ToString();
                 string text12 = " Pairs at a time on UnPaid and Demo ID";
                 string text13 = text10 + text11 + text12;
                 string caption2 = "UnPaid Limitation";

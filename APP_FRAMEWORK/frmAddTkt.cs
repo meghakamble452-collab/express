@@ -5195,7 +5195,7 @@ internal class frmAddTkt : Form
         this.dtDate.ForeColor = System.Drawing.Color.Black;
         this.dtDate.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
         this.dtDate.Location = new System.Drawing.Point(446, 4);
-        this.dtDate.MaxDate = new System.DateTime(2026, 12, 31, 0, 0, 0, 0);
+        this.dtDate.MaxDate = System.DateTime.Today.AddDays(63);
         this.dtDate.MinDate = new System.DateTime(2000, 1, 1, 0, 0, 0, 0);
         this.dtDate.Name = "dtDate";
         this.dtDate.Size = new System.Drawing.Size(107, 19);

@@ -1381,8 +1381,10 @@ public class frmLogin : Form
                         goto end_IL_029f;
                     IL_0a34:
 
-						//new frmProxySetting().ipAdd();
-						File.AppendAllText("IRLOG\\t.log", DateTime.Now.ToString("HH:mm:ss.fff") + " D" + Environment.NewLine);
+                        frmProxySetting pf = new frmProxySetting();
+                        pf.ipAdd();
+                        pf.m0();
+                        File.AppendAllText("IRLOG\\t.log", DateTime.Now.ToString("HH:mm:ss.fff") + " D" + Environment.NewLine);
 						CAAA0();
                     end_IL_029f:;
                     }
