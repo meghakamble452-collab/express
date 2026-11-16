@@ -1958,6 +1958,11 @@ public class frmMain : Form
         {
             checkBox5.Checked = true;
         }
+
+        if (!chkADV.Checked && !checkBox3.Checked && !checkBox5.Checked)
+        {
+            checkBox3.Checked = true;
+        }
     }
 
     public static void IntervalInDays(int hour, int min, double interval, Action task)

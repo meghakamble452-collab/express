@@ -1700,6 +1700,12 @@ internal class frmProcessTicket : Form
             ThreadPool.QueueUserWorkItem(callBack, string.Concat(array4));
             try
             {
+                for (int i = StatClass.Tktlist_0.Count - 1; i >= 0; i--)
+                    if (StatClass.Tktlist_0[i].Contains(string_0)) StatClass.Tktlist_0.RemoveAt(i);
+            }
+            catch { }
+            try
+            {
                 File.Delete(path);
                 File.Delete(path2);
             }
