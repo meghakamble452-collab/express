@@ -5374,29 +5374,41 @@ internal class clsMain
             string expression = string_91;
             string delimiter = "!";
             string[] array = Strings.Split(expression, delimiter);
-            string_91 = array[0];
+
+            // Har field safely uthao: chhoti string ya khaali field par bhi crash na ho.
+            string[] fld = new string[21];
+            for (int fldIdx = 0; fldIdx < fld.Length; fldIdx++)
+                fld[fldIdx] = (fldIdx < array.Length && array[fldIdx] != null) ? array[fldIdx].Trim() : "";
+
+            string_91 = fld[0];
             if (array.Length > 1)
             {
                 token.ThrowIfCancellationRequested();
-                loginType = int.Parse(array[1]);
-                allowalogin = array[2];
-                bookingmode1 = array[3];
-                bookingmode2 = array[4];
-                bookingmode3 = array[5];
-                availtime1 = int.Parse(array[6]);
-                availtime2 = int.Parse(array[7]);
-                availtime3 = int.Parse(array[8]);
-                availtime4 = int.Parse(array[9]);
-                validate = array[10];
-                bravewith = array[11];
-                chromewith = array[12];
-                edgewith = array[13];
-                cometwith = array[14];
-                operawith = array[15];
-                app1 = array[17];
-                directlogin = array[18];
-                unverifiedbook = array[19];
-                stopipblocknew = array[20];
+
+                int.TryParse(fld[1], out loginType);
+
+                allowalogin = fld[2].ToLower();
+                if (allowalogin != "true" && allowalogin != "yes") allowalogin = "false";
+
+                bookingmode1 = fld[3];
+                bookingmode2 = fld[4];
+                bookingmode3 = fld[5];
+
+                int.TryParse(fld[6], out availtime1);
+                int.TryParse(fld[7], out availtime2);
+                int.TryParse(fld[8], out availtime3);
+                int.TryParse(fld[9], out availtime4);
+
+                validate = fld[10];
+                bravewith = fld[11];
+                chromewith = fld[12];
+                edgewith = fld[13];
+                cometwith = fld[14];
+                operawith = fld[15];
+                app1 = fld[17];
+                directlogin = fld[18];
+                unverifiedbook = fld[19];
+                stopipblocknew = fld[20];
             }
             token.ThrowIfCancellationRequested();
             webProxy_0 = new WebProxy();
