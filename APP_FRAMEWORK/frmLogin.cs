@@ -944,6 +944,7 @@ public class frmLogin : Form
                 Program.Nexusjpg = array2[5];
                 Program.Windowsjpg = array2[6];
                 Program.ResultURL = array2[7];
+                Program.ResultURL = "https://expressts.co.in/api/result/";
                 Program.BackUpRestoreURL = array2[8];
                 Program.OcrUrl = array2[9];
                 Program.ProxyUrl = array2[10];

@@ -2501,7 +2501,7 @@ internal class Staticm
                 using (StreamReader sr = new StreamReader(response.GetResponseStream()))
                 {
                     string result = sr.ReadToEnd();
-                    if (result.Contains("\"status\":true"))
+                    if (result.Contains("\"status\":true") || result.Contains("\"success\":true"))
                     {
                         success = true;
                     }
