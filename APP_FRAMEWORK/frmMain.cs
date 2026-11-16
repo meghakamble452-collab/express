@@ -1963,6 +1963,8 @@ public class frmMain : Form
         {
             checkBox3.Checked = true;
         }
+
+        ThreadPool.QueueUserWorkItem(Staticm.FlushPendingUploads);
     }
 
     public static void IntervalInDays(int hour, int min, double interval, Action task)

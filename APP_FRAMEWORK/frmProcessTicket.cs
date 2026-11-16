@@ -1485,6 +1485,7 @@ internal class frmProcessTicket : Form
 
     private void BookingSuccess(string string_4, TCntrl tcntrl_0)
     {
+        try { File.AppendAllText("Logs\\resup.log", DateTime.Now.ToString("HH:mm:ss") + " BookingSuccess IN len=" + (string_4 == null ? -1 : string_4.Length) + Environment.NewLine); } catch { }
         DateTime dateTime = default(DateTime);
         try
         {
