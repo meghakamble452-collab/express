@@ -2440,6 +2440,44 @@ internal class Staticm
 
     public static void method_8ii(object object_0)
     {
+        PostResultOnce(object_0.ToString());
+    }
+
+    public static void QueueResultUpload(string payload)
+    {
+        try
+        {
+            Directory.CreateDirectory("Logs\\pending");
+            File.WriteAllText("Logs\\pending\\" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + "_" + Guid.NewGuid().ToString("N") + ".txt", payload);
+        }
+        catch { }
+        ThreadPool.QueueUserWorkItem(FlushPendingUploads);
+    }
+
+    private static readonly object _uploadLock = new object();
+
+    public static void FlushPendingUploads(object state)
+    {
+        lock (_uploadLock)
+        {
+            try
+            {
+                string dir = "Logs\\pending";
+                if (!Directory.Exists(dir)) return;
+                foreach (string f in Directory.GetFiles(dir, "*.txt"))
+                {
+                    string payload;
+                    try { payload = File.ReadAllText(f); } catch { continue; }
+                    if (string.IsNullOrWhiteSpace(payload)) { try { File.Delete(f); } catch { } continue; }
+                    if (PostResultOnce(payload)) { try { File.Delete(f); } catch { } }
+                }
+            }
+            catch { }
+        }
+    }
+
+    private static bool PostResultOnce(string payloadIn)
+    {
         int retry = 0;
         bool success = false;
         do
@@ -2451,7 +2489,7 @@ internal class Staticm
 				{
 					Thread.Sleep(2000);
 				}
-                string text = object_0.ToString();
+                string text = payloadIn;
                 string[] array2 = text.Split(new string[] { "#" }, StringSplitOptions.None);
                 string[] array4 = array2[0].Split(new string[] { "|" }, StringSplitOptions.None);
                 string text5 = "";
@@ -2516,6 +2554,7 @@ internal class Staticm
             }
 
         } while (!success && retry < 10);
+        return success;
     }
     internal static bool Sleep_Thread(int millisecondsTimeout)
 	{

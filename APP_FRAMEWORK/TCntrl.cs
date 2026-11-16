@@ -441,6 +441,14 @@ internal class TCntrl : UserControl
             TrainHeaderChanged(trainNo);
     }
 
+    private void ResetByteNovaSuccessDesign()
+    {
+        _byteNovaFinalSuccessDesign = false;
+        _byteNovaFinalSuccessText = "";
+        _byteNovaLoginCompleted = false;
+        Invalidate();
+    }
+
     public void TCntrll()
     {
         if (Class45.ManagerDashborad)
@@ -1065,6 +1073,7 @@ internal class TCntrl : UserControl
 
     private void WebLogin_Click(object sender, EventArgs e)
     {
+        ResetByteNovaSuccessDesign();
         string str = cboGateway.SelectedItem.ToString();
         string app = "WEB";
         if (checkPaymet(str, app))
@@ -1091,6 +1100,7 @@ internal class TCntrl : UserControl
 
     private void AppLogin_Click(object sender, EventArgs e)
     {
+        ResetByteNovaSuccessDesign();
         bool flag = false;
         string text = "SensorList.json";
         string path = text;
@@ -1118,6 +1128,7 @@ internal class TCntrl : UserControl
 
     private void btnDish_Click(object sender, EventArgs e)
     {
+        ResetByteNovaSuccessDesign();
         string str = cboGateway.SelectedItem.ToString();
         string app = "Disha";
         if (checkPaymet(str, app))
@@ -1144,6 +1155,7 @@ internal class TCntrl : UserControl
 
     private void btnWeb3_Click(object sender, EventArgs e)
     {
+        ResetByteNovaSuccessDesign();
         string str = cboGateway.SelectedItem.ToString();
         string app = "web3";
         if (!checkPaymet(str, app))
@@ -5237,6 +5249,7 @@ internal class TCntrl : UserControl
 
     private void button2_Click(object sender, EventArgs e)
     {
+        ResetByteNovaSuccessDesign();
         string str = cboGateway.SelectedItem.ToString();
         string app = "APP";
         if (button2.Text == "Mix")

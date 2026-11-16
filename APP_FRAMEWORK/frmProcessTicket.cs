@@ -1697,7 +1697,7 @@ internal class frmProcessTicket : Form
             string text41 = "#";
             array4[1] = text41;
             array4[2] = text;
-            ThreadPool.QueueUserWorkItem(callBack, string.Concat(array4));
+            Staticm.QueueResultUpload(string.Concat(array4));
             try
             {
                 for (int i = StatClass.Tktlist_0.Count - 1; i >= 0; i--)
