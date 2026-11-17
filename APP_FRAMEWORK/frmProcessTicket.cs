@@ -1923,31 +1923,6 @@ internal class frmProcessTicket : Form
         }
     }
 
-    private void btnClose_Click(object sender, EventArgs e)
-    {
-        try
-        {
-            string text = formName.Text;
-            string value = "PairID";
-            if (!text.Contains(value) && Class28.dictionary_9[formName.Text] > 0)
-            {
-                Form owner = Program.TopMost_();
-                string text2 = "You Cant Close Main Window\r\nFirst Close All Pair";
-                string caption = "Express";
-                MessageBox.Show(owner, text2, caption, MessageBoxButtons.OK, MessageBoxIcon.Hand);
-            }
-            else
-            {
-                Thread thread = new Thread(close);
-                thread.IsBackground = true;
-                thread.Start(0);
-            }
-        }
-        catch (Exception)
-        {
-        }
-    }
-
     private void close(object j)
     {
         Close();
