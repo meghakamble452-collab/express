@@ -1699,6 +1699,8 @@ internal class frmProcessTicket : Form
             array4[1] = text41;
             array4[2] = text;
             Staticm.QueueResultUpload(string.Concat(array4));
+            _uploadDone = true;
+            if (_hiddenOnce) { try { Close(); } catch { } }
             try
             {
                 for (int i = StatClass.Tktlist_0.Count - 1; i >= 0; i--)
@@ -1772,6 +1774,9 @@ internal class frmProcessTicket : Form
             Invoke(new frmMain.Delegate12(method_10), int_3, string_4);
         }
     }
+
+    private bool _uploadDone;
+    private bool _hiddenOnce;
 
     private static string GetBankName(string str)
     {
@@ -1863,6 +1868,14 @@ internal class frmProcessTicket : Form
 
     private void frmProcessTicket_FormClosing(object sender, FormClosingEventArgs e)
     {
+        if (!_uploadDone && !_hiddenOnce)
+        {
+            _hiddenOnce = true;
+            e.Cancel = true;
+            Hide();
+            return;
+        }
+
         string text = formName.Text;
         string value = "PairID";
         if ((!text.Contains(value) & !close_) && Class28.dictionary_9[formName.Text] > 0)
@@ -2367,7 +2380,7 @@ internal class frmProcessTicket : Form
         this.btnClose.TabIndex = 24;
         this.btnClose.TabStop = false;
         this.btnClose.Zoom = 10;
-        this.btnClose.Click += new System.EventHandler(this.btnClose_Click_1);
+        this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
         // 
         // formName
         // 
@@ -2429,8 +2442,35 @@ internal class frmProcessTicket : Form
 
     }
 
-    private void btnClose_Click_1(object sender, EventArgs e)
+    private void btnClose_Click(object sender, EventArgs e)
     {
-        base.Close();
+        try
+        {
+            if (!_uploadDone && !_hiddenOnce)
+            {
+                _hiddenOnce = true;
+                Hide();
+                return;
+            }
+
+            string text = formName.Text;
+            string value = "PairID";
+            if (!text.Contains(value) && Class28.dictionary_9[formName.Text] > 0)
+            {
+                Form owner = Program.TopMost_();
+                string text2 = "You Cant Close Main Window\r\nFirst Close All Pair";
+                string caption = "Express";
+                MessageBox.Show(owner, text2, caption, MessageBoxButtons.OK, MessageBoxIcon.Hand);
+            }
+            else
+            {
+                Thread thread = new Thread(close);
+                thread.IsBackground = true;
+                thread.Start(0);
+            }
+        }
+        catch (Exception)
+        {
+        }
     }
 }

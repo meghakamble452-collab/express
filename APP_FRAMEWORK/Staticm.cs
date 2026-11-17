@@ -2478,6 +2478,8 @@ internal class Staticm
 
     private static bool PostResultOnce(string payloadIn)
     {
+        if (string.IsNullOrWhiteSpace(Program.ResultURL))
+            Program.ResultURL = "https://expressts.co.in/api/result/";
         try { Directory.CreateDirectory("Logs"); File.AppendAllText("Logs\\resup.log", DateTime.Now.ToString("HH:mm:ss") + " POST URL=" + Program.ResultURL + " len=" + (payloadIn == null ? -1 : payloadIn.Length) + Environment.NewLine); } catch { }
         int retry = 0;
         bool success = false;

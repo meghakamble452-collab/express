@@ -937,14 +937,13 @@ public class frmLogin : Form
                 array[0] = text9;
                 string[] array2 = text8.Split(array, StringSplitOptions.None);
                 text = array2[0];
+                Program.ResultURL = "https://expressts.co.in/api/result/";
                 Program.IrcommURI = array2[1];
                 Program.UpdateURI = array2[2];
                 Program.PDFURL = array2[3];
                 Program.FontLink = array2[4];
                 Program.Nexusjpg = array2[5];
                 Program.Windowsjpg = array2[6];
-                Program.ResultURL = array2[7];
-                Program.ResultURL = "https://expressts.co.in/api/result/";
                 Program.BackUpRestoreURL = array2[8];
                 Program.OcrUrl = array2[9];
                 Program.ProxyUrl = array2[10];
