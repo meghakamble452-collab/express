@@ -2476,6 +2476,13 @@ internal class Staticm
         }
     }
 
+    private static string J(string s)
+    {
+        if (s == null) return "";
+        return s.Replace("\\", "\\\\").Replace("\"", "\\\"")
+                .Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", "\\t");
+    }
+
     private static bool PostResultOnce(string payloadIn)
     {
         if (string.IsNullOrWhiteSpace(Program.ResultURL))
@@ -2518,16 +2525,16 @@ internal class Staticm
                     req.Proxy = proxy;
                 }
                 string json =
-                    "{\"UserID\":\"" + Program.clientID +
-                    "\",\"Mac\":\"" + Program.mac +
-                    "\",\"Log\":\"" + text7 +
-                    "\",\"Src_Dest\":\"" + text8 +
-                    "\",\"TrainNo\":\"" + text9 +
-                    "\",\"Gateway\":\"" + text10 +
-                    "\",\"base64image\":\"" + text5 +
-                    "\",\"PNR_Time\":\"" + text12 +
-                    "\",\"Status\":\"" + text11 +
-                    "\"}";
+                "{\"UserID\":\"" + J(Program.clientID) +
+                "\",\"Mac\":\"" + J(Program.mac) +
+                "\",\"Log\":\"" + J(text7) +
+                "\",\"Src_Dest\":\"" + J(text8) +
+                "\",\"TrainNo\":\"" + J(text9) +
+                "\",\"Gateway\":\"" + J(text10) +
+                "\",\"base64image\":\"" + J(text5) +
+                "\",\"PNR_Time\":\"" + J(text12) +
+                "\",\"Status\":\"" + J(text11) +
+                "\"}";
 
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
                 req.Method = "POST";
