@@ -17,7 +17,7 @@ using NEXUS;
 
 namespace APP_FRAMEWORK;
 
-internal class tabIrctcId : UserControl
+internal partial class tabIrctcId : UserControl
 {
     private mCOMM mcommInstance;
 

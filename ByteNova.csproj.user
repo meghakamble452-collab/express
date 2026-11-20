@@ -125,6 +125,9 @@
     <Compile Update="APP_FRAMEWORK\tabIrctcId.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="APP_FRAMEWORK\tabIrctcId.ExpressLayout.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="APP_FRAMEWORK\tabMobikwSetting.cs">
       <SubType>UserControl</SubType>
     </Compile>
