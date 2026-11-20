@@ -15,31 +15,72 @@ namespace APP_FRAMEWORK
         private Panel exBar;
         private Panel exCanvas;
         private Panel exLogo;
-        private Label exDate;
+        private Panel exModeBox;
+        private Panel exClockPill;
+        private Label exDateTxt;
+        private Label exTimeTxt;
+        private Label exTip;
         private Timer exTick;
-        private Control exHot;
+        private Timer exRegion;
+        private Timer exPopFix;
         private Control exDown;
         private int exTries;
+        private bool exFit;
+        private Font exTipFont;
+        private Font exDateFont;
 
-        private const int ExBarH = 106;
+        private float exK = 1f;
+        private int exBarH = 150;
 
         private readonly List<Control> exNav = new List<Control>();
         private readonly List<Panel> exSwitchRow = new List<Panel>();
+        private readonly List<Control> exPills = new List<Control>();
         private readonly Dictionary<Panel, CheckBox> exSwitchMap = new Dictionary<Panel, CheckBox>();
+        private readonly Dictionary<Panel, int> exBookIndex = new Dictionary<Panel, int>();
+        private readonly Dictionary<Control, float> exHov = new Dictionary<Control, float>();
+        private readonly Dictionary<string, Font> exFontCache = new Dictionary<string, Font>();
 
-        private static readonly Color ExInk = Color.FromArgb(15, 35, 62);
-        private static readonly Color ExSoft = Color.FromArgb(74, 96, 124);
-        private static readonly Color ExLine = Color.FromArgb(214, 226, 240);
-        private static readonly Color ExBlue = Color.FromArgb(11, 99, 206);
-        private static readonly Color ExRed = Color.FromArgb(226, 72, 60);
-        private static readonly Color ExGreen = Color.FromArgb(41, 186, 76);
-        private static readonly Color ExTint = Color.FromArgb(232, 241, 254);
+        private bool exDrag;
+        private int exDragX, exDragY;
+
+        private static readonly Color ExBlue = Color.FromArgb(59, 132, 247);
+        private static readonly Color ExBlue2 = Color.FromArgb(148, 198, 253);
+        private static readonly Color ExGreen = UiTheme.Green;
+        private static readonly Color ExBoxBg = Color.FromArgb(88, 145, 230);
+
+        private static readonly Color ExCUser = Color.FromArgb(99, 102, 241);
+        private static readonly Color ExCIrctc = Color.FromArgb(124, 58, 237);
+        private static readonly Color ExCBank = Color.FromArgb(13, 148, 136);
+        private static readonly Color ExCNew = Color.FromArgb(22, 163, 74);
+        private static readonly Color ExCProc = Color.FromArgb(37, 99, 235);
+        private static readonly Color ExCProxy = Color.FromArgb(217, 119, 6);
+        private static readonly Color ExCBypass = Color.FromArgb(192, 38, 211);
+        private static readonly Color ExCBackup = Color.FromArgb(71, 85, 105);
+        private static readonly Color ExCToken = Color.FromArgb(8, 145, 178);
+        private static readonly Color ExCPower = Color.FromArgb(234, 108, 26);
+        private static readonly Color ExCRed = Color.FromArgb(220, 38, 38);
 
         private static bool ExIsButton(Control c)
         {
             if (c is Button) return true;
             string n = c.GetType().Name;
             return n.Contains("FlatButton") || n.Contains("ImageButton");
+        }
+
+        private static int ExS(float v, float k)
+        {
+            return (int)Math.Round(v * k);
+        }
+
+        private Font ExCached(string fam, float px, FontStyle st, float k)
+        {
+            int size = Math.Max(9, (int)Math.Round(px * k));
+            string key = fam + "|" + size + "|" + (int)st;
+            Font f;
+            if (exFontCache.TryGetValue(key, out f) && f != null) return f;
+            f = new Font(fam, size, st, GraphicsUnit.Pixel);
+            exFontCache[key] = f;
+            return f;
         }
 
         private void ApplyExpressHeader()
@@ -86,20 +127,24 @@ namespace APP_FRAMEWORK
 
             if (boxes.Count == 0) boxes = ExFallbackBoxes();
 
-            exBar.Height = ExBarH;
-            exBar.BackColor = Color.White;
+            ExFitWindow();
+
+            exBar.Location = new Point(0, 0);
+            exBar.Size = new Size(ClientSize.Width, ClientSize.Height);
+            exBar.BackColor = UiTheme.Bg;
             exBar.BringToFront();
 
             exCanvas = new Panel();
             exCanvas.Dock = DockStyle.Fill;
-            exCanvas.BackColor = Color.White;
+            exCanvas.BackColor = UiTheme.Bg;
             exCanvas.Paint += ExCanvasPaint;
+            exCanvas.MouseDown += ExCanvasDown;
+            exCanvas.MouseMove += ExCanvasMove;
+            exCanvas.MouseUp += (s, e) => exDrag = false;
             exBar.Controls.Add(exCanvas);
             exCanvas.BringToFront();
-            ExRoundRegion(exCanvas, 16);
 
             exLogo = new Panel();
-            exLogo.Size = new Size(32, 32);
             exLogo.BackColor = Color.White;
             exLogo.Paint += ExLogoPaint;
             Image logoImg = null;
@@ -107,34 +152,61 @@ namespace APP_FRAMEWORK
             if (logoImg != null) exLogo.Tag = logoImg;
             exCanvas.Controls.Add(exLogo);
 
-            foreach (CheckBox cb in boxes)
+            if (boxes.Count > 0)
             {
-                Panel row = ExBuildSwitch(cb);
-                if (row != null) exSwitchRow.Add(row);
+                Panel videoRow = ExBuildVideoSwitch(boxes[0]);
+                if (videoRow != null) exSwitchRow.Add(videoRow);
             }
 
-            Control userBtn = ExFindByText("USER INFO");
-            if (userBtn != null)
+            if (boxes.Count > 1)
             {
-                Panel ui = ExPill("USER INFO", ExBlue, true, 96, 20);
-                ui.Click += (s, e) => ExClick(userBtn);
+                exModeBox = new Panel();
+                exModeBox.BackColor = ExBoxBg;
+                exModeBox.Paint += ExModeBoxPaint;
+                exCanvas.Controls.Add(exModeBox);
+
+                for (int i = 1; i < boxes.Count; i++)
+                {
+                    Panel row = ExBuildBookSwitch(boxes[i], i);
+                    if (row == null) continue;
+                    row.Parent = exModeBox;
+                    exSwitchRow.Add(row);
+                }
+            }
+
+            Control userLbl = ExFind(this, "bnUserInfoLabel");
+            if (userLbl != null)
+            {
+                Panel ui = ExPill("USER INFO", 1, ExCUser, 1, 124, 38);
+                ui.Click += (s, e) => { ExClick(userLbl); ExFixUserInfoPopup(); };
                 exCanvas.Controls.Add(ui);
             }
 
-            exDate = new Label();
-            exDate.AutoSize = false;
-            exDate.Size = new Size(150, 22);
-            exDate.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Bold);
-            exDate.ForeColor = ExBlue;
-            exDate.BackColor = Color.FromArgb(236, 244, 254);
-            exDate.TextAlign = ContentAlignment.MiddleCenter;
-            exDate.Paint += ExDatePaint;
-            exCanvas.Controls.Add(exDate);
+            exDateFont = ExCached("Segoe UI Semibold", 15f, FontStyle.Bold, exK);
 
-            Control resetHit = ExFindClickable(resetBox) ?? resetBox;
+            exClockPill = new Panel();
+            exClockPill.BackColor = Color.White;
+            exClockPill.Paint += ExClockPaint;
+            exCanvas.Controls.Add(exClockPill);
+
+            exDateTxt = new Label();
+            exDateTxt.AutoSize = false;
+            exDateTxt.BackColor = Color.White;
+            exDateTxt.ForeColor = Color.FromArgb(20, 78, 190);
+            exDateTxt.TextAlign = ContentAlignment.MiddleRight;
+            exClockPill.Controls.Add(exDateTxt);
+
+            exTimeTxt = new Label();
+            exTimeTxt.AutoSize = false;
+            exTimeTxt.BackColor = Color.White;
+            exTimeTxt.ForeColor = Color.FromArgb(20, 78, 190);
+            exTimeTxt.TextAlign = ContentAlignment.MiddleLeft;
+            exClockPill.Controls.Add(exTimeTxt);
+
+            Control resetHit = ExFindClickable(resetBox) ?? ExFind(this, "bnResetGlyph") ?? resetBox;
             if (resetHit != null)
             {
-                Panel rb = ExPill("\u21BB", ExBlue, false, 28, 22);
+                Panel rb = ExPill("", 2, ExCPower, 9, 44, 38);
                 rb.Click += (s, e) => ExClick(resetHit);
                 exCanvas.Controls.Add(rb);
             }
@@ -142,34 +214,215 @@ namespace APP_FRAMEWORK
             Control closeHit = ExFindClickable(closeBox) ?? closeBox ?? btnClose;
             if (closeHit != null)
             {
-                Panel cbx = ExPill("\u2715", ExRed, false, 28, 22);
+                Panel cbx = ExPill("", 3, ExCRed, 10, 44, 38);
                 cbx.Click += (s, e) => ExClick(closeHit);
                 exCanvas.Controls.Add(cbx);
             }
 
-            string[] navKw = { "IRCTC", "BANK", "New Ticket", "OpenTicket", "Histry", "OTP", "BackUp", "Ip Block" };
-            foreach (string kw in navKw)
+            string[,] nav =
             {
-                Control src = ExFindByText(kw);
+                { "bunifuFlatButton7", "IRCTC ID" },
+                { "bunifuFlatButton1", "BANK" },
+                { "bunifuFlatButton3", "NEW TICKET" },
+                { "bunifuFlatButton4", "PROCESS_TICKET" },
+                { "bunifuFlatButton2", "PROXY" },
+                { "bunifuFlatButton6", "BYPASS" },
+                { "bunifuFlatButton8", "BACKUP" },
+                { "bnTokenButton",     "TOKEN" }
+            };
+            Color[] navCol = { ExCIrctc, ExCBank, ExCNew, ExCProc, ExCProxy, ExCBypass, ExCBackup, ExCToken };
+            int[] navIco = { 1, 2, 3, 4, 5, 6, 7, 8 };
+
+            for (int i = 0; i < nav.GetLength(0); i++)
+            {
+                Control src = ExFind(this, nav[i, 0]);
+                if (src == null) src = ExFindByText(nav[i, 1]);
                 if (src == null) continue;
                 Control b = src;
-                Panel p = ExPill(ExNavText(b.Text), ExBlue, false, 100, 22);
+                Panel p = ExPill(nav[i, 1], 0, navCol[i], navIco[i], 150, 44);
                 p.Click += (s, e) => ExClick(b);
                 exCanvas.Controls.Add(p);
                 exNav.Add(p);
             }
 
+            exTipFont = ExCached("Segoe UI Semibold", 11f, FontStyle.Bold, exK);
+
+            exTip = new Label();
+            exTip.AutoSize = false;
+            exTip.Size = new Size(150, 24);
+            exTip.Font = exTipFont;
+            exTip.ForeColor = Color.White;
+            exTip.BackColor = Color.FromArgb(15, 40, 78);
+            exTip.TextAlign = ContentAlignment.MiddleCenter;
+            exTip.Visible = false;
+            exTip.Paint += ExTipPaint;
+            exCanvas.Controls.Add(exTip);
+
             ExLayoutBar();
 
             exTick = new Timer();
-            exTick.Interval = 20;
+            exTick.Interval = 16;
             exTick.Tick += ExTick;
             exTick.Start();
 
-            exCanvas.Resize += (s, e) => { ExLayoutBar(); ExRoundRegion(exCanvas, 16); };
+            exRegion = new Timer();
+            exRegion.Interval = 40;
+            int rt = 0;
+            exRegion.Tick += (s, e) =>
+            {
+                rt++;
+                ExApplyAllRegions();
+                if (rt > 80) { exRegion.Stop(); exRegion.Dispose(); }
+            };
+            exRegion.Start();
+
+            exCanvas.Resize += (s, e) => { ExLayoutBar(); ExApplyAllRegions(); };
+            Resize += (s, e) => { ExFitWindow(); ExLayoutBar(); ExApplyAllRegions(); };
+            Application.ThreadException -= ExLogThread;
+            Application.ThreadException += ExLogThread;
+            AppDomain.CurrentDomain.UnhandledException -= ExLogDomain;
+            AppDomain.CurrentDomain.UnhandledException += ExLogDomain;
         }
 
-        // ------------------------------------------------------------------
+        private static void ExLogText(string where, Exception ex)
+        {
+            try
+            {
+                System.IO.File.AppendAllText(
+                    System.IO.Path.Combine(Application.StartupPath, "express_ui_error.log"),
+                    DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss") + "  [" + where + "]" +
+                    Environment.NewLine + ex + Environment.NewLine +
+                    "----------------------------------------" + Environment.NewLine);
+            }
+            catch { }
+        }
+
+        private void ExLogThread(object sender, System.Threading.ThreadExceptionEventArgs e)
+        {
+            ExLogText("thread", e.Exception);
+        }
+
+        private void ExLogDomain(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception ex = e.ExceptionObject as Exception;
+            if (ex != null) ExLogText("domain", ex);
+        }
+
+        private void ExApplyAllRegions()
+        {
+            try
+            {
+                if (exCanvas == null) return;
+                ExTameLeftovers();
+                int rad = ExS(16, exK);
+                ExRoundRegion(this, rad);
+                ExRoundRegion(exCanvas, rad);
+                if (exModeBox != null) ExRoundRegion(exModeBox, ExS(12, exK));
+                if (exClockPill != null) ExRoundRegion(exClockPill, ExS(12, exK));
+                foreach (Control c in exPills) ExRoundRegion(c, ExS(11, exK));
+            }
+            catch { }
+        }
+
+        private void ExTameLeftovers()
+        {
+            try
+            {
+                if (exBar.Anchor != (AnchorStyles.Top | AnchorStyles.Left))
+                    exBar.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+
+                string[] names = { "bnTopTimeBox", "bnTopResetBox", "bnTopCloseBox", "bnCompactNavigation" };
+                foreach (string n in names)
+                {
+                    Control c = ExFind(exBar, n);
+                    if (c != null && c.Visible) c.Visible = false;
+                }
+
+                if (btnClose != null && btnClose.Visible) btnClose.Visible = false;
+                if (_bnClockIcon != null && _bnClockIcon.Visible) _bnClockIcon.Visible = false;
+                if (_bnClockTitle != null && _bnClockTitle.Visible) _bnClockTitle.Visible = false;
+                if (_bnResetButton != null && _bnResetButton.Visible) _bnResetButton.Visible = false;
+            }
+            catch { }
+        }
+
+        // ==================================================================
+        private void ExFitWindow()
+        {
+            if (exFit) return;
+            exFit = true;
+            try
+            {
+                Rectangle wa = Screen.FromControl(this).WorkingArea;
+                if (wa.Width < 200 || wa.Height < 120) return;
+
+                exK = Math.Max(0.70f, Math.Min(1.25f, wa.Width / 1920f));
+                exBarH = ExS(150, exK);
+
+                int needW = Math.Min(wa.Width - 20, ExS(1720, exK));
+                int needH = exBarH;
+
+                int w = Math.Max(ClientSize.Width, needW);
+                int h = needH;
+                if (w == ClientSize.Width && h == ClientSize.Height) return;
+
+                int dH = h - ClientSize.Height;
+                ClientSize = new Size(w, h);
+                if (dH != 0) Top -= dH;
+
+                if (Bottom > wa.Bottom) Top = wa.Bottom - Height;
+                if (Top < wa.Top) Top = wa.Top;
+            }
+            catch { }
+            finally { exFit = false; }
+        }
+
+        private void ExFixUserInfoPopup()
+        {
+            Panel pill = null;
+            foreach (Control c in exPills)
+                if (c.Tag is object[] t && (int)t[1] == 1) { pill = c as Panel; break; }
+            if (pill == null) return;
+
+            if (exPopFix != null) { exPopFix.Stop(); exPopFix.Dispose(); }
+            exPopFix = new Timer();
+            exPopFix.Interval = 16;
+            int n = 0;
+            exPopFix.Tick += (s, e) =>
+            {
+                try
+                {
+                    n++;
+                    Form pop = ExFindInfoPopup();
+                    if (pop == null || !pop.Visible || n > 70)
+                    {
+                        if (n > 70) { exPopFix.Stop(); exPopFix.Dispose(); }
+                        return;
+                    }
+                    Rectangle wa = Screen.FromControl(this).WorkingArea;
+                    Point p0 = pill.PointToScreen(Point.Empty);
+                    int x = p0.X + (pill.Width - pop.Width) / 2;
+                    x = Math.Max(wa.Left + 6, Math.Min(wa.Right - pop.Width - 6, x));
+                    pop.Left = x;
+                }
+                catch { }
+            };
+            exPopFix.Start();
+        }
+
+        private Form ExFindInfoPopup()
+        {
+            foreach (Form f in Application.OpenForms)
+            {
+                if (ReferenceEquals(f, this)) continue;
+                if (f.FormBorderStyle != FormBorderStyle.None) continue;
+                if (f.Width < 290 || f.Width > 350) continue;
+                if (f.Height < 130 || f.Height > 175) continue;
+                return f;
+            }
+            return null;
+        }
+
         private static Control ExFind(Control root, string name)
         {
             if (root.Name == name) return root;
@@ -177,6 +430,17 @@ namespace APP_FRAMEWORK
             {
                 Control r = ExFind(c, name);
                 if (r != null) return r;
+            }
+            return null;
+        }
+
+        private Control ExFindByText(string keyword)
+        {
+            string k = keyword.Replace("&", "").Trim().ToLowerInvariant();
+            foreach (Control c in AllChildren(this))
+            {
+                if (!ExIsButton(c)) continue;
+                if (c.Text.Replace("&", "").Trim().ToLowerInvariant() == k) return c;
             }
             return null;
         }
@@ -204,17 +468,6 @@ namespace APP_FRAMEWORK
             return null;
         }
 
-        private Control ExFindByText(string keyword)
-        {
-            string k = keyword.Replace("&", "").Trim().ToLowerInvariant();
-            foreach (Control c in AllChildren(this))
-            {
-                if (!ExIsButton(c)) continue;
-                if (c.Text.Replace("&", "").Trim().ToLowerInvariant().Contains(k)) return c;
-            }
-            return null;
-        }
-
         private static IEnumerable<Control> AllChildren(Control root)
         {
             foreach (Control c in root.Controls)
@@ -230,7 +483,6 @@ namespace APP_FRAMEWORK
             string[,] map =
             {
                 { "checkBox1", "Video Mode" },
-                { "checkBox9", "Beta Version" },
                 { "chkADV",    "Booking Mode-1" },
                 { "checkBox3", "Booking Mode-2" },
                 { "checkBox5", "Booking Mode-3" }
@@ -245,32 +497,27 @@ namespace APP_FRAMEWORK
             return list;
         }
 
-        private static string ExNavText(string raw)
-        {
-            string t = (raw ?? "").Replace("&", "").Trim().ToUpperInvariant();
-            if (t.Contains("IRCTC")) return "IRCTC ID";
-            if (t.Contains("BANK")) return "BANK";
-            if (t.Contains("NEW TICKET")) return "NEW TICKET";
-            if (t.Contains("OPENTICKET")) return "PROCESS TICKET";
-            if (t.Contains("HISTRY")) return "PROXY";
-            if (t.Contains("OTP")) return "BYPASS";
-            if (t.Contains("BACKUP")) return "BACKUP";
-            if (t.Contains("IP BLOCK")) return "TOKEN";
-            return t;
-        }
-
         private static void ExClick(Control c)
         {
             if (c == null || ExOnClick == null) return;
             try { ExOnClick.Invoke(c, new object[] { EventArgs.Empty }); } catch { }
         }
 
-        // ------------------------------------------------------------------
-        private Panel ExBuildSwitch(CheckBox cb)
+        private static Color ExMix(Color a, Color b, float t)
+        {
+            t = Math.Max(0f, Math.Min(1f, t));
+            return Color.FromArgb(
+                (int)(a.R + (b.R - a.R) * t),
+                (int)(a.G + (b.G - a.G) * t),
+                (int)(a.B + (b.B - a.B) * t));
+        }
+
+        // ==================================================================
+        private Panel ExBuildVideoSwitch(CheckBox cb)
         {
             Panel row = new Panel();
-            row.Size = new Size(148, 24);
-            row.BackColor = Color.White;
+            row.Size = new Size(ExS(150, exK), ExS(46, exK));
+            row.BackColor = Color.Transparent;
             row.Cursor = Cursors.Hand;
             row.Tag = cb;
             row.Click += (s, e) => { cb.Checked = !cb.Checked; };
@@ -278,257 +525,617 @@ namespace APP_FRAMEWORK
             exCanvas.Controls.Add(row);
 
             Panel track = new Panel();
-            track.Size = new Size(30, 16);
-            track.Location = new Point(114, 4);
-            track.BackColor = Color.White;
+            track.Size = new Size(ExS(42, exK), ExS(22, exK));
+            track.BackColor = Color.Transparent;
             track.Cursor = Cursors.Hand;
             track.Click += (s, e) => { cb.Checked = !cb.Checked; };
             track.Paint += ExSwitchPaint;
             row.Controls.Add(track);
 
             cb.CheckedChanged += (s, e) => { track.Invalidate(); row.Invalidate(); };
-
             exSwitchMap[row] = cb;
             return row;
         }
 
-        private Panel ExPill(string text, Color accent, bool outline, int w, int h)
+        private Panel ExBuildBookSwitch(CheckBox cb, int index)
+        {
+            Panel row = new Panel();
+            row.Size = new Size(ExS(70, exK), ExS(20, exK));
+            row.BackColor = ExBoxBg;
+            row.Cursor = Cursors.Hand;
+            row.Tag = cb;
+            row.Click += (s, e) => { cb.Checked = !cb.Checked; };
+            row.Paint += ExSwitchRowPaint;
+            exCanvas.Controls.Add(row);
+
+            Panel track = new Panel();
+            track.Size = new Size(ExS(38, exK), ExS(20, exK));
+            track.BackColor = ExBoxBg;
+            track.Cursor = Cursors.Hand;
+            track.Click += (s, e) => { cb.Checked = !cb.Checked; };
+            track.Paint += ExSwitchPaint;
+            row.Controls.Add(track);
+
+            cb.CheckedChanged += (s, e) => { track.Invalidate(); row.Invalidate(); };
+            exSwitchMap[row] = cb;
+            exBookIndex[row] = index;
+            return row;
+        }
+
+        private Panel ExPill(string text, int kind, Color accent, int icon, int w, int h)
         {
             Panel p = new Panel();
-            p.Size = new Size(w, h);
-            p.BackColor = Color.White;
+            p.Size = new Size(ExS(w, exK), ExS(h, exK));
+            p.BackColor = accent;
             p.Cursor = Cursors.Hand;
-            p.Tag = new object[] { text, accent, outline };
+            p.Tag = new object[] { text, kind, accent, icon };
             p.Paint += ExPillPaint;
+            exHov[p] = 0f;
+            exPills.Add(p);
+            ExRoundRegion(p, ExS(11, exK));
             return p;
         }
 
-        // ------------------------------------------------------------------
+        // ==================================================================
         private void ExLayoutBar()
         {
-            if (exCanvas == null) return;
-            if (exBar.Height != ExBarH) exBar.Height = ExBarH;
-            int W = exCanvas.Width;
-
-            if (exLogo != null) exLogo.Bounds = new Rectangle(10, 10, 32, 32);
-
-            for (int i = 0; i < exSwitchRow.Count; i++)
-                exSwitchRow[i].Location = new Point(10 + i * 152, 52);
-
-            if (exDate != null) exDate.Bounds = new Rectangle(W - 238, 12, 150, 22);
-
-            foreach (Control c in exCanvas.Controls)
+            try
             {
-                if (!(c.Tag is object[] t)) continue;
-                string s = (string)t[0];
-                if (s == "USER INFO") c.Bounds = new Rectangle(50, 36, 96, 20);
-                if (s == "\u21BB") c.Bounds = new Rectangle(W - 82, 12, 28, 22);
-                if (s == "\u2715") c.Bounds = new Rectangle(W - 50, 12, 28, 22);
-            }
+                if (exCanvas == null) return;
+                float k = exK;
 
-            int n = exNav.Count;
-            if (n > 0)
-            {
-                int gap = 6;
-                int avail = W - 20 - (n - 1) * gap;
-                int bw = Math.Max(60, avail / n);
-                int x = 10;
-                foreach (Control b in exNav)
+                if (exBar.Location != Point.Empty) exBar.Location = Point.Empty;
+                Size want = new Size(ClientSize.Width, ClientSize.Height);
+                if (exBar.Width != want.Width || exBar.Height != want.Height) exBar.Size = want;
+
+                int W = exCanvas.Width;
+                if (W < 20 || exCanvas.Height < 20) return;
+
+                if (exLogo != null) exLogo.Bounds = new Rectangle(ExS(14, k), ExS(16, k), ExS(56, k), ExS(56, k));
+
+                int rowY = ExS(88, k);
+
+                if (exSwitchRow.Count > 0 && exModeBox != null)
                 {
-                    b.Bounds = new Rectangle(x, 78, bw, 22);
-                    x += bw + gap;
+                    exSwitchRow[0].Bounds = new Rectangle(ExS(16, k), rowY, ExS(150, k), ExS(46, k));
+                    if (exSwitchRow[0].Controls.Count > 0)
+                        exSwitchRow[0].Controls[0].Location = new Point(ExS(104, k), ExS(12, k));
                 }
-            }
-        }
 
-        // ------------------------------------------------------------------
-        private void ExTick(object sender, EventArgs e)
-        {
-            if (exCanvas == null || !Visible) return;
-            if (exBar.Height != ExBarH) { exBar.Height = ExBarH; ExLayoutBar(); }
+                if (exModeBox != null)
+                {
+                    int boxW = ExS(24, k) + (exSwitchRow.Count - 1) * ExS(74, k);
+                    exModeBox.Bounds = new Rectangle(ExS(16, k) + ExS(150, k) + ExS(14, k), rowY - ExS(2, k), boxW, ExS(46, k));
 
-            if (exDate != null && lbl_Date != null && exDate.Text != lbl_Date.Text)
-                exDate.Text = lbl_Date.Text;
+                    for (int i = 1; i < exSwitchRow.Count; i++)
+                    {
+                        Panel r = exSwitchRow[i];
+                        r.Bounds = new Rectangle(ExS(12, k) + (i - 1) * ExS(74, k), ExS(22, k), ExS(70, k), ExS(20, k));
+                        if (r.Controls.Count > 0)
+                        {
+                            r.Controls[0].Size = new Size(ExS(38, k), ExS(20, k));
+                            r.Controls[0].Location = new Point(ExS(18, k), 0);
+                        }
+                    }
+                }
 
-            Point p = exCanvas.PointToClient(Cursor.Position);
-            Control under = null;
+                int pillH = ExS(44, k);
+                int topY = ExS(24, k);
 
-            if (exCanvas.ClientRectangle.Contains(p))
-            {
+                int closeW = ExS(44, k);
+                int gap = ExS(7, k);
+                int right = W - ExS(18, k);
+
+                int closeX = right - closeW;
+                int powerX = closeX - gap - closeW;
+                int dateW = ExS(178, k);
+                int dateX = powerX - gap - dateW;
+                int userW = ExS(124, k);
+                int userX = dateX - gap - userW;
+
+                if (exClockPill != null)
+                {
+                    int pw = ExS(240, k);
+                    int ph = ExS(46, k);
+                    int px = (W - pw) / 2;
+                    exClockPill.Bounds = new Rectangle(px, ExS(18, k), pw, ph);
+
+                    exDateTxt.Font = ExCached("Segoe UI Semibold", 11f, FontStyle.Bold, k);
+                    exTimeTxt.Font = ExCached("Segoe UI Semibold", 30f, FontStyle.Bold, k);
+
+                    exDateTxt.Bounds = new Rectangle(ExS(10, k), 0, ExS(96, k), ph);
+                    exTimeTxt.Bounds = new Rectangle(ExS(110, k), 0, pw - ExS(120, k), ph);
+                }
+
                 foreach (Control c in exCanvas.Controls)
                 {
-                    if (!c.Visible || !(c.Tag is object[])) continue;
-                    if (c.Bounds.Contains(p)) { under = c; break; }
+                    if (!(c.Tag is object[] t)) continue;
+                    int kind = (int)t[1];
+                    if (kind == 1) c.Bounds = new Rectangle(userX, topY, userW, ExS(38, k));
+                    if (kind == 2) c.Bounds = new Rectangle(powerX, topY, closeW, ExS(38, k));
+                    if (kind == 3) c.Bounds = new Rectangle(closeX, topY, closeW, ExS(38, k));
                 }
-            }
 
-            if (under != exHot)
-            {
-                Control old = exHot;
-                exHot = under;
-                if (old != null) old.Invalidate();
-                if (under != null) under.Invalidate();
-            }
+                int n = exNav.Count;
+                if (n > 0)
+                {
+                    int startX = ExS(16, k) + ExS(150, k) + ExS(14, k) + (exModeBox != null ? exModeBox.Width : 0) + ExS(18, k);
+                    int g2 = ExS(8, k);
+                    int minW = ExS(140, k);
+                    int avail = Math.Max(n * minW, W - startX - ExS(14, k));
+                    int bw = Math.Max(minW, (avail - (n - 1) * g2) / n);
+                    int x = startX;
+                    foreach (Control b in exNav)
+                    {
+                        b.Bounds = new Rectangle(x, rowY - ExS(2, k), bw, pillH);
+                        x += bw + g2;
+                    }
+                }
 
-            Control down = (under != null && Control.MouseButtons == MouseButtons.Left) ? under : null;
-            if (down != exDown)
-            {
-                exDown = down;
-                if (exHot != null) exHot.Invalidate();
+                ExApplyAllRegions();
+                if (exTip != null) exTip.BringToFront();
             }
+            catch { }
         }
 
-        // ------------------------------------------------------------------
-        private void ExCanvasPaint(object sender, PaintEventArgs e)
+        // ==================================================================
+        private void ExTick(object sender, EventArgs e)
         {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-
-            Rectangle r = new Rectangle(0, 0, exCanvas.Width, exCanvas.Height);
-            using (SolidBrush bg = new SolidBrush(Color.White))
-                e.Graphics.FillRectangle(bg, r);
-
-            Rectangle b = new Rectangle(0, 0, exCanvas.Width - 1, exCanvas.Height - 1);
-            using (GraphicsPath path = ExRounded(b, 16))
+            try
             {
-                using (LinearGradientBrush lb = new LinearGradientBrush(b, ExBlue, ExGreen, 20f))
+                if (exCanvas == null || !Visible) return;
+                if (exBar.Width != ClientSize.Width || exBar.Height != ClientSize.Height) ExLayoutBar();
+
+                if (exDateTxt != null && exTimeTxt != null)
                 {
-                    lb.InterpolationColors = new ColorBlend
+                    string raw = (lbl_Date != null && !string.IsNullOrEmpty(lbl_Date.Text))
+                        ? lbl_Date.Text
+                        : DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+
+                    int sp = raw.IndexOf(' ');
+                    string dPart = sp > 0 ? raw.Substring(0, sp) : raw;
+                    string tPart = sp > 0 ? raw.Substring(sp + 1) : "";
+
+                    if (exDateTxt.Text != dPart) exDateTxt.Text = dPart;
+                    if (exTimeTxt.Text != tPart) exTimeTxt.Text = tPart;
+                }
+
+                Point p = exCanvas.PointToClient(Cursor.Position);
+                Control under = null;
+                if (exCanvas.ClientRectangle.Contains(p))
+                {
+                    foreach (Control c in exPills)
                     {
-                        Positions = new float[] { 0f, 0.55f, 1f },
-                        Colors = new Color[] { Color.FromArgb(58, 123, 213), Color.FromArgb(90, 200, 120), Color.FromArgb(150, 120, 235) }
-                    };
-                    using (Pen pen = new Pen(lb, 1.8f)) e.Graphics.DrawPath(pen, path);
+                        if (!c.Visible) continue;
+                        if (c.Bounds.Contains(p)) { under = c; break; }
+                    }
+                }
+
+                bool down = Control.MouseButtons == MouseButtons.Left;
+                exDown = (under != null && down) ? under : null;
+
+                foreach (Control c in exPills)
+                {
+                    float target = (c == under) ? 1f : 0f;
+                    float v = exHov.ContainsKey(c) ? exHov[c] : 0f;
+                    float diff = target - v;
+                    if (Math.Abs(diff) < 0.01f) v = target; else v += diff * 0.22f;
+                    if (v != exHov[c]) { exHov[c] = v; c.Invalidate(); }
+                }
+                if (under != null) under.Invalidate();
+
+                string tip = null;
+                int underKind = -1;
+
+                if (under != null && under.Tag is object[] m)
+                {
+                    underKind = (int)m[1];
+                    if (underKind == 2) tip = "POWER / RESTART";
+                    else if (underKind == 3) tip = "CLOSE";
+                    else tip = (string)m[0];
+                }
+
+                if (tip == null)
+                {
+                    if (exTip.Visible) exTip.Visible = false;
+                }
+                else
+                {
+                    Font f = exTipFont != null ? exTipFont : exTip.Font;
+                    exTip.Size = new Size(Math.Max(ExS(96, exK), TextRenderer.MeasureText(tip, f).Width + ExS(22, exK)), ExS(24, exK));
+                    exTip.Text = tip;
+
+                    int tx = under.Left + under.Width / 2 - exTip.Width / 2;
+                    tx = Math.Max(8, Math.Min(exCanvas.Width - exTip.Width - 8, tx));
+
+                    int ty = underKind == 0
+                        ? ExS(62, exK)
+                        : Math.Max(4, under.Top - ExS(30, exK));
+
+                    exTip.Location = new Point(tx, ty);
+                    if (!exTip.Visible) { exTip.Visible = true; exTip.BringToFront(); }
                 }
             }
+            catch { }
+        }
 
-            using (Font f = new Font("Segoe UI", 12F, FontStyle.Bold | FontStyle.Italic))
-                TextRenderer.DrawText(e.Graphics, "EXPRESS", f,
-                    new Rectangle(50, 8, 220, 20), ExBlue,
-                    TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
-
-            using (Font f = new Font("Segoe UI Semibold", 5.6F, FontStyle.Bold))
-                TextRenderer.DrawText(e.Graphics, "PREMIUM TATKAL SOFTWARE", f,
-                    new Rectangle(51, 27, 220, 12), Color.FromArgb(130, 148, 170),
-                    TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
-
-            using (Pen p = new Pen(Color.FromArgb(232, 238, 246), 1f))
+        private void ExTipPaint(object sender, PaintEventArgs e)
+        {
+            try
             {
-                e.Graphics.DrawLine(p, 10, 44, exCanvas.Width - 10, 44);
-                e.Graphics.DrawLine(p, 10, 80, exCanvas.Width - 10, 80);
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Rectangle r = new Rectangle(0, 0, exTip.Width - 1, exTip.Height - 1);
+                if (r.Width < 4 || r.Height < 4) return;
+                using (GraphicsPath path = ExRounded(r, ExS(7, exK)))
+                using (SolidBrush b = new SolidBrush(Color.FromArgb(15, 40, 78)))
+                    e.Graphics.FillPath(b, path);
+                TextRenderer.DrawText(e.Graphics, exTip.Text, exTip.Font, r, Color.White,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
             }
+            catch { }
+        }
+
+        // ==================================================================
+        private void ExCanvasDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left) return;
+            exDrag = true;
+            exDragX = Cursor.Position.X - FindForm().Left;
+            exDragY = Cursor.Position.Y - FindForm().Top;
+        }
+
+        private void ExCanvasMove(object sender, MouseEventArgs e)
+        {
+            if (!exDrag) return;
+            FindForm().Left = Cursor.Position.X - exDragX;
+            FindForm().Top = Cursor.Position.Y - exDragY;
+        }
+
+        // ==================================================================
+        private void ExCanvasPaint(object sender, PaintEventArgs e)
+        {
+            try
+            {
+                float k = exK;
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+                int w = exCanvas.Width;
+                int h = exCanvas.Height;
+                if (w < 12 || h < 12) return;
+
+                using (SolidBrush bg = new SolidBrush(UiTheme.Bg))
+                    e.Graphics.FillRectangle(bg, new Rectangle(0, 0, w, h));
+
+                Rectangle r = new Rectangle(0, 0, w - 1, h - 1);
+                int rad = ExS(16, k);
+
+                using (GraphicsPath path = ExRounded(r, rad))
+                using (LinearGradientBrush lb = new LinearGradientBrush(r, ExBlue, ExBlue2, 0f))
+                    e.Graphics.FillPath(lb, path);
+
+                using (GraphicsPath bp = ExRounded(new Rectangle(1, 1, w - 3, h - 3), rad))
+                using (Pen outer = new Pen(Color.FromArgb(175, 255, 255, 255), 2f))
+                    e.Graphics.DrawPath(outer, bp);
+
+                using (GraphicsPath ip = ExRounded(new Rectangle(4, 4, w - 9, h - 9), Math.Max(4, rad - 3)))
+                using (Pen inner = new Pen(Color.FromArgb(55, 12, 60, 130), 1.2f))
+                    e.Graphics.DrawPath(inner, ip);
+
+                Font fe = ExCached("Segoe UI", 26f, FontStyle.Bold | FontStyle.Italic, k);
+                TextRenderer.DrawText(e.Graphics, "EXPRESS", fe,
+                    new Rectangle(ExS(84, k), ExS(17, k), ExS(380, k), ExS(32, k)), Color.White,
+                    TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoClipping);
+
+                Font fs = ExCached("Segoe UI Semibold", 10f, FontStyle.Bold, k);
+                TextRenderer.DrawText(e.Graphics, "PREMIUM TATKAL SOFTWARE", fs,
+                    new Rectangle(ExS(86, k), ExS(51, k), ExS(380, k), ExS(14, k)), Color.FromArgb(240, 248, 255),
+                    TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoClipping);
+
+                using (Pen p = new Pen(Color.FromArgb(110, 255, 255, 255), 1f))
+                    e.Graphics.DrawLine(p, ExS(16, k), ExS(80, k), w - ExS(16, k), ExS(80, k));
+            }
+            catch { }
         }
 
         private void ExLogoPaint(object sender, PaintEventArgs e)
         {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            Rectangle r = new Rectangle(0, 0, exLogo.Width, exLogo.Height);
-
-            using (GraphicsPath p = ExRounded(r, 9))
-            using (LinearGradientBrush b = new LinearGradientBrush(r, Color.FromArgb(232, 242, 255), Color.FromArgb(210, 231, 254), 90f))
-                e.Graphics.FillPath(b, p);
-
-            Image img = exLogo.Tag as Image;
-            if (img != null)
+            try
             {
-                int box = 24;
-                float sc = Math.Min((float)box / img.Width, (float)box / img.Height);
-                int w = Math.Max(1, (int)(img.Width * sc));
-                int h = Math.Max(1, (int)(img.Height * sc));
-                e.Graphics.DrawImage(img, new Rectangle((exLogo.Width - w) / 2, (exLogo.Height - h) / 2, w, h));
-            }
-            else
-            {
-                using (Font f = new Font("Segoe UI Black", 12F, FontStyle.Bold))
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                Rectangle r = new Rectangle(0, 0, exLogo.Width, exLogo.Height);
+                if (r.Width < 4 || r.Height < 4) return;
+
+                using (GraphicsPath p = ExRounded(r, ExS(14, exK)))
+                using (SolidBrush b = new SolidBrush(Color.White))
+                    e.Graphics.FillPath(b, p);
+
+                Image img = exLogo.Tag as Image;
+                if (img != null)
+                {
+                    int box = ExS(40, exK);
+                    float sc = Math.Min((float)box / img.Width, (float)box / img.Height);
+                    int w = Math.Max(1, (int)(img.Width * sc));
+                    int h = Math.Max(1, (int)(img.Height * sc));
+                    e.Graphics.DrawImage(img, new Rectangle((exLogo.Width - w) / 2, (exLogo.Height - h) / 2, w, h));
+                }
+                else
+                {
+                    Font f = ExCached("Segoe UI Black", 24f, FontStyle.Bold, exK);
                     TextRenderer.DrawText(e.Graphics, "E", f, r, ExBlue,
                         TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                }
             }
+            catch { }
         }
 
-        private void ExDatePaint(object sender, PaintEventArgs e)
+        private void ExModeBoxPaint(object sender, PaintEventArgs e)
         {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            Rectangle r = new Rectangle(0, 0, exDate.Width - 1, exDate.Height - 1);
-            using (GraphicsPath p = ExRounded(r, 8))
+            try
             {
-                using (SolidBrush b = new SolidBrush(Color.FromArgb(236, 244, 254))) e.Graphics.FillPath(b, p);
-                using (Pen pen = new Pen(Color.FromArgb(198, 219, 244), 1f)) e.Graphics.DrawPath(pen, p);
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Rectangle r = new Rectangle(0, 0, exModeBox.Width - 1, exModeBox.Height - 1);
+                if (r.Width < 4 || r.Height < 4) return;
+
+                using (GraphicsPath p = ExRounded(r, ExS(12, exK)))
+                {
+                    using (SolidBrush b = new SolidBrush(ExBoxBg)) e.Graphics.FillPath(b, p);
+                    using (Pen pen = new Pen(Color.FromArgb(120, 255, 255, 255), 1f)) e.Graphics.DrawPath(pen, p);
+                }
+
+                Font f = ExCached("Segoe UI Semibold", 10f, FontStyle.Bold, exK);
+                TextRenderer.DrawText(e.Graphics, "BOOKING MODE", f,
+                    new Rectangle(ExS(12, exK), ExS(5, exK), ExS(150, exK), ExS(14, exK)), Color.White,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
             }
-            TextRenderer.DrawText(e.Graphics, exDate.Text, exDate.Font, r, ExBlue,
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            catch { }
+        }
+
+        private void ExClockPaint(object sender, PaintEventArgs e)
+        {
+            try
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Rectangle r = new Rectangle(0, 0, exClockPill.Width - 1, exClockPill.Height - 1);
+                if (r.Width < 6 || r.Height < 6) return;
+
+                using (GraphicsPath sh = ExRounded(new Rectangle(r.X, r.Y + ExS(2, exK), r.Width, r.Height), ExS(12, exK)))
+                using (SolidBrush sb = new SolidBrush(Color.FromArgb(75, 8, 26, 58)))
+                    e.Graphics.FillPath(sb, sh);
+
+                using (GraphicsPath p = ExRounded(r, ExS(12, exK)))
+                {
+                    using (SolidBrush b = new SolidBrush(Color.White)) e.Graphics.FillPath(b, p);
+                    using (Pen pen = new Pen(Color.White, 1.5f)) e.Graphics.DrawPath(pen, p);
+                }
+            }
+            catch { }
         }
 
         private void ExSwitchRowPaint(object sender, PaintEventArgs e)
         {
-            Panel row = (Panel)sender;
-            CheckBox cb;
-            if (!exSwitchMap.TryGetValue(row, out cb)) return;
+            try
+            {
+                Panel row = (Panel)sender;
+                CheckBox cb;
+                if (!exSwitchMap.TryGetValue(row, out cb)) return;
 
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-            using (Font f = new Font("Segoe UI", 6.8F))
+                if (exBookIndex.ContainsKey(row))
+                {
+                    Font fb = ExCached("Segoe UI Semibold", 12f, FontStyle.Bold, exK);
+                    TextRenderer.DrawText(e.Graphics, exBookIndex[row].ToString(), fb,
+                        new Rectangle(0, 0, ExS(16, exK), row.Height), Color.White,
+                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+                    return;
+                }
+
+                Font f = ExCached("Segoe UI", 12f, FontStyle.Regular, exK);
                 TextRenderer.DrawText(e.Graphics, cb.Text, f,
-                    new Rectangle(0, 0, 110, row.Height), ExSoft,
-                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+                    new Rectangle(0, 0, ExS(100, exK), row.Height), Color.White,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+            }
+            catch { }
         }
 
         private void ExSwitchPaint(object sender, PaintEventArgs e)
         {
-            Panel track = (Panel)sender;
-            Panel row = track.Parent as Panel;
-            if (row == null) return;
-
-            CheckBox cb;
-            if (!exSwitchMap.TryGetValue(row, out cb)) return;
-
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            Rectangle r = new Rectangle(0, 0, track.Width - 1, track.Height - 1);
-
-            using (GraphicsPath p = ExRounded(r, r.Height / 2))
+            try
             {
-                using (SolidBrush b = new SolidBrush(cb.Checked ? ExGreen : Color.FromArgb(205, 214, 226)))
-                    e.Graphics.FillPath(b, p);
+                Panel track = (Panel)sender;
+                Panel row = track.Parent as Panel;
+                if (row == null) return;
 
-                int k = r.Height - 4;
-                int x = cb.Checked ? (r.Width - k - 2) : 2;
-                using (SolidBrush kb = new SolidBrush(Color.White))
-                    e.Graphics.FillEllipse(kb, x, 2, k, k);
+                CheckBox cb;
+                if (!exSwitchMap.TryGetValue(row, out cb)) return;
+
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Rectangle r = new Rectangle(0, 0, track.Width - 1, track.Height - 1);
+                if (r.Width < 4 || r.Height < 4) return;
+
+                using (GraphicsPath p = ExRounded(r, r.Height / 2))
+                {
+                    Color off = Color.FromArgb(195, 255, 255, 255);
+                    using (SolidBrush b = new SolidBrush(cb.Checked ? ExGreen : off))
+                        e.Graphics.FillPath(b, p);
+
+                    int kk = r.Height - ExS(4, exK);
+                    int x = cb.Checked ? (r.Width - kk - ExS(2, exK)) : ExS(2, exK);
+                    using (SolidBrush kb = new SolidBrush(Color.White))
+                        e.Graphics.FillEllipse(kb, x, ExS(2, exK), kk, kk);
+                }
             }
+            catch { }
         }
 
         private void ExPillPaint(object sender, PaintEventArgs e)
         {
-            Panel p = (Panel)sender;
-            object[] meta = p.Tag as object[];
-            if (meta == null) return;
-
-            string text = (string)meta[0];
-            Color accent = (Color)meta[1];
-            bool outline = (bool)meta[2];
-
-            bool hot = (exHot == p);
-            bool dn = (exDown == p);
-
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-
-            Rectangle r = new Rectangle(0, dn ? 1 : 0, p.Width - 1, p.Height - 1);
-
-            Color bg = dn ? accent : (hot ? ExTint : Color.White);
-            Color fg = dn ? Color.White : (hot || outline ? accent : ExInk);
-
-            using (GraphicsPath path = ExRounded(r, 7))
+            try
             {
-                using (SolidBrush b = new SolidBrush(bg)) e.Graphics.FillPath(b, path);
-                using (Pen pen = new Pen(hot || dn || outline ? accent : ExLine, 1f))
-                    e.Graphics.DrawPath(pen, path);
-            }
+                Panel p = (Panel)sender;
+                object[] meta = p.Tag as object[];
+                if (meta == null) return;
 
-            using (Font f = new Font("Segoe UI Semibold", text.Length <= 2 ? 10F : 7.5F, FontStyle.Bold))
-                TextRenderer.DrawText(e.Graphics, text, f, r, fg,
-                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+                float k = exK;
+                string text = (string)meta[0];
+                int kind = (int)meta[1];
+                Color accent = (Color)meta[2];
+                int icon = (int)meta[3];
+
+                if (p.Width < 8 || p.Height < 8) return;
+
+                float h = exHov.ContainsKey(p) ? exHov[p] : 0f;
+                bool dn = (exDown == p);
+                bool hot = h > 0.02f;
+
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+                // hover par button 1px uthta hai, press par 2px dabta hai
+                int dy = dn ? ExS(2, k) : (hot ? -1 : 0);
+                Rectangle r = new Rectangle(1, 1 + dy, p.Width - 3, p.Height - 3 - dy);
+                if (r.Width < 6 || r.Height < 6) return;
+                int rad = ExS(10, k);
+
+                // hover par shadow badi aur gehri
+                int shA = dn ? 30 : (int)(50 + 60 * h);
+                int shOff = dn ? ExS(1, k) : (int)(ExS(2, k) + ExS(4, k) * h);
+                Rectangle sh2 = new Rectangle(r.X - 1, r.Y + shOff + ExS(1, k), r.Width + 2, r.Height);
+                using (GraphicsPath sp2 = ExRounded(sh2, rad + 1))
+                using (SolidBrush sb2 = new SolidBrush(Color.FromArgb(shA, 6, 22, 52)))
+                    e.Graphics.FillPath(sb2, sp2);
+
+                Rectangle sh1 = new Rectangle(r.X, r.Y + shOff, r.Width, r.Height);
+                using (GraphicsPath sp1 = ExRounded(sh1, rad))
+                using (SolidBrush sb1 = new SolidBrush(Color.FromArgb(Math.Min(255, shA + 30), 8, 26, 58)))
+                    e.Graphics.FillPath(sb1, sp1);
+
+                // hover par rang saaf halka, press par saaf gehra
+                Color bg;
+                if (dn) bg = ExMix(accent, Color.Black, 0.26f);
+                else if (hot) bg = ExMix(accent, Color.White, 0.12f + 0.30f * h);
+                else bg = accent;
+
+                using (GraphicsPath path = ExRounded(r, rad))
+                {
+                    using (SolidBrush b = new SolidBrush(bg)) e.Graphics.FillPath(b, path);
+
+                    // hover par safed rim, warna halki rim
+                    Color rim = hot ? Color.FromArgb((int)(120 + 120 * h), 255, 255, 255)
+                                    : Color.FromArgb(70, 255, 255, 255);
+                    using (Pen pen = new Pen(rim, hot ? 1.8f : 1.1f))
+                        e.Graphics.DrawPath(pen, path);
+
+                    // andar ki gehari line (depth)
+                    if (!dn)
+                    {
+                        using (GraphicsPath ip = ExRounded(new Rectangle(r.X + 1, r.Y + 1, r.Width - 2, r.Height - 2), Math.Max(3, rad - 2)))
+                        using (Pen ipen = new Pen(Color.FromArgb(40, 8, 26, 58), 1f))
+                            e.Graphics.DrawPath(ipen, ip);
+                    }
+                }
+
+                Color fg = Color.White;
+
+                if (kind == 2 || kind == 3 || text.Length == 0)
+                {
+                    Rectangle ir = new Rectangle(r.X + r.Width / 2 - ExS(10, k), r.Y + r.Height / 2 - ExS(10, k), ExS(20, k), ExS(20, k));
+                    ExIcon(e.Graphics, ir, icon, fg, k);
+                    return;
+                }
+
+                Rectangle ic = new Rectangle(r.X + ExS(12, k), r.Y + r.Height / 2 - ExS(9, k), ExS(18, k), ExS(18, k));
+                ExIcon(e.Graphics, ic, icon, fg, k);
+
+                Rectangle tr = new Rectangle(r.X + ExS(38, k), r.Y, r.Width - ExS(46, k), r.Height);
+                if (tr.Width < 10) return;
+
+                int size = Math.Max(9, (int)Math.Round(12 * k));
+                Font f = ExCached("Segoe UI Semibold", size, FontStyle.Bold, 1f);
+                while (size > 9 && TextRenderer.MeasureText(text, f).Width > tr.Width)
+                {
+                    size--;
+                    f = ExCached("Segoe UI Semibold", size, FontStyle.Bold, 1f);
+                }
+
+                TextRenderer.DrawText(e.Graphics, text, f, tr, fg,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
+                    TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
+            }
+            catch { }
+        }
+
+        private static void ExIcon(Graphics g, Rectangle r, int id, Color col, float k)
+        {
+            int cx = r.X + r.Width / 2;
+            int cy = r.Y + r.Height / 2;
+            using (Pen p = new Pen(col, Math.Max(1.4f, 1.9f * k)))
+            {
+                p.StartCap = LineCap.Round;
+                p.EndCap = LineCap.Round;
+                p.LineJoin = LineJoin.Round;
+
+                switch (id)
+                {
+                    case 1:
+                        g.DrawRectangle(p, r.X + 1, r.Y + 4, r.Width - 2, r.Height - 8);
+                        g.DrawEllipse(p, r.X + 4, r.Y + 7, 5, 5);
+                        g.DrawLine(p, r.X + 11, r.Y + 9, r.Right - 3, r.Y + 9);
+                        g.DrawLine(p, r.X + 11, r.Y + 13, r.Right - 5, r.Y + 13);
+                        break;
+                    case 2:
+                        g.DrawLine(p, r.X + 1, r.Y + 6, cx, r.Y + 2);
+                        g.DrawLine(p, cx, r.Y + 2, r.Right - 1, r.Y + 6);
+                        g.DrawLine(p, r.X + 1, r.Y + 6, r.Right - 1, r.Y + 6);
+                        g.DrawLine(p, r.X + 4, r.Y + 6, r.X + 4, r.Bottom - 3);
+                        g.DrawLine(p, cx, r.Y + 6, cx, r.Bottom - 3);
+                        g.DrawLine(p, r.Right - 4, r.Y + 6, r.Right - 4, r.Bottom - 3);
+                        g.DrawLine(p, r.X + 1, r.Bottom - 2, r.Right - 1, r.Bottom - 2);
+                        break;
+                    case 3:
+                        g.DrawLine(p, cx, r.Y + 3, cx, r.Bottom - 3);
+                        g.DrawLine(p, r.X + 3, cy, r.Right - 3, cy);
+                        break;
+                    case 4:
+                        g.DrawPolygon(p, new Point[] {
+                            new Point(r.X + 4, r.Y + 2),
+                            new Point(r.Right - 3, cy),
+                            new Point(r.X + 4, r.Bottom - 2) });
+                        break;
+                    case 5:
+                        g.DrawEllipse(p, r.X + 1, r.Y + 1, r.Width - 2, r.Height - 2);
+                        g.DrawEllipse(p, cx - 4, r.Y + 1, 8, r.Height - 2);
+                        g.DrawLine(p, r.X + 1, cy, r.Right - 1, cy);
+                        break;
+                    case 6:
+                        g.DrawPolygon(p, new Point[] {
+                            new Point(cx, r.Y + 1),
+                            new Point(r.Right - 2, r.Y + 5),
+                            new Point(r.Right - 3, r.Bottom - 6),
+                            new Point(cx, r.Bottom - 1),
+                            new Point(r.X + 3, r.Bottom - 6),
+                            new Point(r.X + 2, r.Y + 5) });
+                        break;
+                    case 7:
+                        g.DrawRectangle(p, r.X + 2, r.Y + 2, r.Width - 4, r.Height - 4);
+                        g.DrawRectangle(p, r.X + 6, r.Y + 2, r.Width - 12, 5);
+                        g.DrawRectangle(p, r.X + 5, r.Bottom - 7, r.Width - 10, 5);
+                        break;
+                    case 8:
+                        g.DrawEllipse(p, r.X + 1, r.Y + 5, 7, 7);
+                        g.DrawLine(p, r.X + 8, cy - 1, r.Right - 2, cy - 1);
+                        g.DrawLine(p, r.Right - 5, cy - 1, r.Right - 5, cy + 4);
+                        break;
+                    case 9:
+                        g.DrawArc(p, cx - 8, cy - 7, 16, 16, -62, 304);
+                        g.DrawLine(p, cx, r.Y, cx, cy);
+                        break;
+                    case 10:
+                        g.DrawLine(p, cx - 7, cy - 7, cx + 7, cy + 7);
+                        g.DrawLine(p, cx + 7, cy - 7, cx - 7, cy + 7);
+                        break;
+                }
+            }
         }
 
         private static GraphicsPath ExRounded(Rectangle r, int radius)
