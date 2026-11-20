@@ -28,6 +28,8 @@ namespace APP_FRAMEWORK
         private bool exFit;
         private Font exTipFont;
         private Font exDateFont;
+        private int exLastSec = -1;
+        private string exLastTip;
 
         private float exK = 1f;
         private int exBarH = 150;
@@ -635,16 +637,23 @@ namespace APP_FRAMEWORK
 
                 if (exClockPill != null)
                 {
-                    int pw = ExS(240, k);
-                    int ph = ExS(46, k);
+                    Font fd = ExCached("Segoe UI Semibold", 11f, FontStyle.Bold, k);
+                    Font ft = ExCached("Segoe UI Semibold", 30f, FontStyle.Bold, k);
+                    exDateTxt.Font = fd;
+                    exTimeTxt.Font = ft;
+
+                    int dw = TextRenderer.MeasureText("00-00-0000", fd).Width + ExS(4, k);
+                    int tw = TextRenderer.MeasureText("00:00:00", ft).Width + ExS(6, k);
+                    int ph = ExS(48, k);
+                    int pw = dw + tw + ExS(24, k);
+                    if (pw > W - ExS(60, k)) pw = W - ExS(60, k);
+
                     int px = (W - pw) / 2;
-                    exClockPill.Bounds = new Rectangle(px, ExS(18, k), pw, ph);
+                    exClockPill.Bounds = new Rectangle(px, ExS(17, k), pw, ph);
 
-                    exDateTxt.Font = ExCached("Segoe UI Semibold", 11f, FontStyle.Bold, k);
-                    exTimeTxt.Font = ExCached("Segoe UI Semibold", 30f, FontStyle.Bold, k);
-
-                    exDateTxt.Bounds = new Rectangle(ExS(10, k), 0, ExS(96, k), ph);
-                    exTimeTxt.Bounds = new Rectangle(ExS(110, k), 0, pw - ExS(120, k), ph);
+                    int dx = ExS(12, k);
+                    exDateTxt.Bounds = new Rectangle(dx, 0, dw, ph);
+                    exTimeTxt.Bounds = new Rectangle(dx + dw + ExS(4, k), 0, Math.Max(20, pw - dx - dw - ExS(16, k)), ph);
                 }
 
                 foreach (Control c in exCanvas.Controls)
@@ -674,6 +683,7 @@ namespace APP_FRAMEWORK
 
                 ExApplyAllRegions();
                 if (exTip != null) exTip.BringToFront();
+                if (exClockPill != null) exClockPill.BringToFront();
             }
             catch { }
         }
@@ -688,16 +698,16 @@ namespace APP_FRAMEWORK
 
                 if (exDateTxt != null && exTimeTxt != null)
                 {
-                    string raw = (lbl_Date != null && !string.IsNullOrEmpty(lbl_Date.Text))
-                        ? lbl_Date.Text
-                        : DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
-
-                    int sp = raw.IndexOf(' ');
-                    string dPart = sp > 0 ? raw.Substring(0, sp) : raw;
-                    string tPart = sp > 0 ? raw.Substring(sp + 1) : "";
-
-                    if (exDateTxt.Text != dPart) exDateTxt.Text = dPart;
-                    if (exTimeTxt.Text != tPart) exTimeTxt.Text = tPart;
+                    DateTime now = DateTime.Now;
+                    int stamp = (int)(now.Ticks / TimeSpan.TicksPerSecond);
+                    if (stamp != exLastSec)
+                    {
+                        exLastSec = stamp;
+                        string dPart = now.ToString("dd-MM-yyyy");
+                        string tPart = now.ToString("HH:mm:ss");
+                        if (exDateTxt.Text != dPart) exDateTxt.Text = dPart;
+                        if (exTimeTxt.Text != tPart) exTimeTxt.Text = tPart;
+                    }
                 }
 
                 Point p = exCanvas.PointToClient(Cursor.Position);
@@ -722,7 +732,6 @@ namespace APP_FRAMEWORK
                     if (Math.Abs(diff) < 0.01f) v = target; else v += diff * 0.22f;
                     if (v != exHov[c]) { exHov[c] = v; c.Invalidate(); }
                 }
-                if (under != null) under.Invalidate();
 
                 string tip = null;
                 int underKind = -1;
@@ -741,9 +750,13 @@ namespace APP_FRAMEWORK
                 }
                 else
                 {
-                    Font f = exTipFont != null ? exTipFont : exTip.Font;
-                    exTip.Size = new Size(Math.Max(ExS(96, exK), TextRenderer.MeasureText(tip, f).Width + ExS(22, exK)), ExS(24, exK));
-                    exTip.Text = tip;
+                    if (tip != exLastTip)
+                    {
+                        exLastTip = tip;
+                        Font f = exTipFont != null ? exTipFont : exTip.Font;
+                        exTip.Size = new Size(Math.Max(ExS(96, exK), TextRenderer.MeasureText(tip, f).Width + ExS(22, exK)), ExS(24, exK));
+                        exTip.Text = tip;
+                    }
 
                     int tx = under.Left + under.Width / 2 - exTip.Width / 2;
                     tx = Math.Max(8, Math.Min(exCanvas.Width - exTip.Width - 8, tx));

@@ -40,8 +40,9 @@ namespace APP_FRAMEWORK
         private bool exDrag;
         private int exDragX, exDragY;
 
-        private const int BASE_W = 540;
-        private const int BASE_H = 470;
+        private const float ExD = 0.86f;
+        private const int BASE_W = (int)(540 * ExD);
+        private const int BASE_H = (int)(470 * ExD);
         private const int CORNER = 20;
         private const int BTN_RADIUS = 14;
 
@@ -272,6 +273,10 @@ namespace APP_FRAMEWORK
                 byteNovaServerLoader.BackColor = Color.White;
                 byteNovaServerLoader.Size = new Size(330, 152);
             }
+
+            ExScaleTree(this, ExD);
+            exHeader.Size = new Size(ClientSize.Width, exHeader.Height);
+            exClose.Location = new Point(ClientSize.Width - exClose.Width - 16, 12);
 
             if (exK > 1f)
             {
