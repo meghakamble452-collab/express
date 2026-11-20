@@ -8,7 +8,7 @@ using NEXUS.Properties;
 
 namespace APP_FRAMEWORK;
 
-public class frmAddID : Form
+public partial class frmAddID : Form
 {
     private IContainer components;
 
@@ -30,6 +30,7 @@ public class frmAddID : Form
     {
         InitializeComponent();
         ApplyByteNovaLatestUI();
+        ApplyExpressTheme();
         pnlHeader.MouseDown += StatClass.Header_MouseDown;
         pnlHeader.MouseMove += StatClass.Header_MouseMove;
         pnlHeader.MouseUp += StatClass.Header_MouseUp;
