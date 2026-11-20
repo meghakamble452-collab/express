@@ -461,6 +461,7 @@ internal class frmProcessTicket : Form
 
     private void method_1(object sender, EventArgs e)
     {
+        if (!Program.CheckLicence(false)) return;
         if (sender is TCntrl { class48_0: var class48_ } tCntrl)
         {
             if (!Program.bool_7)

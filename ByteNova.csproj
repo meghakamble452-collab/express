@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <AssemblyName>Express</AssemblyName>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
@@ -241,5 +241,11 @@
     <None Update="bg_banner.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EditorConfigFiles Remove="F:\express\.editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="F:\express\.editorconfig" />
   </ItemGroup>
 </Project>

@@ -1110,7 +1110,39 @@ public static class Program
 		return list;
 	}
 
-	private static bool TryDeleteDirectoryWithRetries(string dir, int maxRetries = 5)
+    public static bool CheckLicence(bool quiet)
+    {
+        try
+        {
+            string body = "{\"userName\":\"" + clientID + "\",\"macAddress\":\"" + mac + "\"}";
+            using (var wc = new System.Net.WebClient())
+            {
+                wc.Headers[System.Net.HttpRequestHeader.ContentType] = "application/json";
+                string res = wc.UploadString("https://expressts.co.in/api/check.php", "POST", body);
+
+                if (res.Contains("\"success\":true")) return true;
+
+                string msg = "Booking ruk gayi — validity check fail hua.";
+                int a = res.IndexOf("\"message\":\"");
+                if (a >= 0)
+                {
+                    a += 11;
+                    int b = res.IndexOf('"', a);
+                    if (b > a) msg = res.Substring(a, b - a);
+                }
+
+                if (!quiet)
+                    MessageBox.Show(msg, "Booking Stop", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                return false;
+            }
+        }
+        catch
+        {
+            return true;
+        }
+    }
+
+    private static bool TryDeleteDirectoryWithRetries(string dir, int maxRetries = 5)
 	{
 		for (int i = 1; i <= maxRetries; i++)
 		{
