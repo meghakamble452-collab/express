@@ -25,7 +25,7 @@ using NEXUS.Properties;
 
 namespace APP_FRAMEWORK;
 
-public class frmLogin : Form
+public partial class frmLogin : Form
 {
     public static bool isPremium;
 
@@ -147,9 +147,10 @@ public class frmLogin : Form
     {
         InitializeComponent();
         LoadByteNovaLogo();
-        ApplyByteNovaStyle();
+        //ApplyByteNovaStyle();
         InitializeServerResponseLoader();
         InitializeByteNovaRestartOption();
+        ApplyExpressTheme();           // naya light theme
         panel1.MouseDown += StatClass.Header_MouseDown;
         panel1.MouseMove += StatClass.Header_MouseMove;
         panel1.MouseUp += StatClass.Header_MouseUp;
