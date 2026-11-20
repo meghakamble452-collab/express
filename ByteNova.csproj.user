@@ -65,6 +65,9 @@
     <Compile Update="APP_FRAMEWORK\frmMain.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="APP_FRAMEWORK\frmMain.ExpressHeader.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="APP_FRAMEWORK\frmManageTicket.cs">
       <SubType>Form</SubType>
     </Compile>

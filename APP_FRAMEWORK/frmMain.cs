@@ -28,7 +28,7 @@ using System.Windows.Forms;
 
 namespace APP_FRAMEWORK;
 
-public class frmMain : Form
+public partial class frmMain : Form
 {
     internal delegate void Delegate12(int statusCode, string cntrlName);
 
@@ -206,6 +206,7 @@ public class frmMain : Form
         string value2 = "False";
         Environment.SetEnvironmentVariable(variable3, value2, EnvironmentVariableTarget.Process);
         StatClass.TotalOpendTicket = 0;
+        ApplyExpressHeader();
     }
 
     static frmMain()
