@@ -31,13 +31,14 @@ public partial class frmAddID
             c.Region = new Region(p);
     }
 
-    protected override void OnLoad(EventArgs e)
+    internal void ApplyExpressTheme()
     {
-        base.OnLoad(e);
+        if (exShell) return;
+        exShell = true;
 
         AutoScaleMode = AutoScaleMode.None;
-        BackColor = Color.FromArgb(1, 9, 18);
-        ForeColor = Color.White;
+        BackColor = Color.FromArgb(150, 186, 245);
+        ForeColor = Color.FromArgb(18, 42, 74);
         MinimumSize = new Size(1000, 620);
 
         pnlHeader.AutoSize = false;
@@ -61,18 +62,21 @@ public partial class frmAddID
 
         PnlBase.AutoSize = false;
         PnlBase.Padding = new Padding(6);
-        PnlBase.BackColor = Color.FromArgb(3, 18, 32);
+        PnlBase.BackColor = Color.FromArgb(233, 241, 252);
         PnlBase.Paint -= ByteNovaBasePaint;
         PnlBase.Paint += ExBasePaint;
 
         tabIrctcId.Dock = DockStyle.Fill;
-        tabIrctcId.Anchor = AnchorStyles.None;
         tabHistory.Dock = DockStyle.Fill;
-        tabHistory.Anchor = AnchorStyles.None;
+        tabHistory.BackColor = Color.FromArgb(233, 241, 252);
 
-        tabHistory.BackColor = Color.FromArgb(3, 18, 32);
+        ExLayoutShell();
+    }
 
-        exShell = true;
+    protected override void OnLoad(EventArgs e)
+    {
+        base.OnLoad(e);
+        ApplyExpressTheme();
         ExFit();
     }
 
@@ -102,21 +106,21 @@ public partial class frmAddID
         SuspendLayout();
         try
         {
-            pnlHeader.Location = new Point(6, 6);
-            pnlHeader.Size = new Size(w - 12, 34);
+            pnlHeader.Location = new Point(8, 8);
+            pnlHeader.Size = new Size(w - 16, 34);
 
-            formName.Location = new Point(14, 7);
-            formName.Size = new Size(w - 130, 20);
+            formName.Location = new Point(16, 7);
+            formName.Size = new Size(w - 140, 20);
 
-            btnClose.Location = new Point(w - 40, 8);
+            btnClose.Location = new Point(w - 44, 10);
             btnClose.Size = new Size(28, 22);
 
-            PnlBase.Location = new Point(6, 44);
-            PnlBase.Size = new Size(w - 12, h - 52);
+            PnlBase.Location = new Point(8, 48);
+            PnlBase.Size = new Size(w - 16, h - 58);
 
-            ExRound(this, 12);
-            ExRound(PnlBase, 10);
-            ExRound(btnClose, 6);
+            ExRound(this, 14);
+            ExRound(PnlBase, 11);
+            ExRound(btnClose, 7);
 
             pnlHeader.BringToFront();
             btnClose.BringToFront();
@@ -137,18 +141,19 @@ public partial class frmAddID
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         Rectangle r = new Rectangle(0, 0, c.Width - 1, c.Height - 1);
 
-        using (GraphicsPath p = ExPath(r, 10))
-        using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, Color.FromArgb(4, 42, 78), Color.FromArgb(2, 20, 38),
-            LinearGradientMode.Horizontal))
+        using (GraphicsPath p = ExPath(r, 11))
         {
-            e.Graphics.FillPath(bg, p);
-            using (Pen pen = new Pen(Color.FromArgb(0, 120, 175), 1f))
+            using (LinearGradientBrush bg = new LinearGradientBrush(
+                r, Color.FromArgb(74, 124, 216), Color.FromArgb(122, 166, 240),
+                LinearGradientMode.Horizontal))
+                e.Graphics.FillPath(bg, p);
+
+            using (Pen pen = new Pen(Color.FromArgb(198, 244, 50), 1.6f))
                 e.Graphics.DrawPath(pen, p);
         }
 
         using (SolidBrush lime = new SolidBrush(Color.FromArgb(198, 244, 50)))
-            e.Graphics.FillRectangle(lime, 14, c.Height - 3, 46, 2);
+            e.Graphics.FillRectangle(lime, 16, c.Height - 4, 52, 3);
     }
 
     private void ExBasePaint(object sender, PaintEventArgs e)
@@ -159,13 +164,11 @@ public partial class frmAddID
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         Rectangle r = new Rectangle(0, 0, c.Width - 1, c.Height - 1);
 
-        using (GraphicsPath p = ExPath(r, 10))
-        using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, Color.FromArgb(5, 31, 51), Color.FromArgb(2, 13, 24),
-            LinearGradientMode.Vertical))
+        using (GraphicsPath p = ExPath(r, 11))
         {
-            e.Graphics.FillPath(bg, p);
-            using (Pen pen = new Pen(Color.FromArgb(0, 135, 205), 1.2f))
+            using (SolidBrush bg = new SolidBrush(Color.FromArgb(238, 245, 253)))
+                e.Graphics.FillPath(bg, p);
+            using (Pen pen = new Pen(Color.FromArgb(150, 186, 245), 1.2f))
                 e.Graphics.DrawPath(pen, p);
         }
     }
@@ -178,13 +181,13 @@ public partial class frmAddID
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         Rectangle r = new Rectangle(1, 1, c.Width - 3, c.Height - 3);
 
-        using (GraphicsPath p = ExPath(r, 6))
+        using (GraphicsPath p = ExPath(r, 7))
         {
             using (LinearGradientBrush bg = new LinearGradientBrush(
-                r, Color.FromArgb(196, 26, 40), Color.FromArgb(78, 6, 17),
+                r, Color.FromArgb(236, 62, 76), Color.FromArgb(190, 32, 46),
                 LinearGradientMode.Vertical))
                 e.Graphics.FillPath(bg, p);
-            using (Pen pen = new Pen(Color.FromArgb(255, 84, 94), 1.2f))
+            using (Pen pen = new Pen(Color.White, 1.2f))
                 e.Graphics.DrawPath(pen, p);
         }
 
