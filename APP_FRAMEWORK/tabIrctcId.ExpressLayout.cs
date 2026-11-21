@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace APP_FRAMEWORK;
 
@@ -50,6 +51,18 @@ internal partial class tabIrctcId
     private DateTimePicker exCalTarget;
     private DateTime exCalMonth = DateTime.Today;
     private int exCalHover = -1;
+
+    [DllImport("user32.dll")]
+    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
+    private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+    private const uint SWP_NOMOVE = 0x0002, SWP_NOSIZE = 0x0001, SWP_NOACTIVATE = 0x0010;
+
+    private static void ExTopMost(Control c)
+    {
+        if (c == null || !c.IsHandleCreated) return;
+        try { SetWindowPos(c.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE); }
+        catch { }
+    }
 
     // ---------------- dpi scale ----------------
 
@@ -108,7 +121,11 @@ internal partial class tabIrctcId
     {
         if (c == null || string.IsNullOrEmpty(c.Text)) return 0;
         using (Graphics g = CreateGraphics())
-            return TextRenderer.MeasureText(g, c.Text, c.Font, new Size(4000, 60), TF_MEASURE).Width + P(6);
+        using (StringFormat sf = StringFormat.GenericTypographic)
+        {
+            SizeF s = g.MeasureString(c.Text, c.Font, 4000, sf);
+            return (int)Math.Ceiling(s.Width) + P(12);
+        }
     }
 
     // ---------------- animation ----------------
@@ -212,6 +229,8 @@ internal partial class tabIrctcId
             BackColor = ExBg;
             ForeColor = ExText;
             Font = ExF(12f, FontStyle.Regular);
+            Form frmHost = FindForm();
+            if (frmHost != null) frmHost.TopMost = true;
 
             Paint -= ByteNovaControlPaint;
             Paint += ExBgPaint;
@@ -561,6 +580,7 @@ internal partial class tabIrctcId
         };
 
         exCal.Show(anchor, new Point(0, anchor.Height + P(4)));
+        ExTopMost(exCal);
     }
 
     private void ExCalClose() { if (exCal != null) exCal.Close(); }
@@ -889,6 +909,7 @@ internal partial class tabIrctcId
         exMenu.Items.Add(host);
         exMenu.Closed += delegate { exMenu = null; exMenuList = null; exMenuHover = -1; if (exDrop != null) exDrop.Invalidate(); };
         exMenu.Show(exDrop, new Point(0, exDrop.Height + P(4)));
+        ExTopMost(exMenu);
         exDrop.Invalidate();
     }
 
@@ -1354,18 +1375,18 @@ internal partial class tabIrctcId
         int innerW = right - M;
         int gw = innerW - GX * 2;
 
-        bool compact = H < P(640);
+        bool compact = H < P(660);
 
-        int footH = P(78);
+        int footH = P(62);
         int footY = H - footH - P(6);
-        int searchH = compact ? P(176) : P(202);
+        int searchH = compact ? P(168) : P(198);
         int searchY = footY - P(8) - searchH;
 
         int topY = P(10);
-        int topH = P(168);
-        int gridY = topY + topH + P(10);
-        int gridH = searchY - P(10) - gridY;
-        if (gridH < P(96)) gridH = P(96);
+        int topH = P(150);
+        int gridY = topY + topH + P(8);
+        int gridH = searchY - P(8) - gridY;
+        if (gridH < P(100)) gridH = P(100);
 
         int bulkW = P(240);
         int bulkX = right - bulkW;
@@ -1509,7 +1530,7 @@ internal partial class tabIrctcId
             ExPut(lbl7, P(544), P(4), P(32), P(18));
 
             int sxBadge = M;
-            int syBadge = footY + P(6);
+            int syBadge = footY + P(4);
             for (int i = 0; i < exStats.Count; i++)
             {
                 Label cap = exStats[i][0];
@@ -1521,11 +1542,11 @@ internal partial class tabIrctcId
                         new Size(2000, 60), TF_MEASURE).Width + P(36);
                 if (cw < P(70)) cw = P(70);
 
-                if (sxBadge + cw + P(40) > W - P(430)) { sxBadge = M; syBadge += P(32); }
+                if (sxBadge + cw + P(40) > W - P(430)) { sxBadge = M; syBadge += P(30); }
 
-                ExPut(cap, sxBadge, syBadge, cw, P(26));
-                ExRound(cap, P(13));
-                ExPut(val, sxBadge + cw + P(4), syBadge + P(2), P(30), P(22));
+                ExPut(cap, sxBadge, syBadge, cw, P(24));
+                ExRound(cap, P(12));
+                ExPut(val, sxBadge + cw + P(4), syBadge + P(2), P(30), P(20));
                 ExRound(val, P(7));
                 sxBadge += cw + P(4) + P(30) + P(8);
             }
@@ -1533,9 +1554,9 @@ internal partial class tabIrctcId
             ExPut(lblMsg, sxBadge, syBadge + P(4), P(170), P(18));
             ExPut(pictureBox1, sxBadge + P(176), syBadge + P(1), P(24), P(24));
 
-            ExPut(button3, W - P(419), footY + P(6), P(110), P(40)); ExRound(button3, P(10));
-            ExPut(C1AA0, W - P(301), footY + P(6), P(115), P(40)); ExRound(C1AA0, P(10));
-            ExPut(button1, W - P(178), footY + P(6), P(150), P(40)); ExRound(button1, P(10));
+            ExPut(button3, W - P(419), footY + P(2), P(110), P(38)); ExRound(button3, P(10));
+            ExPut(C1AA0, W - P(301), footY + P(2), P(115), P(38)); ExRound(C1AA0, P(10));
+            ExPut(button1, W - P(178), footY + P(2), P(150), P(38)); ExRound(button1, P(10));
 
             ExPut(pnlloader, M + (gridW / 2) - P(216), gridY + (gridH / 2) - P(32), P(433), P(65));
             ExRound(pnlloader, P(11));

@@ -37,6 +37,7 @@ public partial class frmAddID
         exShell = true;
 
         AutoScaleMode = AutoScaleMode.None;
+        AutoSize = false;
         BackColor = Color.FromArgb(150, 186, 245);
         ForeColor = Color.FromArgb(18, 42, 74);
         MinimumSize = new Size(1000, 620);
