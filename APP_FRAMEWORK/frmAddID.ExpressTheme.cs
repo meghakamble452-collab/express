@@ -118,7 +118,7 @@ public partial class frmAddID
             PnlBase.Location = new Point(8, 48);
             PnlBase.Size = new Size(w - 16, h - 58);
 
-            ExRound(this, 14);
+            
             ExRound(PnlBase, 11);
             ExRound(btnClose, 7);
 

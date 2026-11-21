@@ -1111,7 +1111,7 @@ internal partial class tabIrctcId
     private void ExCheck(CheckBox c)
     {
         if (c == null) return;
-        c.AutoSize = true;
+        c.AutoSize = false;
         c.BackColor = Color.Transparent;
         c.ForeColor = ExText;
         c.FlatStyle = FlatStyle.Flat;
@@ -1158,7 +1158,7 @@ internal partial class tabIrctcId
     private void ExRadio(RadioButton r)
     {
         if (r == null) return;
-        r.AutoSize = true;
+        r.AutoSize = false;
         r.BackColor = Color.Transparent;
         r.ForeColor = ExText;
         r.Font = ExFS(12f, FontStyle.Bold);
@@ -1409,9 +1409,11 @@ internal partial class tabIrctcId
             exFPass.Visible = textmpass.Visible;
 
             int ckX = GX;
-            ExPut(chkValidate, ckX, rowCk, P(10), P(24)); ckX += chkValidate.Width + P(28);
-            ExPut(chkShowPwd, ckX, rowCk, P(10), P(24)); ckX += chkShowPwd.Width + P(28);
-            ExPut(checkBox1, ckX, rowCk, P(10), P(24));
+            int ck1 = ExTextW(chkValidate) + P(24);
+            ExPut(chkValidate, ckX, rowCk, ck1, P(24)); ckX += ck1 + P(30);
+            int ck2 = ExTextW(chkShowPwd) + P(24);
+            ExPut(chkShowPwd, ckX, rowCk, ck2, P(24)); ckX += ck2 + P(30);
+            ExPut(checkBox1, ckX, rowCk, ExTextW(checkBox1) + P(24), P(24));
 
             ExPut(btnIDSave, btnX, row1, btnW, P(46));
             ExRound(btnIDSave, P(10));
@@ -1448,9 +1450,11 @@ internal partial class tabIrctcId
             ExPut(btnHideDay, x, s1, P(104), P(30)); ExRound(btnHideDay, P(8));
 
             x = GX;
-            ExPut(RadioBdate, x, s2, P(10), P(26)); x += RadioBdate.Width + P(14);
-            ExPut(RadioJdate, x, s2, P(10), P(26)); x += RadioJdate.Width + P(14);
-            ExPut(RadioPnr, x, s2, P(10), P(26));
+            int rb1 = ExTextW(RadioBdate) + P(24);
+            ExPut(RadioBdate, x, s2, rb1, P(26)); x += rb1 + P(16);
+            int rb2 = ExTextW(RadioJdate) + P(24);
+            ExPut(RadioJdate, x, s2, rb2, P(26)); x += rb2 + P(16);
+            ExPut(RadioPnr, x, s2, ExTextW(RadioPnr) + P(24), P(26));
 
             int rangeW = Math.Min(P(520), gw - P(400));
             if (rangeW < P(300)) rangeW = Math.Max(P(260), gw - P(330));

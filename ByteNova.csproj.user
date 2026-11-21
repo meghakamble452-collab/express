@@ -227,15 +227,6 @@
     <Compile Update="NEXUS\Updater.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="_backup_21nov\frmAddID.ExpressTheme.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="_backup_21nov\tabIrctcId.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="_backup_21nov\tabIrctcId.ExpressLayout.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="NEXUS.APP_FRAMEWORK.BankList.resx">

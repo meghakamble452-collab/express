@@ -181,7 +181,7 @@ internal partial class tabIrctcId : UserControl
         {
             InitializeComponent();
             method_1();
-            ApplyByteNovaLatestUI();
+            //ApplyByteNovaLatestUI();
         }
         catch (Exception)
         {
@@ -1541,7 +1541,6 @@ internal partial class tabIrctcId : UserControl
         this.backgroundWorker_0 = new System.ComponentModel.BackgroundWorker();
         this.backgroundWorker_1 = new System.ComponentModel.BackgroundWorker();
         this.backgroundWorker_2 = new System.ComponentModel.BackgroundWorker();
-        this.bunifuElipse_0 = new Bunifu.Framework.UI.BunifuElipse(this.components);
         this.pictureBox1 = new System.Windows.Forms.PictureBox();
         this.bgwkverify_ = new System.ComponentModel.BackgroundWorker();
         this.button3 = new System.Windows.Forms.Button();
@@ -2234,8 +2233,6 @@ internal partial class tabIrctcId : UserControl
         // 
         // bunifuElipse_0
         // 
-        this.bunifuElipse_0.ElipseRadius = 5;
-        this.bunifuElipse_0.TargetControl = this;
         // 
         // pictureBox1
         // 
@@ -2385,7 +2382,7 @@ internal partial class tabIrctcId : UserControl
         // tabIrctcId
         // 
         this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
-        this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+        this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
         this.Controls.Add(this.button1);
         this.Controls.Add(this.label10);
         this.Controls.Add(this.lblUnVerified);
@@ -2494,14 +2491,14 @@ internal partial class tabIrctcId : UserControl
             label6.Visible = true;
             txtbulk.Enabled = true;
             txtLogin.Enabled = false;
-            base.Size = new Size(903, 352);
+            
         }
         else
         {
             txtbulk.Enabled = false;
             label6.Visible = false;
             txtLogin.Enabled = true;
-            base.Size = new Size(758, 352);
+            
         }
     }
 
