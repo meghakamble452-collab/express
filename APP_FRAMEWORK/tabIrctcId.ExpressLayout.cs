@@ -45,6 +45,10 @@ internal partial class tabIrctcId
     private ToolStripDropDown exMenu;
     private Panel exMenuList;
     private int exMenuHover = -1;
+    private Form exMenuForm;
+    private DateTime exMenuClosedAt = DateTime.MinValue;
+    private Form exCalForm;
+    private DateTime exCalClosedAt = DateTime.MinValue;
 
     private ToolStripDropDown exCal;
     private Panel exCalPanel;
@@ -171,8 +175,8 @@ internal partial class tabIrctcId
     protected override void OnHandleDestroyed(EventArgs e)
     {
         if (exTicker != null) { exTicker.Stop(); exTicker.Dispose(); exTicker = null; }
-        if (exCal != null) exCal.Close();
-        if (exMenu != null) exMenu.Close();
+        ExCalClose();
+        ExMenuClose();
         base.OnHandleDestroyed(e);
     }
 
@@ -544,7 +548,8 @@ internal partial class tabIrctcId
 
     private void ExCalOpen(DateTimePicker dt, Control anchor)
     {
-        if (exCal != null) { ExCalClose(); return; }
+        if (exCalForm != null) { ExCalClose(); return; }
+        if ((DateTime.Now - exCalClosedAt).TotalMilliseconds < 180) return;
 
         exCalTarget = dt;
         exCalMonth = dt.Value;
@@ -560,30 +565,44 @@ internal partial class tabIrctcId
         exCalPanel.MouseClick += ExCalClick;
         exCalPanel.MouseWheel += ExCalWheel;
 
-        ToolStripControlHost host = new ToolStripControlHost(exCalPanel);
-        host.Margin = Padding.Empty;
-        host.Padding = Padding.Empty;
-
-        exCal = new ToolStripDropDown
+        Form host = FindForm();
+        exCalForm = new Form
         {
-            AutoSize = true,
-            Padding = Padding.Empty,
+            FormBorderStyle = FormBorderStyle.None,
+            ShowInTaskbar = false,
+            StartPosition = FormStartPosition.Manual,
+            TopMost = true,
             BackColor = ExCard,
-            DropShadowEnabled = true
+            Size = new Size(w, h)
         };
-        exCal.Items.Add(host);
-        exCal.Closed += delegate
-        {
-            exCal = null; exCalPanel = null; exCalTarget = null; exCalHover = -1;
-            if (exFDate1 != null) exFDate1.Invalidate();
-            if (exFDate2 != null) exFDate2.Invalidate();
-        };
+        exCalForm.Controls.Add(exCalPanel);
+        exCalPanel.Dock = DockStyle.Fill;
+        exCalForm.Deactivate += delegate { ExCalClose(); };
 
-        exCal.Show(anchor, new Point(0, anchor.Height + P(4)));
-        ExTopMost(exCal);
+        Point pt = anchor.PointToScreen(new Point(0, anchor.Height + P(4)));
+        Rectangle wa = Screen.FromControl(anchor).WorkingArea;
+        if (pt.Y + h > wa.Bottom) pt.Y = anchor.PointToScreen(Point.Empty).Y - h - P(4);
+        if (pt.X + w > wa.Right) pt.X = wa.Right - w - P(4);
+        exCalForm.Location = pt;
+
+        if (host != null) exCalForm.Show(host); else exCalForm.Show();
+        if (exFDate1 != null) exFDate1.Invalidate();
     }
 
-    private void ExCalClose() { if (exCal != null) exCal.Close(); }
+    private void ExCalClose()
+    {
+        exCalClosedAt = DateTime.Now;
+        if (exCalForm == null) return;
+
+        Form f = exCalForm;
+        exCalForm = null;
+        exCalPanel = null;
+        exCalTarget = null;
+        exCalHover = -1;
+        try { f.Close(); f.Dispose(); } catch { }
+        if (exFDate1 != null) exFDate1.Invalidate();
+        if (exFDate2 != null) exFDate2.Invalidate();
+    }
 
     private void ExCalWheel(object sender, MouseEventArgs e)
     {
@@ -795,7 +814,7 @@ internal partial class tabIrctcId
         Panel p = sender as Panel;
         if (p == null || p.Width < 8) return;
         float g = exGlow.ContainsKey(p) ? exGlow[p] : 0f;
-        bool open = exMenu != null;
+        bool open = exMenuForm != null;
 
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         Rectangle r = new Rectangle(0, 0, p.Width - 1, p.Height - 1);
@@ -876,17 +895,18 @@ internal partial class tabIrctcId
         if (idx < 0 || idx >= CmbDays.Items.Count) return;
         CmbDays.SelectedIndex = idx;
         CmbDays.Text = Convert.ToString(CmbDays.Items[idx]);
-        if (exMenu != null) exMenu.Close();
-        if (exDrop != null) exDrop.Invalidate();
+        ExMenuClose();
     }
 
     private void ExDropOpen()
     {
-        if (exMenu != null) { exMenu.Close(); return; }
+        if (exMenuForm != null) { ExMenuClose(); return; }
+        if ((DateTime.Now - exMenuClosedAt).TotalMilliseconds < 180) return;
+
         int n = CmbDays.Items.Count;
         if (n == 0) return;
 
-        int w = Math.Max(P(120), exDrop.Width + P(20));
+        int w = Math.Max(P(130), exDrop.Width + P(24));
         exMenuHover = -1;
 
         exMenuList = new Panel { BackColor = ExCard, Size = new Size(w, n * P(30) + P(10)) };
@@ -895,22 +915,41 @@ internal partial class tabIrctcId
         exMenuList.MouseLeave += delegate { exMenuHover = -1; exMenuList.Invalidate(); };
         exMenuList.MouseClick += ExMenuClick;
 
-        ToolStripControlHost host = new ToolStripControlHost(exMenuList);
-        host.Margin = Padding.Empty;
-        host.Padding = Padding.Empty;
-
-        exMenu = new ToolStripDropDown
+        Form host = FindForm();
+        exMenuForm = new Form
         {
-            AutoSize = true,
-            Padding = Padding.Empty,
+            FormBorderStyle = FormBorderStyle.None,
+            ShowInTaskbar = false,
+            StartPosition = FormStartPosition.Manual,
+            TopMost = true,
             BackColor = ExCard,
-            DropShadowEnabled = true
+            Size = new Size(w, n * P(30) + P(10))
         };
-        exMenu.Items.Add(host);
-        exMenu.Closed += delegate { exMenu = null; exMenuList = null; exMenuHover = -1; if (exDrop != null) exDrop.Invalidate(); };
-        exMenu.Show(exDrop, new Point(0, exDrop.Height + P(4)));
-        ExTopMost(exMenu);
+        exMenuForm.Controls.Add(exMenuList);
+        exMenuList.Dock = DockStyle.Fill;
+        exMenuForm.Deactivate += delegate { ExMenuClose(); };
+
+        Point pt = exDrop.PointToScreen(new Point(0, exDrop.Height + P(4)));
+        Rectangle wa = Screen.FromControl(exDrop).WorkingArea;
+        if (pt.Y + exMenuForm.Height > wa.Bottom) pt.Y = wa.Bottom - exMenuForm.Height - P(4);
+        if (pt.X + w > wa.Right) pt.X = wa.Right - w - P(4);
+        exMenuForm.Location = pt;
+
+        if (host != null) exMenuForm.Show(host); else exMenuForm.Show();
         exDrop.Invalidate();
+    }
+
+    private void ExMenuClose()
+    {
+        exMenuClosedAt = DateTime.Now;
+        if (exMenuForm == null) return;
+
+        Form f = exMenuForm;
+        exMenuForm = null;
+        exMenuList = null;
+        exMenuHover = -1;
+        try { f.Close(); f.Dispose(); } catch { }
+        if (exDrop != null) exDrop.Invalidate();
     }
 
     private void ExCardPaint(object sender, PaintEventArgs e)
@@ -1149,6 +1188,8 @@ internal partial class tabIrctcId
     {
         CheckBox c = sender as CheckBox;
         if (c == null) return;
+        using (SolidBrush bgFill = new SolidBrush(ExCard))
+            e.Graphics.FillRectangle(bgFill, c.ClientRectangle);
         float g = exGlow.ContainsKey(c) ? exGlow[c] : 0f;
 
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -1195,6 +1236,8 @@ internal partial class tabIrctcId
     {
         RadioButton r = sender as RadioButton;
         if (r == null || r.Width < 8) return;
+        using (SolidBrush bgFill = new SolidBrush(ExCard))
+            e.Graphics.FillRectangle(bgFill, r.ClientRectangle);
         float g = exGlow.ContainsKey(r) ? exGlow[r] : 0f;
         bool on = r.Checked;
 
@@ -1366,6 +1409,7 @@ internal partial class tabIrctcId
         int W = ClientSize.Width;
         int H = ClientSize.Height;
         if (W < P(620) || H < P(430)) return;
+        if (Parent != null && Dock != DockStyle.Fill) Dock = DockStyle.Fill;
 
         int M = P(16);
         int GX = P(18);
