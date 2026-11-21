@@ -40,7 +40,7 @@ public partial class frmAddID
         AutoSize = false;
         BackColor = Color.FromArgb(150, 186, 245);
         ForeColor = Color.FromArgb(18, 42, 74);
-        MinimumSize = new Size(1000, 620);
+        MinimumSize = new Size(1040, 680);
 
         pnlHeader.AutoSize = false;
         pnlHeader.BorderStyle = BorderStyle.None;
