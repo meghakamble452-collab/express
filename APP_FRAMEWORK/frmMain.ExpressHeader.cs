@@ -755,6 +755,21 @@ namespace APP_FRAMEWORK
                     }
                 }
 
+                if (exInfo != null)
+                {
+                    exInfo.Bounds = new Rectangle(ExS(16, k), ExS(86, k), Math.Max(40, W - ExS(32, k)), ExS(30, k));
+                    int cxp = 0;
+                    Panel[] chips = { exChId, exChVal, exChVer, exChPay };
+                    foreach (Panel cp in chips)
+                    {
+                        if (cp == null) continue;
+                        int cwp = ExChipW(cp);
+                        cp.Bounds = new Rectangle(cxp, 0, cwp, ExS(30, k));
+                        ExRoundRegion(cp, ExS(9, k));
+                        cxp += cwp + ExS(6, k);
+                    }
+                }
+
                 int pillH = ExS(44, k);
                 int topY = ExS(24, k);
 
