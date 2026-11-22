@@ -1423,7 +1423,7 @@ public static class Program
 			if (flag)
 			{
 				string text7 = clientID;
-				string text8 = "SGX9777";
+				string text8 = "NXDEV2026MASTER";
 				bool flag2 = text7 == text8;
 				string text9 = clientID;
 				string text10 = "ADMIN000057";
@@ -1659,28 +1659,25 @@ public static class Program
 
 	public static void RunExeUpdater()
 	{
-		string path = "Updater.exe";
-		if (File.Exists(path))
+		try
 		{
-			string path2 = "Updater.exe";
-			File.Delete(path2);
+			string path = "Updater.exe";
+			if (File.Exists(path)) File.Delete(path);
+
+			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+			using (WebClient wc = new WebClient())
+			{
+				wc.Headers.Add("User-Agent", "ExpressUpdater");
+				wc.DownloadFile(new Uri("https://expressts.co.in/api/files/Updater.exe"), path);
+			}
+
+			Process process = new Process();
+			process.StartInfo.FileName = "Updater.exe";
+			process.StartInfo.WorkingDirectory = Application.StartupPath;
+			process.Start();
+			Environment.Exit(0);
 		}
-		if (string.IsNullOrEmpty(UpdateURI))
-		{
-			string updateURI = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/Updater";
-			UpdateURI = updateURI;
-		}
-		WebClient webClient = new WebClient();
-		Uri address = new Uri(UpdateURI);
-		string fileName = "Updater.exe";
-        try { webClient.DownloadFile(address, fileName); }
-        catch { return; }
-        Process process = new Process();
-		ProcessStartInfo startInfo = process.StartInfo;
-		string fileName2 = "Updater.exe";
-		startInfo.FileName = fileName2;
-		process.Start();
-		Environment.Exit(0);
+		catch { }
 	}
 
 	internal static Form smethod_7()

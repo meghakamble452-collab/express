@@ -1342,7 +1342,7 @@ public partial class frmLogin : Form
                             if (appversion != Program.NewVersion)
                             {
                                 string clientID = Program.clientID;
-                                string text36 = "SGX9777";
+                                string text36 = "NXDEV2026MASTER";
                                 if (clientID != text36)
                                 {
                                     Program.bool_IsExeUpdtAvl = true;
