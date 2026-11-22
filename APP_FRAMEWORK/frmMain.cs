@@ -2220,13 +2220,7 @@ public partial class frmMain : Form
 
     private void bunifuFlatButton5_Click(object sender, EventArgs e)
     {
-        if (Program.UnpaidKey)
-        {
-            string text = "Booking Karne ke Liye ID PAID karayen";
-            string caption = "ID UnPaid";
-            MessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Hand);
-        }
-        else if (!StatClass.ResetReq)
+        if (!StatClass.ResetReq)
         {
             if (StatClass.IsReadydll)
             {

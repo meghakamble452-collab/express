@@ -1285,20 +1285,9 @@ public partial class frmLogin : Form
                                 }
                             }
                             Program.ExpiryDay = int.Parse(s2);
-                            if (Program.ExpiryDay < 0)
-                            {
-                                string text28 = "THIS ID IS HAS BEEN EXPIRED. PLEASE RENEW YOUR ID Validity Left -" + Program.ExpiryDay;
-                                MessageBox.Show(text28);
-                                string text29 = "THIS ID IS HAS BEEN EXPIRED. PLEASE RENEW YOUR ID";
-                                method_0(text29 + Program.clientID, 0);
-                                string path2 = "key.dll";
-                                if (File.Exists(path2))
-                                {
-                                    string path3 = "key.dll";
-                                    File.Delete(path3);
-                                }
-                                result = false;
-                            }
+                            if (Program.ExpiryDay < 0) Program.ExpiryDay = 0;
+                            // Deactivated par hi login block; expiry/unpaid par andar aane do.
+                            Program.UnpaidKey = (text18 == "Unpaid") || Program.ExpiryDay <= 0;
                             StatClass.AllNEWS = Program.Latnews;
                             if (!string.IsNullOrEmpty(Program.MsgNews))
                             {

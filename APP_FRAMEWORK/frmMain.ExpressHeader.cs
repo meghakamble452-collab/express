@@ -819,10 +819,10 @@ namespace APP_FRAMEWORK
                     int cw0 = TextRenderer.MeasureText("Current Time", fc0).Width + ExS(8, k);
                     int dw = TextRenderer.MeasureText("00-00-0000", fd).Width + ExS(4, k);
                     int tw = TextRenderer.MeasureText("00:00:00", ft).Width + ExS(6, k);
-                    int ph = ExS(54, k);
+                    int ph = ExS(62, k);
                     int pw = cw0 + dw + tw + ExS(26, k);
 
-                    exClockPill.Bounds = new Rectangle(clockX, ExS(12, k), pw, ph);
+                    exClockPill.Bounds = new Rectangle(clockX, ExS(8, k), pw, ph);
 
                     int dx = ExS(12, k);
                     if (exClockCap != null) exClockCap.Bounds = new Rectangle(dx, 0, cw0, ph);
@@ -835,20 +835,23 @@ namespace APP_FRAMEWORK
 
                 if (exInfo != null)
                 {
-                    exInfo.Bounds = new Rectangle(infoX, ExS(12, k), Math.Max(60, powerX - infoX - ExS(8, k)), ExS(54, k));
-
-                    int cxp = ExS(88, k);
+                    int cxp = ExS(86, k);
+                    int chipTop = ExS(4, k);
+                    int chipH = ExS(54, k);
                     Panel[] chips = { exChId, exChVal, exChVer, exChPay };
                     foreach (Panel cp in chips)
                     {
                         if (cp == null) continue;
                         int cwp = ExChipW(cp);
-                        if (cxp + cwp > exInfo.Width - ExS(4, k))
-                            cwp = Math.Max(ExS(64, k), exInfo.Width - ExS(4, k) - cxp);
-                        cp.Bounds = new Rectangle(cxp, 0, cwp, ExS(54, k));
+                        if (cxp + cwp > powerX - ExS(14, k))
+                            cwp = Math.Max(ExS(64, k), powerX - ExS(14, k) - cxp);
+                        cp.Bounds = new Rectangle(cxp, chipTop, cwp, chipH);
                         ExRoundRegion(cp, ExS(9, k));
                         cxp += cwp + ExS(6, k);
                     }
+
+                    int infoW = Math.Max(ExS(120, k), Math.Min(cxp, powerX - infoX - ExS(8, k)));
+                    exInfo.Bounds = new Rectangle(infoX, ExS(8, k), infoW, ExS(62, k));
                 }
 
                 foreach (Control c in exCanvas.Controls)

@@ -1071,9 +1071,21 @@ internal class TCntrl : UserControl
         BottomPanel.Width = base.Width;
     }
 
+    private static bool ByteNovaValidityOk()
+    {
+        if (!Program.UnpaidKey && Program.ExpiryDay > 0) return true;
+
+        string msg = "Aapki validity khatam ho chuki hai, isliye ticket book nahi ho sakta.\r\n\r\n"
+                   + "Booking ke liye apna plan renew karayein aur phir software restart karein.";
+        Form owner = Program.TopMost_();
+        MessageBox.Show(owner, msg, "Validity Expired", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        return false;
+    }
+
     private void WebLogin_Click(object sender, EventArgs e)
     {
         ResetByteNovaSuccessDesign();
+        if (!ByteNovaValidityOk()) return;
         string str = cboGateway.SelectedItem.ToString();
         string app = "WEB";
         if (checkPaymet(str, app))
@@ -1101,6 +1113,7 @@ internal class TCntrl : UserControl
     private void AppLogin_Click(object sender, EventArgs e)
     {
         ResetByteNovaSuccessDesign();
+        if (!ByteNovaValidityOk()) return;
         bool flag = false;
         string text = "SensorList.json";
         string path = text;
@@ -1129,6 +1142,7 @@ internal class TCntrl : UserControl
     private void btnDish_Click(object sender, EventArgs e)
     {
         ResetByteNovaSuccessDesign();
+        if (!ByteNovaValidityOk()) return;
         string str = cboGateway.SelectedItem.ToString();
         string app = "Disha";
         if (checkPaymet(str, app))
@@ -1156,6 +1170,7 @@ internal class TCntrl : UserControl
     private void btnWeb3_Click(object sender, EventArgs e)
     {
         ResetByteNovaSuccessDesign();
+        if (!ByteNovaValidityOk()) return;
         string str = cboGateway.SelectedItem.ToString();
         string app = "web3";
         if (!checkPaymet(str, app))
