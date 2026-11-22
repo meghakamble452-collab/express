@@ -1077,7 +1077,7 @@ internal partial class tabIrctcId
         ExStatIcon(e.Graphics, icon, new Rectangle(P(9), (l.Height - P(11)) / 2, P(11), P(11)), accent);
 
         string txt = l.Text.Trim().TrimEnd(':').Trim();
-        TextRenderer.DrawText(e.Graphics, txt, l.Font, new Rectangle(P(25), 0, l.Width - P(30), l.Height), ExInk,
+        TextRenderer.DrawText(e.Graphics, txt, l.Font, new Rectangle(P(28), 0, l.Width - P(34), l.Height), ExInk,
             TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix |
             TextFormatFlags.EndEllipsis);
     }
@@ -1569,7 +1569,7 @@ internal partial class tabIrctcId
             int l14 = ExTextW(label14) + P(8);
             ExPut(label14, x, s1 + P(4), l14, P(22)); x += l14 + P(10);
 
-            ExPut(exDrop, x, s1, P(104), P(30)); ExRound(exDrop, P(9)); x += P(102);
+            ExPut(exDrop, x, s1, P(104), P(30)); ExRound(exDrop, P(9)); x += P(122);
             ExPut(btnHideDay, x, s1, P(112), P(30)); ExRound(btnHideDay, P(8));
 
             x = GX;
@@ -1641,16 +1641,16 @@ internal partial class tabIrctcId
                 int cw;
                 using (Graphics gg = CreateGraphics())
                     cw = TextRenderer.MeasureText(gg, cap.Text.Trim().TrimEnd(':'), cap.Font,
-                        new Size(2000, 60), TF_MEASURE).Width + P(30);
-                if (cw < P(66)) cw = P(66);
+                        new Size(2000, 60), TF_MEASURE).Width + P(46);
+                if (cw < P(88)) cw = P(88);
 
-                if (sxBadge + cw + P(40) > W - P(430)) { sxBadge = M; if (sxBadge + cw + P(34) > W - P(440)) { sxBadge = M; syBadge += P(28); } }
+                if (sxBadge + cw + P(34) > W - P(440)) { sxBadge = M; syBadge += P(28); }
 
                 ExPut(cap, sxBadge, syBadge, cw, P(24));
                 ExRound(cap, P(12));
                 ExPut(val, sxBadge + cw + P(4), syBadge + P(2), P(30), P(20));
                 ExRound(val, P(7));
-                sxBadge += cw + P(4) + P(28) + P(6);
+                sxBadge += cw + P(4) + P(30) + P(10);
             }
 
             ExPut(lblMsg, sxBadge, syBadge + P(4), P(170), P(18));
