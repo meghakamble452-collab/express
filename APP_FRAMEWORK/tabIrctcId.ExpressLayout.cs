@@ -1458,7 +1458,7 @@ internal partial class tabIrctcId
 
         bool compact = H < P(660);
 
-        int footH = P(74);
+        int footH = P(86);
         int footY = H - footH - P(6);
         int searchH = compact ? P(168) : P(198);
         int searchY = footY - P(8) - searchH;
@@ -1514,7 +1514,7 @@ internal partial class tabIrctcId
             ExPut(exFId, x, row1, f1, ROW); ExPut(txtLogin, P(40), P(9), f1 - P(54), P(22)); x += f1 + P(26);
             ExPut(lblPassword, x, row1 + P(9), l2, P(22)); x += l2 + P(8);
             ExPut(exFPwd, x, row1, f2, ROW); ExPut(txtPassword, P(40), P(9), f2 - P(54), P(22));
-            btnX = x + P(26);
+            btnX = x + f2 + P(26);
             if (btnX + btnW > M + innerW - GX) btnX = M + innerW - GX - btnW;
 
             int l3 = ExTextW(label4) + P(8), l4 = ExTextW(label5) + P(8);
@@ -1570,7 +1570,7 @@ internal partial class tabIrctcId
             ExPut(label14, x, s1 + P(4), l14, P(22)); x += l14 + P(10);
 
             ExPut(exDrop, x, s1, P(104), P(30)); ExRound(exDrop, P(9)); x += P(102);
-            ExPut(btnHideDay, x, s1, P(104), P(30)); ExRound(btnHideDay, P(8));
+            ExPut(btnHideDay, x, s1, P(112), P(30)); ExRound(btnHideDay, P(8));
 
             x = GX;
             int rb1 = ExTextW(RadioBdate) + P(24);
@@ -1641,16 +1641,16 @@ internal partial class tabIrctcId
                 int cw;
                 using (Graphics gg = CreateGraphics())
                     cw = TextRenderer.MeasureText(gg, cap.Text.Trim().TrimEnd(':'), cap.Font,
-                        new Size(2000, 60), TF_MEASURE).Width + P(36);
-                if (cw < P(70)) cw = P(70);
+                        new Size(2000, 60), TF_MEASURE).Width + P(30);
+                if (cw < P(66)) cw = P(66);
 
-                if (sxBadge + cw + P(40) > W - P(430)) { sxBadge = M; if (sxBadge + cw + P(40) > W - P(430)) { sxBadge = M; syBadge += P(28); } }
+                if (sxBadge + cw + P(40) > W - P(430)) { sxBadge = M; if (sxBadge + cw + P(34) > W - P(440)) { sxBadge = M; syBadge += P(28); } }
 
                 ExPut(cap, sxBadge, syBadge, cw, P(24));
                 ExRound(cap, P(12));
                 ExPut(val, sxBadge + cw + P(4), syBadge + P(2), P(30), P(20));
                 ExRound(val, P(7));
-                sxBadge += cw + P(4) + P(30) + P(8);
+                sxBadge += cw + P(4) + P(28) + P(6);
             }
 
             ExPut(lblMsg, sxBadge, syBadge + P(4), P(170), P(18));
