@@ -39,7 +39,7 @@ namespace APP_FRAMEWORK
         private static readonly string ExVersion = "0.0.1";
 
         private float exK = 1f;
-        private int exBarH = 200;
+        private int exBarH = 150;
 
         private readonly List<Control> exNav = new List<Control>();
         private readonly List<Panel> exSwitchRow = new List<Panel>();
@@ -68,6 +68,7 @@ namespace APP_FRAMEWORK
         private static readonly Color ExCToken = Color.FromArgb(8, 145, 178);
         private static readonly Color ExCPower = Color.FromArgb(234, 108, 26);
         private static readonly Color ExCRed = Color.FromArgb(220, 38, 38);
+        private static readonly Color ExKeyCol = Color.FromArgb(255, 226, 148);
 
         private static bool ExIsButton(Control c)
         {
@@ -387,7 +388,7 @@ namespace APP_FRAMEWORK
                 if (wa.Width < 200 || wa.Height < 120) return;
 
                 exK = Math.Max(0.70f, Math.Min(1.25f, wa.Width / 1920f));
-                exBarH = ExS(200, exK);
+                exBarH = ExS(150, exK);
 
                 int needW = Math.Min(wa.Width - 20, ExS(1720, exK));
                 int needH = exBarH;
@@ -607,8 +608,8 @@ namespace APP_FRAMEWORK
         {
             object[] m = p.Tag as object[];
             if (m == null) return ExS(90, exK);
-            Font fc = ExCached("Segoe UI Semibold", 9f, FontStyle.Bold, exK);
-            Font fv = ExCached("Segoe UI Semibold", 10.5f, FontStyle.Bold, exK);
+            Font fc = ExCached("Segoe UI Semibold", 12f, FontStyle.Bold, exK);
+            Font fv = ExCached("Segoe UI", 28f, FontStyle.Regular, exK);
             return TextRenderer.MeasureText((string)m[0], fc).Width
                  + TextRenderer.MeasureText(Convert.ToString(m[1]), fv).Width
                  + ExS(36, exK);
@@ -638,17 +639,17 @@ namespace APP_FRAMEWORK
                         e.Graphics.DrawPath(pen, path);
                 }
 
-                Font fc = ExCached("Segoe UI Semibold", 9f, FontStyle.Bold, exK);
-                Font fv = ExCached("Segoe UI Semibold", 10.5f, FontStyle.Bold, exK);
+                Font fc = ExCached("Segoe UI Semibold", 12f, FontStyle.Bold, exK);
+                Font fv = ExCached("Segoe UI", 28f, FontStyle.Regular, exK);
                 int cw = TextRenderer.MeasureText(cap, fc).Width;
                 int pad = ExS(10, exK);
 
                 TextRenderer.DrawText(e.Graphics, cap, fc,
-                    new Rectangle(pad, 0, cw + 2, p.Height), Color.FromArgb(206, 232, 246, 255),
+                    new Rectangle(pad, 0, cw + 2, p.Height), ExKeyCol,
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
 
                 TextRenderer.DrawText(e.Graphics, val, fv,
-                    new Rectangle(pad + cw + ExS(7, exK), 0, Math.Max(8, p.Width - cw - pad - ExS(18, exK)), p.Height), vc,
+                    new Rectangle(pad + cw + ExS(9, exK), 0, Math.Max(8, p.Width - cw - pad - ExS(20, exK)), p.Height), ExKeyCol,
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
             }
             catch { }
@@ -729,7 +730,7 @@ namespace APP_FRAMEWORK
 
                 if (exLogo != null) exLogo.Bounds = new Rectangle(ExS(14, k), ExS(16, k), ExS(56, k), ExS(56, k));
 
-                int rowY = ExS(124, k);
+                int rowY = ExS(88, k);
 
                 if (exSwitchRow.Count > 0 && exModeBox != null)
                 {
@@ -755,21 +756,6 @@ namespace APP_FRAMEWORK
                     }
                 }
 
-                if (exInfo != null)
-                {
-                    exInfo.Bounds = new Rectangle(ExS(16, k), ExS(86, k), Math.Max(40, W - ExS(32, k)), ExS(30, k));
-                    int cxp = 0;
-                    Panel[] chips = { exChId, exChVal, exChVer, exChPay };
-                    foreach (Panel cp in chips)
-                    {
-                        if (cp == null) continue;
-                        int cwp = ExChipW(cp);
-                        cp.Bounds = new Rectangle(cxp, 0, cwp, ExS(30, k));
-                        ExRoundRegion(cp, ExS(9, k));
-                        cxp += cwp + ExS(6, k);
-                    }
-                }
-
                 int pillH = ExS(44, k);
                 int topY = ExS(24, k);
 
@@ -783,25 +769,43 @@ namespace APP_FRAMEWORK
                 int userX = powerX - gap - ExS(178, k) - gap - userW;
 
 
+                int clockX = ExS(356, k);
+
                 if (exClockPill != null)
                 {
-                    Font fd = ExCached("Segoe UI Semibold", 11f, FontStyle.Bold, k);
-                    Font ft = ExCached("Segoe UI Semibold", 30f, FontStyle.Bold, k);
+                    Font fd = ExCached("Segoe UI Semibold", 9f, FontStyle.Bold, k);
+                    Font ft = ExCached("Segoe UI Semibold", 20f, FontStyle.Bold, k);
                     exDateTxt.Font = fd;
                     exTimeTxt.Font = ft;
 
                     int dw = TextRenderer.MeasureText("00-00-0000", fd).Width + ExS(4, k);
                     int tw = TextRenderer.MeasureText("00:00:00", ft).Width + ExS(6, k);
-                    int ph = ExS(48, k);
+                    int ph = ExS(46, k);
                     int pw = dw + tw + ExS(24, k);
-                    if (pw > W - ExS(60, k)) pw = W - ExS(60, k);
 
-                    int px = (W - pw) / 2;
-                    exClockPill.Bounds = new Rectangle(px, ExS(17, k), pw, ph);
+                    exClockPill.Bounds = new Rectangle(clockX, ExS(12, k), pw, ph);
 
                     int dx = ExS(12, k);
                     exDateTxt.Bounds = new Rectangle(dx, 0, dw, ph);
                     exTimeTxt.Bounds = new Rectangle(dx + dw + ExS(4, k), 0, Math.Max(20, pw - dx - dw - ExS(16, k)), ph);
+                }
+
+                if (exInfo != null)
+                {
+                    exInfo.Bounds = new Rectangle(clockX, ExS(12, k), Math.Max(60, powerX - clockX - ExS(8, k)), ExS(46, k));
+
+                    int cxp = (exClockPill != null ? exClockPill.Width : 0) + ExS(12, k);
+                    Panel[] chips = { exChId, exChVal, exChVer, exChPay };
+                    foreach (Panel cp in chips)
+                    {
+                        if (cp == null) continue;
+                        int cwp = ExChipW(cp);
+                        if (cxp + cwp > exInfo.Width - ExS(4, k))
+                            cwp = Math.Max(ExS(70, k), exInfo.Width - ExS(4, k) - cxp);
+                        cp.Bounds = new Rectangle(cxp, 0, cwp, ExS(46, k));
+                        ExRoundRegion(cp, ExS(9, k));
+                        cxp += cwp + ExS(6, k);
+                    }
                 }
 
                 foreach (Control c in exCanvas.Controls)
