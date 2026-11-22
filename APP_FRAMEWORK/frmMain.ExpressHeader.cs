@@ -681,11 +681,11 @@ namespace APP_FRAMEWORK
                 int pad = ExS(10, exK);
 
                 TextRenderer.DrawText(e.Graphics, cap, fc,
-                    new Rectangle(pad, 0, cw + 2, p.Height), Color.White,
+                    new Rectangle(pad, ExS(4, exK), cw + 2, p.Height - ExS(8, exK)), Color.White,
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
 
                 TextRenderer.DrawText(e.Graphics, val, fv,
-                    new Rectangle(pad + cw + ExS(9, exK), 0, Math.Max(8, p.Width - cw - pad - ExS(20, exK)), p.Height), ExKeyCol,
+                    new Rectangle(pad + cw + ExS(9, exK), ExS(4, exK), Math.Max(8, p.Width - cw - pad - ExS(20, exK)), p.Height - ExS(8, exK)), ExKeyCol,
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
             }
             catch { }
@@ -819,7 +819,7 @@ namespace APP_FRAMEWORK
                     int cw0 = TextRenderer.MeasureText("Current Time", fc0).Width + ExS(8, k);
                     int dw = TextRenderer.MeasureText("00-00-0000", fd).Width + ExS(4, k);
                     int tw = TextRenderer.MeasureText("00:00:00", ft).Width + ExS(6, k);
-                    int ph = ExS(46, k);
+                    int ph = ExS(54, k);
                     int pw = cw0 + dw + tw + ExS(26, k);
 
                     exClockPill.Bounds = new Rectangle(clockX, ExS(12, k), pw, ph);
@@ -835,7 +835,7 @@ namespace APP_FRAMEWORK
 
                 if (exInfo != null)
                 {
-                    exInfo.Bounds = new Rectangle(infoX, ExS(12, k), Math.Max(60, powerX - infoX - ExS(8, k)), ExS(46, k));
+                    exInfo.Bounds = new Rectangle(infoX, ExS(12, k), Math.Max(60, powerX - infoX - ExS(8, k)), ExS(54, k));
 
                     int cxp = ExS(88, k);
                     Panel[] chips = { exChId, exChVal, exChVer, exChPay };
@@ -845,7 +845,7 @@ namespace APP_FRAMEWORK
                         int cwp = ExChipW(cp);
                         if (cxp + cwp > exInfo.Width - ExS(4, k))
                             cwp = Math.Max(ExS(64, k), exInfo.Width - ExS(4, k) - cxp);
-                        cp.Bounds = new Rectangle(cxp, 0, cwp, ExS(46, k));
+                        cp.Bounds = new Rectangle(cxp, 0, cwp, ExS(54, k));
                         ExRoundRegion(cp, ExS(9, k));
                         cxp += cwp + ExS(6, k);
                     }
