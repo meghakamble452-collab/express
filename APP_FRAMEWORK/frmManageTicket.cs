@@ -282,13 +282,22 @@ internal class frmManageTicket : Form
     {
         int index = int_1;
         string tktname_ = grdUsers.Rows[index].Cells[1].Value.ToString();
-        if (Class28.dictionary_8.Any((KeyValuePair<string, int> tr) => tr.Key.Equals(tktname_, StringComparison.CurrentCultureIgnoreCase)))
+        frmProcessTicket existing = frmProcessTicket.FindOpen(tktname_);
+        if (existing != null)
         {
-            Form owner = Program.TopMost_();
-            string text = "Ticket Already Open";
-            MessageBox.Show(owner, text, tktname_, MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            if (!existing.Visible || existing.WindowState == FormWindowState.Minimized)
+            {
+                existing.Show();
+                if (existing.WindowState == FormWindowState.Minimized)
+                    existing.WindowState = FormWindowState.Normal;
+                existing.BringToFront();
+                existing.Activate();
+                return;
+            }
+            MessageBox.Show(Program.TopMost_(), "Ticket Already Open", tktname_, MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
             return;
         }
+        frmProcessTicket.Forget(tktname_);
         StatClass.Tktlist_0.Clear();
         DataGridViewCellCollection cells = grdUsers.Rows[index].Cells;
         string columnName = "Slot";

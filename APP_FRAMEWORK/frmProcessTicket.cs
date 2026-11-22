@@ -1484,6 +1484,31 @@ internal class frmProcessTicket : Form
         return num;
     }
 
+    internal static frmProcessTicket FindOpen(string tktName)
+    {
+        if (string.IsNullOrWhiteSpace(tktName)) return null;
+        foreach (Form f in Application.OpenForms)
+        {
+            if (f is frmProcessTicket p && !p.IsDisposed &&
+                string.Equals(p.formName.Text, tktName, StringComparison.CurrentCultureIgnoreCase))
+                return p;
+        }
+        return null;
+    }
+
+    internal static void Forget(string tktName)
+    {
+        List<string> dead = new List<string>();
+        foreach (string k in Class28.dictionary_8.Keys)
+            if (k.Equals(tktName, StringComparison.CurrentCultureIgnoreCase)) dead.Add(k);
+        foreach (string k in dead) Class28.dictionary_8.Remove(k);
+
+        dead.Clear();
+        foreach (string k in Class28.dictionary_9.Keys)
+            if (k.Equals(tktName, StringComparison.CurrentCultureIgnoreCase)) dead.Add(k);
+        foreach (string k in dead) Class28.dictionary_9.Remove(k);
+    }
+
     private void BookingSuccess(string string_4, TCntrl tcntrl_0)
     {
         try { File.AppendAllText("Logs\\resup.log", DateTime.Now.ToString("HH:mm:ss") + " BookingSuccess IN len=" + (string_4 == null ? -1 : string_4.Length) + Environment.NewLine); } catch { }
@@ -1893,6 +1918,7 @@ internal class frmProcessTicket : Form
             {
                 Method_3(pnl.Controls[0], new EventArgs());
             }
+            Forget(formName.Text);
         }
     }
 
