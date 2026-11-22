@@ -1450,7 +1450,7 @@ internal partial class tabIrctcId
 
         int M = P(16);
         int GX = P(18);
-        int ROW = P(40);
+        int ROW = P(38);
 
         int right = W - M;
         int innerW = right - M;
@@ -1464,7 +1464,7 @@ internal partial class tabIrctcId
         int searchY = footY - P(8) - searchH;
 
         int topY = P(10);
-        int topH = P(150);
+        int topH = P(166);
         int gridY = topY + topH + P(8);
         int gridH = searchY - P(8) - gridY;
 
@@ -1472,7 +1472,7 @@ internal partial class tabIrctcId
         {
             int deficit = P(150) - gridH;
 
-            int cutTop = Math.Min(deficit, Math.Max(0, topH - P(128)));
+            int cutTop = Math.Min(deficit, Math.Max(0, topH - P(156)));
             topH -= cutTop;
             deficit -= cutTop;
 
@@ -1498,7 +1498,7 @@ internal partial class tabIrctcId
             ExPut(grpAddID, M, topY, innerW, topH);
             ExRound(grpAddID, P(11));
 
-            int row1 = P(34), row2 = row1 + ROW + P(4), rowCk = row2 + ROW + P(8);
+            int row1 = P(30), row2 = row1 + ROW + P(6), rowCk = row2 + ROW + P(8);
 
             int btnW = P(170);
             int btnX = M + innerW - GX - btnW;
@@ -1532,15 +1532,15 @@ internal partial class tabIrctcId
             exFPass.Visible = textmpass.Visible;
 
             int ckX = GX;
-            int ck1 = ExTextW(chkValidate) + P(24);
-            ExPut(chkValidate, ckX, rowCk, ck1, P(24)); ckX += ck1 + P(30);
-            int ck2 = ExTextW(chkShowPwd) + P(24);
-            ExPut(chkShowPwd, ckX, rowCk, ck2, P(24)); ckX += ck2 + P(30);
-            ExPut(checkBox1, ckX, rowCk, ExTextW(checkBox1) + P(24), P(24));
+            int ck1 = ExTextW(chkValidate) + P(20);
+            ExPut(chkValidate, ckX, rowCk, ck1, P(26)); ckX += ck1 + P(28);
+            int ck2 = ExTextW(chkShowPwd) + P(20);
+            ExPut(chkShowPwd, ckX, rowCk, ck2, P(26)); ckX += ck2 + P(28);
+            ExPut(checkBox1, ckX, rowCk, ExTextW(checkBox1) + P(20), P(26));
 
-            ExPut(btnIDSave, btnX, row1, btnW, P(46));
+            ExPut(btnIDSave, btnX, row1, btnW, P(40));
             ExRound(btnIDSave, P(10));
-            ExPut(button5, btnX, row2, btnW, P(32));
+            ExPut(button5, btnX, row2, btnW, P(30));
             ExRound(button5, P(9));
 
             ExPut(label6, M, gridY, P(160), P(16));
