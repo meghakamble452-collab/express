@@ -389,6 +389,9 @@ internal partial class tabIrctcId
 
             ExGrid();
             ExModeSync();
+
+            if (Parent != null)
+                Parent.Resize += delegate { ExFitToParent(); ExLayout(); };
         }
         finally
         {
@@ -1409,13 +1412,23 @@ internal partial class tabIrctcId
 
     // ---------------- layout ----------------
 
+    private void ExFitToParent()
+    {
+        if (Parent == null) return;
+        Rectangle r = Parent.DisplayRectangle;
+        if (Location.X != r.X || Location.Y != r.Y) Location = r.Location;
+        if (Width != r.Width || Height != r.Height) Size = r.Size;
+    }
     private void ExLayout()
     {
         if (!exBuilt || IsDisposed) return;
 
         int W = ClientSize.Width;
         int H = ClientSize.Height;
-        if (W < P(620) || H < P(430)) return;
+        ExFitToParent();
+        W = ClientSize.Width;
+        H = ClientSize.Height;
+        if (W < P(400) || H < P(300)) return;
         if (Parent != null && Dock != DockStyle.Fill) Dock = DockStyle.Fill;
 
         int M = P(16);
