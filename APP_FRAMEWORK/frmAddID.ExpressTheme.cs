@@ -61,19 +61,18 @@ public partial class frmAddID
         btnClose.Paint -= ByteNovaClosePaint;
         btnClose.Paint += ExClosePaint;
 
-        Padding = new Padding(6, 46, 6, 8);
         PnlBase.AutoSize = false;
-        PnlBase.Dock = DockStyle.Fill;
+        PnlBase.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         PnlBase.Padding = new Padding(6);
         PnlBase.BackColor = Color.FromArgb(233, 241, 252);
         PnlBase.Paint -= ByteNovaBasePaint;
         PnlBase.Paint += ExBasePaint;
 
-        tabIrctcId.Dock = DockStyle.Fill;
         tabIrctcId.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         tabHistory.Dock = DockStyle.Fill;
         tabHistory.BackColor = Color.FromArgb(233, 241, 252);
 
+        Resize += delegate { ExLayoutShell(); };
         ExLayoutShell();
     }
 
