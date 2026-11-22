@@ -779,7 +779,9 @@ namespace APP_FRAMEWORK
 
                 int closeX = right - closeW;
                 int powerX = closeX - gap - closeW;
-                
+                int userW = ExS(124, k);
+                int userX = powerX - gap - ExS(178, k) - gap - userW;
+
 
                 if (exClockPill != null)
                 {
