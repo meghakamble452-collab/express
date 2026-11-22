@@ -1458,13 +1458,13 @@ internal partial class tabIrctcId
 
         bool compact = H < P(660);
 
-        int footH = P(86);
+        int footH = P(72);
         int footY = H - footH - P(6);
-        int searchH = compact ? P(168) : P(198);
+        int searchH = compact ? P(180) : P(210);
         int searchY = footY - P(8) - searchH;
 
         int topY = P(10);
-        int topH = P(166);
+        int topH = P(160);
         int gridY = topY + topH + P(8);
         int gridH = searchY - P(8) - gridY;
 
@@ -1558,7 +1558,7 @@ internal partial class tabIrctcId
             ExPut(groupBox1, M, searchY, innerW, searchH);
             ExRound(groupBox1, P(11));
 
-            int s1 = P(32), s2 = s1 + P(34), s3 = s2 + P(32);
+            int s1 = P(30), s2 = s1 + P(32), s3 = s2 + P(30);
             int rcH = compact ? P(40) : P(66);
             int s4 = s3 + rcH + P(8);
 
@@ -1628,7 +1628,7 @@ internal partial class tabIrctcId
             ExPut(label3, P(10), P(4), P(152), P(18));
             ExPut(lblCurMonbk, P(168), P(4), P(32), P(18));
             ExPut(label2, P(206), P(4), P(112), P(18));
-            ExPut(B3AAA, P(322), P(4), P(216), P(18));
+            ExPut(B3AAA, P(322), P(4), P(200), P(18));
             ExPut(lbl7, P(544), P(4), P(32), P(18));
 
             int sxBadge = M;
