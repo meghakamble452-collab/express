@@ -61,7 +61,9 @@ public partial class frmAddID
         btnClose.Paint -= ByteNovaClosePaint;
         btnClose.Paint += ExClosePaint;
 
+        Padding = new Padding(6, 46, 6, 8);
         PnlBase.AutoSize = false;
+        PnlBase.Dock = DockStyle.Fill;
         PnlBase.Padding = new Padding(6);
         PnlBase.BackColor = Color.FromArgb(233, 241, 252);
         PnlBase.Paint -= ByteNovaBasePaint;
