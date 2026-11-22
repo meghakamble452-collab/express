@@ -210,7 +210,7 @@ internal partial class tabIrctcId
             int w = (int)(1180 * exS);
             int h = (int)(700 * exS);
             if (w > wa.Width - P(40)) w = wa.Width - P(40);
-            if (h > wa.Height - P(80)) h = wa.Height - P(80);
+            if (h > wa.Height - P(120)) h = wa.Height - P(120);
             if (w < P(900)) w = Math.Min(P(900), wa.Width - P(20));
             if (h < P(560)) h = Math.Min(P(560), wa.Height - P(20));
 
@@ -219,7 +219,7 @@ internal partial class tabIrctcId
             f.MinimumSize = new Size(w, h);
 
             int x = wa.Left + (wa.Width - f.Width) / 2;
-            f.Location = new Point(x, wa.Top + P(10));
+            f.Location = new Point(x, wa.Top + P(16));
         }
         catch { }
     }
@@ -839,11 +839,23 @@ internal partial class tabIrctcId
                 e.Graphics.DrawPath(pen, path);
         }
 
+        int gy = (p.Height - P(12)) / 2;
+        using (Pen gl = new Pen(open ? ExCyan : ExMuted, P(1.4f)))
+        {
+            gl.StartCap = LineCap.Round;
+            gl.EndCap = LineCap.Round;
+            e.Graphics.DrawLine(gl, P(10), gy + P(1), P(19), gy + P(1));
+            e.Graphics.DrawLine(gl, P(10), gy + P(1), P(10), gy + P(9));
+            e.Graphics.DrawLine(gl, P(19), gy + P(1), P(19), gy + P(9));
+            e.Graphics.DrawLine(gl, P(10), gy + P(9), P(19), gy + P(9));
+            e.Graphics.DrawLine(gl, P(10), gy + P(5), P(19), gy + P(5));
+        }
+
         string val = CmbDays.Text;
         if (string.IsNullOrEmpty(val) && CmbDays.Items.Count > 0) val = Convert.ToString(CmbDays.Items[0]);
         TextRenderer.DrawText(e.Graphics, val, ExFS(12.5f, FontStyle.Bold),
-            new Rectangle(0, 0, p.Width - P(20), p.Height), open ? ExCyan : ExText,
-            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+            new Rectangle(P(26), 0, p.Width - P(44), p.Height), open ? ExCyan : ExText,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
 
         int cx = p.Width - P(15), cy = p.Height / 2 - (open ? 1 : P(2));
         using (Pen chev = new Pen(open ? ExCyan : ExMuted, P(1.7f)))
@@ -1446,7 +1458,7 @@ internal partial class tabIrctcId
 
         bool compact = H < P(660);
 
-        int footH = P(62);
+        int footH = P(74);
         int footY = H - footH - P(6);
         int searchH = compact ? P(168) : P(198);
         int searchY = footY - P(8) - searchH;
@@ -1488,7 +1500,7 @@ internal partial class tabIrctcId
 
             int row1 = P(34), row2 = row1 + ROW + P(4), rowCk = row2 + ROW + P(8);
 
-            int btnW = P(190);
+            int btnW = P(170);
             int btnX = M + innerW - GX - btnW;
             int maxEnd = btnX - M - P(18);
 
@@ -1502,6 +1514,8 @@ internal partial class tabIrctcId
             ExPut(exFId, x, row1, f1, ROW); ExPut(txtLogin, P(40), P(9), f1 - P(54), P(22)); x += f1 + P(26);
             ExPut(lblPassword, x, row1 + P(9), l2, P(22)); x += l2 + P(8);
             ExPut(exFPwd, x, row1, f2, ROW); ExPut(txtPassword, P(40), P(9), f2 - P(54), P(22));
+            btnX = x + P(26);
+            if (btnX + btnW > M + innerW - GX) btnX = M + innerW - GX - btnW;
 
             int l3 = ExTextW(label4) + P(8), l4 = ExTextW(label5) + P(8);
             int f3 = P(200), f4 = P(210);
@@ -1555,7 +1569,7 @@ internal partial class tabIrctcId
             int l14 = ExTextW(label14) + P(8);
             ExPut(label14, x, s1 + P(4), l14, P(22)); x += l14 + P(10);
 
-            ExPut(exDrop, x, s1, P(92), P(30)); ExRound(exDrop, P(9)); x += P(102);
+            ExPut(exDrop, x, s1, P(104), P(30)); ExRound(exDrop, P(9)); x += P(102);
             ExPut(btnHideDay, x, s1, P(104), P(30)); ExRound(btnHideDay, P(8));
 
             x = GX;
@@ -1630,7 +1644,7 @@ internal partial class tabIrctcId
                         new Size(2000, 60), TF_MEASURE).Width + P(36);
                 if (cw < P(70)) cw = P(70);
 
-                if (sxBadge + cw + P(40) > W - P(430)) { sxBadge = M; syBadge += P(30); }
+                if (sxBadge + cw + P(40) > W - P(430)) { sxBadge = M; if (sxBadge + cw + P(40) > W - P(430)) { sxBadge = M; syBadge += P(28); } }
 
                 ExPut(cap, sxBadge, syBadge, cw, P(24));
                 ExRound(cap, P(12));
