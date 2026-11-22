@@ -210,7 +210,7 @@ internal partial class tabIrctcId
             int w = (int)(1180 * exS);
             int h = (int)(700 * exS);
             if (w > wa.Width - P(40)) w = wa.Width - P(40);
-            if (h > wa.Height - P(70)) h = wa.Height - P(70);
+            if (h > wa.Height - P(80)) h = wa.Height - P(80);
             if (w < P(900)) w = Math.Min(P(900), wa.Width - P(20));
             if (h < P(560)) h = Math.Min(P(560), wa.Height - P(20));
 
@@ -219,9 +219,7 @@ internal partial class tabIrctcId
             f.MinimumSize = new Size(w, h);
 
             int x = wa.Left + (wa.Width - f.Width) / 2;
-            int y = wa.Top + (wa.Height - f.Height) / 2;
-            if (y < wa.Top + P(6)) y = wa.Top + P(6);
-            f.Location = new Point(x, y);
+            f.Location = new Point(x, wa.Top + P(10));
         }
         catch { }
     }

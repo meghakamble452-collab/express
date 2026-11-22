@@ -8,6 +8,7 @@ namespace APP_FRAMEWORK;
 public partial class frmAddID
 {
     private bool exShell;
+    private Label exHistTitle;
 
     private static GraphicsPath ExPath(Rectangle r, int rad)
     {
@@ -143,7 +144,7 @@ public partial class frmAddID
         if (tabHistory == null) return;
 
         tabHistory.BackColor = Color.FromArgb(233, 241, 252);
-        tabHistory.Padding = new Padding(10);
+        tabHistory.Padding = new Padding(10, 46, 10, 10);
 
         foreach (Control c in tabHistory.Controls)
         {
@@ -154,8 +155,9 @@ public partial class frmAddID
 
                 if (lbl.Name == "label1")
                 {
-                    lbl.Dock = DockStyle.Top;
-                    lbl.Height = 32;
+                    exHistTitle = lbl;
+                    lbl.Dock = DockStyle.None;
+                    lbl.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
                     lbl.AutoSize = false;
                     lbl.TextAlign = ContentAlignment.MiddleCenter;
                     lbl.ForeColor = Color.White;
@@ -163,7 +165,6 @@ public partial class frmAddID
                     lbl.Font = new Font("Segoe UI Semibold", 12f, FontStyle.Bold, GraphicsUnit.Pixel);
                     lbl.Paint -= ExHistTitlePaint;
                     lbl.Paint += ExHistTitlePaint;
-                    lbl.BringToFront();
                     continue;
                 }
 
@@ -228,6 +229,12 @@ public partial class frmAddID
                 }
                 g.Invalidate();
             }
+        }
+
+        if (exHistTitle != null)
+        {
+            exHistTitle.SetBounds(10, 10, Math.Max(60, tabHistory.ClientSize.Width - 20), 30);
+            exHistTitle.BringToFront();
         }
     }
 
