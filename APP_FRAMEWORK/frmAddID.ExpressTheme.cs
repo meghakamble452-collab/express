@@ -73,6 +73,8 @@ public partial class frmAddID
         tabHistory.BackColor = Color.FromArgb(233, 241, 252);
 
         Resize += delegate { ExLayoutShell(); };
+        ExStyleHistory();
+        tabHistory.Resize += delegate { ExStyleHistory(); };
         ExLayoutShell();
     }
 
@@ -134,6 +136,116 @@ public partial class frmAddID
             PerformLayout();
             Invalidate();
         }
+    }
+
+    private void ExStyleHistory()
+    {
+        if (tabHistory == null) return;
+
+        tabHistory.BackColor = Color.FromArgb(233, 241, 252);
+        tabHistory.Padding = new Padding(10);
+
+        foreach (Control c in tabHistory.Controls)
+        {
+            Label lbl = c as Label;
+            if (lbl != null)
+            {
+                if (lbl.Name == "label16") { lbl.Visible = false; continue; }
+
+                if (lbl.Name == "label1")
+                {
+                    lbl.Dock = DockStyle.Top;
+                    lbl.Height = 32;
+                    lbl.AutoSize = false;
+                    lbl.TextAlign = ContentAlignment.MiddleCenter;
+                    lbl.ForeColor = Color.White;
+                    lbl.BackColor = Color.Transparent;
+                    lbl.Font = new Font("Segoe UI Semibold", 12f, FontStyle.Bold, GraphicsUnit.Pixel);
+                    lbl.Paint -= ExHistTitlePaint;
+                    lbl.Paint += ExHistTitlePaint;
+                    lbl.BringToFront();
+                    continue;
+                }
+
+                if (lbl.Name == "lblMsg")
+                {
+                    lbl.ForeColor = Color.FromArgb(17, 40, 72);
+                    lbl.Font = new Font("Segoe UI Semibold", 12f, FontStyle.Bold, GraphicsUnit.Pixel);
+                }
+                continue;
+            }
+
+            Panel pnl = c as Panel;
+            if (pnl != null && pnl.Name == "pnlloader")
+            {
+                pnl.BackColor = Color.White;
+                pnl.BorderStyle = BorderStyle.None;
+                continue;
+            }
+
+            DataGridView g = c as DataGridView;
+            if (g != null)
+            {
+                g.Dock = DockStyle.Fill;
+                g.EnableHeadersVisualStyles = false;
+                g.BorderStyle = BorderStyle.None;
+                g.BackgroundColor = Color.White;
+                g.GridColor = Color.FromArgb(226, 236, 248);
+                g.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+                g.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+                g.RowHeadersVisible = false;
+                g.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+                g.ColumnHeadersHeight = 34;
+                g.RowTemplate.Height = 30;
+                g.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+                g.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(226, 238, 252);
+                g.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(17, 40, 72);
+                g.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(226, 238, 252);
+                g.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.FromArgb(17, 40, 72);
+                g.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 12f, FontStyle.Bold, GraphicsUnit.Pixel);
+                g.ColumnHeadersDefaultCellStyle.Padding = new Padding(8, 0, 4, 0);
+
+                g.DefaultCellStyle.BackColor = Color.White;
+                g.DefaultCellStyle.ForeColor = Color.FromArgb(24, 46, 74);
+                g.DefaultCellStyle.SelectionBackColor = Color.FromArgb(214, 234, 255);
+                g.DefaultCellStyle.SelectionForeColor = Color.FromArgb(12, 34, 60);
+                g.DefaultCellStyle.Font = new Font("Segoe UI", 12f, FontStyle.Regular, GraphicsUnit.Pixel);
+                g.DefaultCellStyle.Padding = new Padding(8, 0, 4, 0);
+                g.RowsDefaultCellStyle.BackColor = Color.White;
+                g.RowsDefaultCellStyle.ForeColor = Color.FromArgb(24, 46, 74);
+                g.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(247, 251, 255);
+                g.AlternatingRowsDefaultCellStyle.ForeColor = Color.FromArgb(24, 46, 74);
+
+                foreach (DataGridViewColumn col in g.Columns)
+                {
+                    col.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    col.MinimumWidth = 62;
+                    string n = col.Name.ToLower();
+                    if (n.Contains("pnr") || n.Contains("from") || n.Contains("to") || n.Contains("train")) col.FillWeight = 72;
+                    else if (n.Contains("date")) col.FillWeight = 110;
+                    else col.FillWeight = 82;
+                }
+                g.Invalidate();
+            }
+        }
+    }
+
+    private void ExHistTitlePaint(object sender, PaintEventArgs e)
+    {
+        Control c = sender as Control;
+        if (c == null || c.Width < 4) return;
+
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        Rectangle r = new Rectangle(0, 0, c.Width, c.Height);
+
+        using (LinearGradientBrush bg = new LinearGradientBrush(
+            r, Color.FromArgb(74, 124, 216), Color.FromArgb(122, 166, 240),
+            LinearGradientMode.Horizontal))
+            e.Graphics.FillRectangle(bg, r);
+
+        TextRenderer.DrawText(e.Graphics, c.Text, c.Font, r, Color.White,
+            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
     }
 
     private void ExHeaderPaint(object sender, PaintEventArgs e)

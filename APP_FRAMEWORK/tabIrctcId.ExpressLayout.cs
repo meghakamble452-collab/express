@@ -16,7 +16,7 @@ internal partial class tabIrctcId
     private static readonly Color ExLine = Color.FromArgb(198, 216, 242);
     private static readonly Color ExText = Color.FromArgb(17, 40, 72);
     private static readonly Color ExMuted = Color.FromArgb(104, 127, 158);
-    private static readonly Color ExLime = Color.FromArgb(198, 244, 50);
+    private static readonly Color ExLime = Color.FromArgb(245, 146, 28);
     private static readonly Color ExCyan = Color.FromArgb(0, 132, 190);
     private static readonly Color ExInk = Color.FromArgb(12, 32, 58);
 
@@ -199,22 +199,29 @@ internal partial class tabIrctcId
     {
         if (exFormScaled) return;
         exFormScaled = true;
-        if (exS < 1.05f) return;
 
         Form f = FindForm();
         if (f == null) return;
 
         try
         {
-            f.MinimumSize = new Size(P(f.MinimumSize.Width), P(f.MinimumSize.Height));
-            Screen sc0 = Screen.FromControl(f);
-            if (f.ClientSize.Width > sc0.WorkingArea.Width - P(20))
-                f.ClientSize = new Size(sc0.WorkingArea.Width - P(20), f.ClientSize.Height);
-            f.ClientSize = new Size(P(f.ClientSize.Width), P(f.ClientSize.Height));
-            Screen sc = Screen.FromControl(f);
-            f.Location = new Point(
-                sc.WorkingArea.Left + (sc.WorkingArea.Width - f.Width) / 2,
-                sc.WorkingArea.Top + (sc.WorkingArea.Height - f.Height) / 2);
+            Rectangle wa = Screen.FromControl(f).WorkingArea;
+
+            int w = (int)(1180 * exS);
+            int h = (int)(700 * exS);
+            if (w > wa.Width - P(40)) w = wa.Width - P(40);
+            if (h > wa.Height - P(70)) h = wa.Height - P(70);
+            if (w < P(900)) w = Math.Min(P(900), wa.Width - P(20));
+            if (h < P(560)) h = Math.Min(P(560), wa.Height - P(20));
+
+            f.MinimumSize = new Size(0, 0);
+            f.ClientSize = new Size(w, h);
+            f.MinimumSize = new Size(w, h);
+
+            int x = wa.Left + (wa.Width - f.Width) / 2;
+            int y = wa.Top + (wa.Height - f.Height) / 2;
+            if (y < wa.Top + P(6)) y = wa.Top + P(6);
+            f.Location = new Point(x, y);
         }
         catch { }
     }
@@ -367,16 +374,16 @@ internal partial class tabIrctcId
             button4.Text = "PASTE";
 
             ExBtn(btnIDSave, ExLime, true);
-            ExBtn(button5, Color.FromArgb(60, 140, 240), false);
-            ExBtn(button3, Color.FromArgb(240, 150, 30), false);
-            ExBtn(C1AA0, Color.FromArgb(20, 170, 160), false);
-            ExBtn(button1, Color.FromArgb(124, 82, 232), false);
+            ExBtn(button5, Color.FromArgb(214, 122, 20), false);
+            ExBtn(button3, Color.FromArgb(198, 108, 12), false);
+            ExBtn(C1AA0, Color.FromArgb(170, 96, 10), false);
+            ExBtn(button1, Color.FromArgb(140, 78, 8), false);
             ExBtn(button2, ExLime, true);
-            ExBtn(C2AA0, Color.FromArgb(150, 165, 185), false);
-            ExBtn(btnChangePwd, Color.FromArgb(60, 140, 240), false);
-            ExBtn(btnChangeQn, Color.FromArgb(60, 140, 240), false);
-            ExBtn(btnHideDay, Color.FromArgb(60, 140, 240), false);
-            ExBtn(button4, Color.FromArgb(60, 140, 240), false);
+            ExBtn(C2AA0, Color.FromArgb(158, 126, 100), false);
+            ExBtn(btnChangePwd, Color.FromArgb(198, 108, 12), false);
+            ExBtn(btnChangeQn, Color.FromArgb(198, 108, 12), false);
+            ExBtn(btnHideDay, Color.FromArgb(198, 108, 12), false);
+            ExBtn(button4, Color.FromArgb(198, 108, 12), false);
 
             panel13.BackColor = ExCard;
             panel13.Paint -= ByteNovaPanelPaint;
@@ -1348,7 +1355,7 @@ internal partial class tabIrctcId
         b.FlatAppearance.MouseOverBackColor = Color.Transparent;
         b.FlatAppearance.MouseDownBackColor = Color.Transparent;
         b.BackColor = filled ? accent : ExCard;
-        b.ForeColor = filled ? Color.FromArgb(16, 40, 20) : ExText;
+        b.ForeColor = filled ? Color.FromArgb(52, 28, 4) : ExText;
         b.Font = ExFS(12f, FontStyle.Bold);
         b.Cursor = Cursors.Hand;
         b.Tag = accent;
@@ -1383,7 +1390,7 @@ internal partial class tabIrctcId
         else fill = down ? ExBlend(Color.White, accent, 0.30f) : ExBlend(Color.White, accent, h * 0.14f);
 
         Color border = down ? ExDark(accent, 22) : ExBlend(accent, Color.White, 0.25f * (1f - h));
-        Color text = filled ? (down ? Color.White : Color.FromArgb(16, 40, 20)) : (down ? Color.White : accent);
+        Color text = filled ? (down ? Color.White : Color.FromArgb(52, 28, 4)) : (down ? Color.White : accent);
 
         if (h > 0.05f && !down)
         {
