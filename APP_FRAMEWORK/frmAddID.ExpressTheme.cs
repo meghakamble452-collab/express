@@ -68,6 +68,7 @@ public partial class frmAddID
         PnlBase.Paint += ExBasePaint;
 
         tabIrctcId.Dock = DockStyle.Fill;
+        tabIrctcId.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         tabHistory.Dock = DockStyle.Fill;
         tabHistory.BackColor = Color.FromArgb(233, 241, 252);
 

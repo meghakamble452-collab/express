@@ -207,6 +207,9 @@ internal partial class tabIrctcId
         try
         {
             f.MinimumSize = new Size(P(f.MinimumSize.Width), P(f.MinimumSize.Height));
+            Screen sc0 = Screen.FromControl(f);
+            if (f.ClientSize.Width > sc0.WorkingArea.Width - P(20))
+                f.ClientSize = new Size(sc0.WorkingArea.Width - P(20), f.ClientSize.Height);
             f.ClientSize = new Size(P(f.ClientSize.Width), P(f.ClientSize.Height));
             Screen sc = Screen.FromControl(f);
             f.Location = new Point(
@@ -1171,6 +1174,7 @@ internal partial class tabIrctcId
     private void ExCheck(CheckBox c)
     {
         if (c == null) return;
+        c.Text = c.Text.Replace("&", "");
         c.AutoSize = false;
         c.BackColor = Color.Transparent;
         c.ForeColor = ExText;
@@ -1220,6 +1224,7 @@ internal partial class tabIrctcId
     private void ExRadio(RadioButton r)
     {
         if (r == null) return;
+        r.Text = r.Text.Replace("&", "");
         r.AutoSize = false;
         r.BackColor = Color.Transparent;
         r.ForeColor = ExText;
@@ -1272,6 +1277,8 @@ internal partial class tabIrctcId
         grdUsers.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
         grdUsers.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
         grdUsers.RowHeadersVisible = false;
+        grdUsers.ScrollBars = ScrollBars.Vertical;
+        grdUsers.AllowUserToAddRows = false;
         grdUsers.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
         grdUsers.ColumnHeadersHeight = P(34);
         grdUsers.RowTemplate.Height = P(30);
@@ -1430,7 +1437,26 @@ internal partial class tabIrctcId
         int topH = P(150);
         int gridY = topY + topH + P(8);
         int gridH = searchY - P(8) - gridY;
-        if (gridH < P(100)) gridH = P(100);
+
+        if (gridH < P(150))
+        {
+            int deficit = P(150) - gridH;
+
+            int cutTop = Math.Min(deficit, Math.Max(0, topH - P(128)));
+            topH -= cutTop;
+            deficit -= cutTop;
+
+            if (deficit > 0)
+            {
+                int cutSearch = Math.Min(deficit, Math.Max(0, searchH - P(150)));
+                searchH -= cutSearch;
+            }
+
+            searchY = footY - P(8) - searchH;
+            gridY = topY + topH + P(8);
+            gridH = searchY - P(8) - gridY;
+            if (gridH < P(120)) gridH = P(120);
+        }
 
         int bulkW = P(240);
         int bulkX = right - bulkW;
