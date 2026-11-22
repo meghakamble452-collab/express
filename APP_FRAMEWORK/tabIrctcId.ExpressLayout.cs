@@ -207,12 +207,12 @@ internal partial class tabIrctcId
         {
             Rectangle wa = Screen.FromControl(f).WorkingArea;
 
-            int w = (int)(1180 * exS);
-            int h = (int)(700 * exS);
+            int w = (int)(1080 * exS);
+            int h = (int)(640 * exS);
             if (w > wa.Width - P(40)) w = wa.Width - P(40);
             if (h > wa.Height - P(120)) h = wa.Height - P(120);
-            if (w < P(900)) w = Math.Min(P(900), wa.Width - P(20));
-            if (h < P(560)) h = Math.Min(P(560), wa.Height - P(20));
+            if (w < P(860)) w = Math.Min(P(860), wa.Width - P(20));
+            if (h < P(540)) h = Math.Min(P(540), wa.Height - P(20));
 
             f.MinimumSize = new Size(0, 0);
             f.ClientSize = new Size(w, h);

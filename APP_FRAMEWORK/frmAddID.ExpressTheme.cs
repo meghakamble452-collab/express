@@ -41,7 +41,7 @@ public partial class frmAddID
         AutoSize = false;
         BackColor = Color.FromArgb(150, 186, 245);
         ForeColor = Color.FromArgb(18, 42, 74);
-        MinimumSize = new Size(1040, 680);
+        MinimumSize = new Size(900, 560);
 
         pnlHeader.AutoSize = false;
         pnlHeader.BorderStyle = BorderStyle.None;
@@ -90,8 +90,8 @@ public partial class frmAddID
     {
         Rectangle wa = Screen.FromControl(this).WorkingArea;
 
-        int w = Math.Min(1180, wa.Width - 80);
-        int h = Math.Min(700, wa.Height - 60);
+        int w = Math.Min(1080, wa.Width - 80);
+        int h = Math.Min(640, wa.Height - 60);
         if (w < 1000) w = Math.Min(1000, wa.Width - 16);
         if (h < 620) h = Math.Min(620, wa.Height - 16);
 
