@@ -154,7 +154,7 @@ namespace APP_FRAMEWORK
             exTitle.TextAlign = ContentAlignment.MiddleLeft;
             exSub = ExLabel("PREMIUM TATKAL SOFTWARE", 90, 48, new Font("Segoe UI Semibold", 7.5F, FontStyle.Bold), Color.FromArgb(112, 133, 160));
 
-            exVersion = ExLabel("v" + appversion + "  •  SECURE", 332, 18, new Font("Segoe UI", 7.5F), Color.FromArgb(140, 158, 182));
+            exVersion = ExLabel("v0.0.1 • SECURE", 332, 18, new Font("Segoe UI", 7.5F), Color.FromArgb(140, 158, 182));
             exVersion.AutoSize = false;
             exVersion.Width = 150;
             exVersion.Height = 14;
@@ -171,6 +171,7 @@ namespace APP_FRAMEWORK
             label4.BackColor = Color.Transparent;
             label4.Cursor = Cursors.Help;
             label4.BringToFront();
+            label4.Visible = false;
 
             exLine = new Panel();
             exLine.Location = new Point(18, 92);
@@ -233,6 +234,7 @@ namespace APP_FRAMEWORK
             byteNovaRestartOption.Font = new Font("Segoe UI", 9F);
             byteNovaRestartOption.BackColor = Color.Transparent;
             byteNovaRestartOption.BringToFront();
+            byteNovaRestartOption.Visible = false;
 
             bunifuFlatButton2.Parent = exCard;
             bunifuFlatButton2.Location = new Point(18, 288);

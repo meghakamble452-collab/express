@@ -31,8 +31,15 @@ namespace APP_FRAMEWORK
         private int exLastSec = -1;
         private string exLastTip;
 
+        private Panel exInfo;
+        private Panel exChId, exChVal, exChVer, exChPay;
+        private Timer exValidityTick;
+        private DateTime exValidityStart;
+        private TimeSpan exValiditySpan;
+        private static readonly string ExVersion = "0.0.1";
+
         private float exK = 1f;
-        private int exBarH = 150;
+        private int exBarH = 200;
 
         private readonly List<Control> exNav = new List<Control>();
         private readonly List<Panel> exSwitchRow = new List<Panel>();
@@ -167,22 +174,35 @@ namespace APP_FRAMEWORK
                 exModeBox.Paint += ExModeBoxPaint;
                 exCanvas.Controls.Add(exModeBox);
 
+                int keep = boxes.Count > 2 ? 2 : boxes.Count - 1;
+
                 for (int i = 1; i < boxes.Count; i++)
                 {
                     Panel row = ExBuildBookSwitch(boxes[i], i);
                     if (row == null) continue;
+                    if (i != keep) { row.Visible = false; continue; }
                     row.Parent = exModeBox;
                     exSwitchRow.Add(row);
                 }
+
+                for (int i = 1; i < boxes.Count; i++)
+                    if (i != keep) boxes[i].Checked = false;
+                if (keep >= 1 && keep < boxes.Count) boxes[keep].Checked = true;
             }
 
-            Control userLbl = ExFind(this, "bnUserInfoLabel");
-            if (userLbl != null)
-            {
-                Panel ui = ExPill("USER INFO", 1, ExCUser, 1, 124, 38);
-                ui.Click += (s, e) => { ExClick(userLbl); ExFixUserInfoPopup(); };
-                exCanvas.Controls.Add(ui);
-            }
+            exInfo = new Panel();
+            exInfo.BackColor = Color.Transparent;
+            exCanvas.Controls.Add(exInfo);
+
+            exChId = ExInfoChip("USER ID", Convert.ToString(Program.clientID), Color.White);
+            exChVer = ExInfoChip("VERSION", ExVersion, Color.White);
+            exChPay = ExInfoChip("PAYMENT", string.IsNullOrEmpty(Program.KeyStatus) ? "—" : Program.KeyStatus,
+                Program.KeyStatus == "Paid" ? Color.FromArgb(198, 255, 220) : Color.FromArgb(255, 208, 176));
+            exChVal = ExInfoChip("VALIDITY", "—", Color.White);
+
+            exValidityStart = DateTime.Now;
+            exValiditySpan = ExLeftSpan();
+            exChVal.Tag = new object[] { "VALIDITY", ExFmtLeft(exValiditySpan), Color.White };
 
             exDateFont = ExCached("Segoe UI Semibold", 15f, FontStyle.Bold, exK);
 
@@ -229,11 +249,10 @@ namespace APP_FRAMEWORK
                 { "bunifuFlatButton4", "PROCESS_TICKET" },
                 { "bunifuFlatButton2", "PROXY" },
                 { "bunifuFlatButton6", "BYPASS" },
-                { "bunifuFlatButton8", "BACKUP" },
-                { "bnTokenButton",     "TOKEN" }
+                { "bunifuFlatButton8", "BACKUP" }
             };
-            Color[] navCol = { ExCIrctc, ExCBank, ExCNew, ExCProc, ExCProxy, ExCBypass, ExCBackup, ExCToken };
-            int[] navIco = { 1, 2, 3, 4, 5, 6, 7, 8 };
+            Color[] navCol = { ExCIrctc, ExCBank, ExCNew, ExCProc, ExCProxy, ExCBypass, ExCBackup };
+            int[] navIco = { 1, 2, 3, 4, 5, 6, 7 };
 
             for (int i = 0; i < nav.GetLength(0); i++)
             {
@@ -267,6 +286,11 @@ namespace APP_FRAMEWORK
             exTick.Tick += ExTick;
             exTick.Start();
 
+            exValidityTick = new Timer();
+            exValidityTick.Interval = 1000;
+            exValidityTick.Tick += ExValidityTickTick;
+            exValidityTick.Start();
+
             exRegion = new Timer();
             exRegion.Interval = 40;
             int rt = 0;
@@ -284,6 +308,10 @@ namespace APP_FRAMEWORK
             Application.ThreadException += ExLogThread;
             AppDomain.CurrentDomain.UnhandledException -= ExLogDomain;
             AppDomain.CurrentDomain.UnhandledException += ExLogDomain;
+            FormClosed += (s, e) =>
+            {
+                if (exValidityTick != null) { exValidityTick.Stop(); exValidityTick.Dispose(); exValidityTick = null; }
+            };
         }
 
         private static void ExLogText(string where, Exception ex)
@@ -359,7 +387,7 @@ namespace APP_FRAMEWORK
                 if (wa.Width < 200 || wa.Height < 120) return;
 
                 exK = Math.Max(0.70f, Math.Min(1.25f, wa.Width / 1920f));
-                exBarH = ExS(150, exK);
+                exBarH = ExS(200, exK);
 
                 int needW = Math.Min(wa.Width - 20, ExS(1720, exK));
                 int needH = exBarH;
@@ -564,6 +592,112 @@ namespace APP_FRAMEWORK
             return row;
         }
 
+
+        private Panel ExInfoChip(string cap, string val, Color valCol)
+        {
+            Panel p = new Panel();
+            p.BackColor = Color.Transparent;
+            p.Tag = new object[] { cap, val, valCol };
+            p.Paint += ExInfoChipPaint;
+            exInfo.Controls.Add(p);
+            return p;
+        }
+
+        private int ExChipW(Panel p)
+        {
+            object[] m = p.Tag as object[];
+            if (m == null) return ExS(90, exK);
+            Font fc = ExCached("Segoe UI Semibold", 9f, FontStyle.Bold, exK);
+            Font fv = ExCached("Segoe UI Semibold", 10.5f, FontStyle.Bold, exK);
+            return TextRenderer.MeasureText((string)m[0], fc).Width
+                 + TextRenderer.MeasureText(Convert.ToString(m[1]), fv).Width
+                 + ExS(36, exK);
+        }
+
+        private void ExInfoChipPaint(object sender, PaintEventArgs e)
+        {
+            try
+            {
+                Panel p = sender as Panel;
+                if (p == null || p.Width < 10 || p.Height < 8) return;
+                object[] m = p.Tag as object[];
+                if (m == null) return;
+
+                string cap = (string)m[0];
+                string val = Convert.ToString(m[1]);
+                Color vc = (Color)m[2];
+
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Rectangle r = new Rectangle(0, 0, p.Width - 1, p.Height - 1);
+
+                using (GraphicsPath path = ExRounded(r, ExS(9, exK)))
+                {
+                    using (SolidBrush b = new SolidBrush(Color.FromArgb(46, 255, 255, 255)))
+                        e.Graphics.FillPath(b, path);
+                    using (Pen pen = new Pen(Color.FromArgb(70, 255, 255, 255), 1f))
+                        e.Graphics.DrawPath(pen, path);
+                }
+
+                Font fc = ExCached("Segoe UI Semibold", 9f, FontStyle.Bold, exK);
+                Font fv = ExCached("Segoe UI Semibold", 10.5f, FontStyle.Bold, exK);
+                int cw = TextRenderer.MeasureText(cap, fc).Width;
+                int pad = ExS(10, exK);
+
+                TextRenderer.DrawText(e.Graphics, cap, fc,
+                    new Rectangle(pad, 0, cw + 2, p.Height), Color.FromArgb(206, 232, 246, 255),
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+
+                TextRenderer.DrawText(e.Graphics, val, fv,
+                    new Rectangle(pad + cw + ExS(7, exK), 0, Math.Max(8, p.Width - cw - pad - ExS(18, exK)), p.Height), vc,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
+            }
+            catch { }
+        }
+
+        private void ExValidityTickTick(object sender, EventArgs e)
+        {
+            try
+            {
+                if (exChVal == null || exChVal.IsDisposed) return;
+                object[] m = exChVal.Tag as object[];
+                if (m == null) return;
+
+                TimeSpan left = exValiditySpan - (DateTime.Now - exValidityStart);
+                if (left.TotalSeconds < 0) left = TimeSpan.Zero;
+
+                string txt = ExFmtLeft(left);
+                if (Equals(m[1], txt)) return;
+                m[1] = txt;
+                exChVal.Invalidate();
+            }
+            catch { }
+        }
+
+        private static TimeSpan ExLeftSpan()
+        {
+            string a = Program.availtime;
+            if (!string.IsNullOrWhiteSpace(a))
+            {
+                TimeSpan t;
+                if (TimeSpan.TryParse(a, out t) && t.TotalSeconds > 0) return t;
+                double sec;
+                if (double.TryParse(a.Trim(), System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture, out sec) && sec > 0)
+                    return TimeSpan.FromSeconds(sec);
+            }
+            if (Program.ExpiryDay > 0) return TimeSpan.FromDays(Program.ExpiryDay);
+            return TimeSpan.Zero;
+        }
+
+        private static string ExFmtLeft(TimeSpan t)
+        {
+            if (t.TotalSeconds <= 0) return "Expired";
+            if (t.TotalDays >= 1) return ((int)t.TotalDays) + "d " + t.ToString(@"hh\:mm\:ss");
+            if (t.TotalHours >= 1) return t.ToString(@"hh\:mm\:ss");
+            if (t.TotalMinutes >= 1) return t.ToString(@"mm\:ss") + " min";
+            return ((int)t.TotalSeconds) + " sec";
+        }
+
         private Panel ExPill(string text, int kind, Color accent, int icon, int w, int h)
         {
             Panel p = new Panel();
@@ -595,7 +729,7 @@ namespace APP_FRAMEWORK
 
                 if (exLogo != null) exLogo.Bounds = new Rectangle(ExS(14, k), ExS(16, k), ExS(56, k), ExS(56, k));
 
-                int rowY = ExS(88, k);
+                int rowY = ExS(124, k);
 
                 if (exSwitchRow.Count > 0 && exModeBox != null)
                 {
@@ -630,10 +764,7 @@ namespace APP_FRAMEWORK
 
                 int closeX = right - closeW;
                 int powerX = closeX - gap - closeW;
-                int dateW = ExS(178, k);
-                int dateX = powerX - gap - dateW;
-                int userW = ExS(124, k);
-                int userX = dateX - gap - userW;
+                
 
                 if (exClockPill != null)
                 {
@@ -935,14 +1066,7 @@ namespace APP_FRAMEWORK
 
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-                if (exBookIndex.ContainsKey(row))
-                {
-                    Font fb = ExCached("Segoe UI Semibold", 12f, FontStyle.Bold, exK);
-                    TextRenderer.DrawText(e.Graphics, exBookIndex[row].ToString(), fb,
-                        new Rectangle(0, 0, ExS(16, exK), row.Height), Color.White,
-                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
-                    return;
-                }
+                if (exBookIndex.ContainsKey(row)) return;
 
                 Font f = ExCached("Segoe UI", 12f, FontStyle.Regular, exK);
                 TextRenderer.DrawText(e.Graphics, cb.Text, f,
