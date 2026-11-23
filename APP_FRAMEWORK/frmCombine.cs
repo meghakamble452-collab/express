@@ -95,9 +95,7 @@ public class frmCombine : Form
 
     private Panel _strip;
     private bool _shapeHooked;
-    private System.Collections.Generic.Dictionary<Control, System.Collections.Generic.List<Control>> _fields;
     private BunifuThinButton2[] _pills;
-    private int _activeTab;
 
     private void ApplyByteNovaLatestDesign()
     {
@@ -105,19 +103,18 @@ public class frmCombine : Form
         try
         {
             BackColor = Color.FromArgb(233, 241, 252);
-            ClientSize = new Size(840, 540);
-            _fields = new System.Collections.Generic.Dictionary<Control, System.Collections.Generic.List<Control>>();
+            ClientSize = new Size(880, 560);
             _pills = new BunifuThinButton2[3] { bunifuThinButton21, bunifuThinButton22, bunifuThinButton23 };
 
             pnlHeader.Dock = DockStyle.None;
-            pnlHeader.SetBounds(0, 0, ClientSize.Width, 46);
+            pnlHeader.SetBounds(0, 0, ClientSize.Width, 48);
             pnlHeader.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            pnlHeader.BackColor = Color.FromArgb(12, 38, 72);
+            pnlHeader.BackColor = Color.FromArgb(18, 76, 196);
             pnlHeader.Paint -= ByteNovaHeaderPaint;
             pnlHeader.Paint += ByteNovaHeaderPaint;
 
             label5.AutoSize = false;
-            label5.SetBounds(18, 10, 520, 26);
+            label5.SetBounds(20, 11, 540, 26);
             label5.Text = "PAYMENT DETAILS   \u2022   BUILD " + Program.appversion;
             label5.Font = new Font("Segoe UI Semibold", 11.5F, FontStyle.Bold);
             label5.ForeColor = Color.White;
@@ -126,7 +123,7 @@ public class frmCombine : Form
 
             bunifuImageButton1.Visible = false;
 
-            btnClose.SetBounds(ClientSize.Width - 42, 9, 28, 28);
+            btnClose.SetBounds(ClientSize.Width - 44, 10, 28, 28);
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnClose.BackColor = Color.Transparent;
             btnClose.BackgroundImage = null;
@@ -140,25 +137,24 @@ public class frmCombine : Form
                 _strip.Paint += StripPaint;
                 Controls.Add(_strip);
             }
-            _strip.SetBounds(0, 46, ClientSize.Width, 54);
+            _strip.SetBounds(0, 48, ClientSize.Width, 56);
             _strip.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             _strip.BackColor = Color.FromArgb(214, 232, 252);
 
             for (int i = 0; i < 3; i++)
             {
                 StylePill(_pills[i], i == 0 ? "NET BANKING" : (i == 1 ? "DEBIT CARD" : "CREDIT CARD"));
-                int idx = i;
                 _pills[i].Click -= PillClick;
                 _pills[i].Click += PillClick;
-                _pills[i].Tag = idx;
+                _pills[i].Tag = i;
             }
 
             int gap = 10;
             int left = 18;
             int pw = (ClientSize.Width - (left * 2) - (gap * 2)) / 3;
-            bunifuThinButton21.SetBounds(left, 8, pw, 36);
-            bunifuThinButton22.SetBounds(left + pw + gap, 8, pw, 36);
-            bunifuThinButton23.SetBounds(left + ((pw + gap) * 2), 8, pw, 36);
+            bunifuThinButton21.SetBounds(left, 9, pw, 36);
+            bunifuThinButton22.SetBounds(left + pw + gap, 9, pw, 36);
+            bunifuThinButton23.SetBounds(left + ((pw + gap) * 2), 9, pw, 36);
 
             bunifuThinButton21.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             bunifuThinButton22.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
@@ -168,7 +164,7 @@ public class frmCombine : Form
             _strip.Controls.Add(bunifuThinButton22);
             _strip.Controls.Add(bunifuThinButton23);
 
-            BAAAA.SetBounds(18, 114, ClientSize.Width - 36, ClientSize.Height - 132);
+            BAAAA.SetBounds(18, 118, ClientSize.Width - 36, ClientSize.Height - 136);
             BAAAA.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             BAAAA.BackColor = Color.White;
             BAAAA.Padding = new Padding(14);
@@ -187,9 +183,9 @@ public class frmCombine : Form
             StyleDeep(tabDebitCard);
             StyleDeep(tabCreditCard);
 
-            BuildFieldFrames(CAAA0);
-            BuildFieldFrames(tabDebitCard);
-            BuildFieldFrames(tabCreditCard);
+            WrapAllFields(CAAA0);
+            WrapAllFields(tabDebitCard);
+            WrapAllFields(tabCreditCard);
 
             HookArrange(CAAA0);
             HookArrange(tabDebitCard);
@@ -220,6 +216,106 @@ public class frmCombine : Form
         }
     }
 
+    private class FieldBox : Panel
+    {
+        public bool Active;
+
+        public FieldBox()
+        {
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer
+                   | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+            BackColor = Color.White;
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            Rectangle r = new Rectangle(0, 0, Width - 1, Height - 1);
+            using (GraphicsPath p = RoundPath(r, 6))
+            {
+                using (SolidBrush b = new SolidBrush(Color.White)) e.Graphics.FillPath(b, p);
+                using (Pen pen = new Pen(Active ? Color.FromArgb(245, 146, 28) : Color.FromArgb(184, 205, 232),
+                                        Active ? 1.7f : 1.1f))
+                    e.Graphics.DrawPath(pen, p);
+            }
+        }
+    }
+
+    private void CollectFields(Control p, System.Collections.Generic.List<Control> hits)
+    {
+        foreach (Control c in p.Controls)
+        {
+            if (c is TextBox || c is ComboBox) { hits.Add(c); continue; }
+            if (c is Label || c is Button || c is CheckBox || c is RadioButton
+                || c is ListBox || c is DataGridView) continue;
+            CollectFields(c, hits);
+        }
+    }
+
+    private void WrapAllFields(Control tab)
+    {
+        System.Collections.Generic.List<Control> hits = new System.Collections.Generic.List<Control>();
+        CollectFields(tab, hits);
+
+        foreach (Control f in hits)
+        {
+            Control par = f.Parent;
+            if (par == null) continue;
+
+            FieldBox box = new FieldBox();
+            box.Anchor = f.Anchor;
+            box.SetBounds(f.Left - 5, f.Top - 5, f.Width + 10, f.Height + 10);
+            par.Controls.Add(box);
+            box.BringToFront();
+
+            f.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            f.SetBounds(5, 5, f.Width, f.Height);
+            box.Controls.Add(f);
+
+            f.Enter += delegate { box.Active = true; box.Invalidate(); };
+            f.Leave += delegate { box.Active = false; box.Invalidate(); };
+        }
+    }
+
+    private void HookArrange(Control tab)
+    {
+        if (tab == null) return;
+        tab.Resize += delegate { ArrangeTab(tab); };
+        ArrangeTab(tab);
+    }
+
+    private void ArrangeTab(Control tab)
+    {
+        if (tab == null) return;
+
+        Button save = null;
+        CheckBox pwd = null;
+        bool pwdDone = false;
+
+        foreach (Control c in tab.Controls)
+        {
+            Button b = c as Button;
+            if (b != null && (b.Text ?? "").ToUpperInvariant().Contains("SAVE")) save = b;
+
+            CheckBox chk = c as CheckBox;
+            if (chk != null && (chk.Text ?? "").ToUpperInvariant().Contains("SHOW"))
+            {
+                if (!pwdDone) { pwd = chk; pwdDone = true; }
+                else chk.Visible = false;
+            }
+        }
+
+        if (save != null && pwd != null && save.Parent == pwd.Parent)
+        {
+            pwd.SetBounds(12, Math.Max(4, save.Top - 27), 210, 22);
+            pwd.BringToFront();
+            save.BringToFront();
+        }
+
+        tab.Invalidate();
+    }
+
     private void PillClick(object sender, EventArgs e)
     {
         BunifuThinButton2 b = sender as BunifuThinButton2;
@@ -229,7 +325,6 @@ public class frmCombine : Form
 
     private void MarkPills(int active)
     {
-        _activeTab = active;
         for (int i = 0; i < _pills.Length; i++)
         {
             BunifuThinButton2 p = _pills[i];
@@ -275,127 +370,16 @@ public class frmCombine : Form
         return p;
     }
 
-    private void BuildFieldFrames(Control tab)
+    private void RoundControl(Control c, int rad)
     {
-        if (tab == null) return;
-
-        System.Collections.Generic.List<Control> list = new System.Collections.Generic.List<Control>();
-        foreach (Control c in tab.Controls)
-            if (c is TextBox || c is ComboBox) list.Add(c);
-
-        _fields[tab] = list;
-        tab.Paint -= FieldsPaint;
-        tab.Paint += FieldsPaint;
-    }
-
-    private void FieldsPaint(object sender, PaintEventArgs e)
-    {
-        Control tab = sender as Control;
-        if (tab == null || _fields == null) return;
-
-        System.Collections.Generic.List<Control> list;
-        if (!_fields.TryGetValue(tab, out list)) return;
-
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-        foreach (Control c in list)
-        {
-            if (!c.Visible) continue;
-            Rectangle r = new Rectangle(c.Left - 4, c.Top - 4, c.Width + 8, c.Height + 8);
-            using (GraphicsPath p = RoundPath(r, 5))
-            {
-                using (SolidBrush fill = new SolidBrush(Color.White)) e.Graphics.FillPath(fill, p);
-                using (Pen pen = new Pen(Color.FromArgb(150, 184, 226), 1.2f)) e.Graphics.DrawPath(pen, p);
-            }
-        }
-    }
-
-    private void HookArrange(Control tab)
-    {
-        if (tab == null) return;
-        tab.Resize += delegate { ArrangeTab(tab); };
-        ArrangeTab(tab);
-    }
-
-    private void ArrangeTab(Control tab)
-    {
-        if (tab == null || tab.ClientSize.Width < 300 || tab.ClientSize.Height < 160) return;
-
-        int pad = 12;
-        int rightW = 250;
-
-        ListBox lb = null;
-        Button save = null;
-        CheckBox pwd = null;
-        bool pwdDone = false;
-        System.Collections.Generic.List<Button> acts = new System.Collections.Generic.List<Button>();
-
-        foreach (Control c in tab.Controls)
-        {
-            if (lb == null) { ListBox x = c as ListBox; if (x != null) lb = x; }
-
-            Button b = c as Button;
-            if (b != null)
-            {
-                string t = (b.Text ?? "").ToUpperInvariant();
-                if (t.Contains("SAVE")) save = b;
-                else if (t.Contains("EDIT") || t.Contains("DEL")) acts.Add(b);
-            }
-
-            CheckBox chk = c as CheckBox;
-            if (chk != null)
-            {
-                string ct = (chk.Text ?? "").ToUpperInvariant();
-                if (ct.Contains("SHOW"))
-                {
-                    if (!pwdDone) { pwd = chk; pwdDone = true; }
-                    else chk.Visible = false;
-                }
-            }
-        }
-
-        if (lb == null) return;
-
-        int leftLimit = tab.ClientSize.Width - rightW - pad;
-        int h = tab.ClientSize.Height;
-
-        lb.Dock = DockStyle.None;
-        lb.SetBounds(leftLimit, pad, rightW, Math.Max(80, h - (pad * 2) - 46));
-
-        int bw = (rightW - 16) / 3;
-        for (int i = 0; i < acts.Count; i++)
-            acts[i].SetBounds(leftLimit + i * (bw + 8), lb.Bottom + 10, bw, 32);
-
-        if (save != null)
-        {
-            save.SetBounds(14, h - 46, leftLimit - 22, 34);
-            save.BringToFront();
-        }
-
-        if (pwd != null)
-        {
-            pwd.SetBounds(16, h - 78, leftLimit - 30, 22);
-            pwd.BringToFront();
-        }
-
-        foreach (Control c in tab.Controls)
-        {
-            if (c == lb || c == save || c == pwd || acts.Contains(c as Button)) continue;
-            if (c is Label || c is CheckBox || c is RadioButton) continue;
-            if (c.Right > leftLimit - 10)
-            {
-                int nw = leftLimit - 10 - c.Left;
-                if (nw >= 60) c.Width = nw;
-            }
-        }
-
-        tab.Invalidate();
+        if (c == null || c.Width < 2 || c.Height < 2) return;
+        using (GraphicsPath p = RoundPath(new Rectangle(0, 0, c.Width, c.Height), rad))
+            c.Region = new Region(p);
     }
 
     private void StylePill(BunifuThinButton2 b, string text)
     {
         if (b == null) return;
-
         b.ButtonText = text;
         b.Font = new Font("Segoe UI Semibold", 9.5F, FontStyle.Bold);
         b.IdleCornerRadius = 8;
@@ -443,7 +427,7 @@ public class frmCombine : Form
             Label l = c as Label;
             if (l != null)
             {
-                l.ForeColor = Color.FromArgb(30, 56, 92);
+                l.ForeColor = Color.FromArgb(28, 52, 88);
                 if (l.BackColor != Color.Transparent) l.BackColor = Color.White;
             }
 
@@ -502,7 +486,8 @@ public class frmCombine : Form
         ComboBox cb = sender as ComboBox;
         if (cb == null || e.Index < 0) return;
 
-        bool sel = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+        bool closed = (e.State & DrawItemState.ComboBoxEdit) == DrawItemState.ComboBoxEdit;
+        bool sel = !closed && (e.State & DrawItemState.Selected) == DrawItemState.Selected;
         Rectangle r = e.Bounds;
 
         using (SolidBrush bg = new SolidBrush(sel ? Color.FromArgb(255, 236, 214) : Color.White))
@@ -534,6 +519,10 @@ public class frmCombine : Form
         b.Font = new Font("Segoe UI Semibold", 9.5f);
         b.UseVisualStyleBackColor = false;
         b.Cursor = Cursors.Hand;
+        b.FlatAppearance.MouseOverBackColor = bg;
+        b.FlatAppearance.MouseDownBackColor = bg;
+        RoundControl(b, 7);
+        b.Resize += delegate { RoundControl(b, 7); };
     }
 
     private void StyleGrid(DataGridView d)
@@ -543,7 +532,7 @@ public class frmCombine : Form
         d.BorderStyle = BorderStyle.None;
         d.GridColor = Color.FromArgb(198, 216, 242);
         d.RowHeadersVisible = false;
-        d.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(12, 38, 72);
+        d.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(18, 76, 196);
         d.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
         d.DefaultCellStyle.BackColor = Color.White;
         d.DefaultCellStyle.ForeColor = Color.FromArgb(17, 40, 72);
@@ -557,7 +546,7 @@ public class frmCombine : Form
         if (r.Width <= 0 || r.Height <= 0) return;
 
         using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, Color.FromArgb(8, 26, 52), Color.FromArgb(18, 62, 112),
+            r, Color.FromArgb(18, 76, 196), Color.FromArgb(48, 140, 244),
             LinearGradientMode.Horizontal))
             e.Graphics.FillRectangle(bg, r);
 
