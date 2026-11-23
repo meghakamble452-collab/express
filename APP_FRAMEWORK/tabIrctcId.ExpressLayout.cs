@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -21,7 +21,8 @@ internal partial class tabIrctcId
     private static readonly Color ExInk = Color.FromArgb(12, 32, 58);
 
     private bool exBuilt;
-    private bool exMin;
+    private bool exMin = true;
+    private bool exMinSized;
     private bool exFormScaled;
     private float exS = 1f;
 
@@ -1514,6 +1515,25 @@ internal partial class tabIrctcId
         SuspendLayout();
         try
         {
+            if (exMin)
+            {
+                grpAddID.Visible = false;
+                groupBox1.Visible = false;
+                label6.Visible = false;
+                exBulk.Visible = false;
+                button4.Visible = false;
+
+                if (!exMinSized)
+                {
+                    exMinSized = true;
+                    Form f = FindForm();
+                    if (f != null && f.ClientSize.Width > 1000)
+                        f.ClientSize = new Size(P(1000), P(580));
+                }
+
+                ExPut(grdUsers, M, 10, innerW, H - 20);
+                return;
+            }
             ExPut(grpAddID, M, topY, innerW, topH);
             ExRound(grpAddID, P(11));
 
