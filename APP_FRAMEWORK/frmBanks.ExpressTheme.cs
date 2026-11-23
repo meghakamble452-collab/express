@@ -95,7 +95,7 @@ namespace APP_FRAMEWORK
 
             using (SolidBrush ink = new SolidBrush(Color.White))
             using (Font f = new Font("Segoe UI Semibold", 11f))
-                e.Graphics.DrawString("PAYMENT DETAILS", f, ink, 16f, 12f);
+                e.Graphics.DrawString("PAYMENT DETAILS   •   BUILD " + Program.appversion, f, ink, 16f, 12f);
         }
 
         private void BkXPaint(object sender, PaintEventArgs e)
