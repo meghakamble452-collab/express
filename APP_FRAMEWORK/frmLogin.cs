@@ -2544,6 +2544,15 @@ public partial class frmLogin : Form
     static frmLogin()
     {
         string text = "28.11.2026";
+        try
+        {
+            if (File.Exists("ver.txt"))
+            {
+                string vf = File.ReadAllText("ver.txt").Trim();
+                if (vf.Length > 0) text = vf;
+            }
+        }
+        catch { }
         appversion = text;
         Program.appversion = appversion;
         ENCkey = "";

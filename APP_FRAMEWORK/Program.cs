@@ -1697,6 +1697,7 @@ public static class Program
         Process process = new Process();
         process.StartInfo.FileName = path;
         process.StartInfo.WorkingDirectory = Application.StartupPath;
+        process.StartInfo.Arguments = Program.NewVersion;
         process.Start();
         Environment.Exit(0);
     }
