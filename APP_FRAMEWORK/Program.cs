@@ -549,18 +549,23 @@ public static class Program
                 smethod_16();
                 if (string.IsNullOrEmpty(DBPASS)) DBPASS = "ExpressLocalKey";
                 DBPASS = "ExpressLocalKey";
+
                 string path19 = "IRLOG//pwd";
-                if (!File.Exists(path19))
+                string_1A = DBPASS;
+                if (File.Exists(path19))
+                {
+                try
+                {
+                string pv = File.ReadAllText(path19).Trim();
+                if (pv.Length > 0) string_1A = pv;
+                }
+                catch { }
+                }
+                else
                 {
                 string path20 = "Database.db";
-                if (File.Exists(path20))
-                {
-                string_1A = clientID.Substring(0, 3);
-                goto IL_08a5;
+                if (File.Exists(path20)) string_1A = clientID.Substring(0, 3);
                 }
-                }
-                string_1A = DBPASS;
-                goto IL_08a5;
                 IL_08a5:
                 string_00 = Class28.smethod_15(clearPwd: false, 1);
                 Class30.smethod_4();

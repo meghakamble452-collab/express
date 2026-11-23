@@ -470,7 +470,11 @@ internal class Class30
         Program.string_1A = Program.DBPASS;
         File.WriteAllText("IRLOG//pwd", Program.DBPASS);
         }
-        catch { }
+        catch
+        {
+        try { if (File.Exists("Database.db")) File.Delete("Database.db"); } catch { }
+        try { if (File.Exists("IRLOG//pwd")) File.Delete("IRLOG//pwd"); } catch { }
+        }
 
         try { System.Diagnostics.Process.Start(Application.ExecutablePath); } catch { }
         Environment.Exit(0);
