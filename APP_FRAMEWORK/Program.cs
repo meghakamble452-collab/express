@@ -1661,8 +1661,29 @@ public static class Program
 {
     try
     {
+        foreach (Process p in Process.GetProcessesByName("Updater"))
+        {
+            try { p.Kill(); } catch { }
+        }
+        Thread.Sleep(400);
+
         string path = "Updater.exe";
-        if (File.Exists(path)) File.Delete(path);
+        if (File.Exists(path))
+        {
+            try
+            {
+                File.SetAttributes(path, FileAttributes.Normal);
+                File.Delete(path);
+            }
+            catch
+            {
+                path = "Updater2.exe";
+                if (File.Exists(path))
+                {
+                    try { File.Delete(path); } catch { }
+                }
+            }
+        }
 
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
         ServicePointManager.ServerCertificateValidationCallback = (s, cert, chain, err) => true;
@@ -1674,7 +1695,7 @@ public static class Program
         }
 
         Process process = new Process();
-        process.StartInfo.FileName = "Updater.exe";
+        process.StartInfo.FileName = path;
         process.StartInfo.WorkingDirectory = Application.StartupPath;
         process.Start();
         Environment.Exit(0);
