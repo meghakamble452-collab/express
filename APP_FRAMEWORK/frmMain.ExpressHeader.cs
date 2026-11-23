@@ -729,7 +729,7 @@ namespace APP_FRAMEWORK
         private static string ExFmtLeft(TimeSpan t)
         {
             if (t.TotalSeconds <= 0) return "Expired";
-            if (t.TotalDays >= 1) return ((int)t.TotalDays) + "d " + t.ToString(@"hh\:mm\:ss");
+            if (t.TotalDays >= 1) return ((int)t.TotalDays) + "d";
             if (t.TotalHours >= 1) return t.ToString(@"hh\:mm\:ss");
             if (t.TotalMinutes >= 1) return t.ToString(@"mm\:ss") + " min";
             return ((int)t.TotalSeconds) + " sec";
@@ -835,6 +835,7 @@ namespace APP_FRAMEWORK
 
                 if (exInfo != null)
                 {
+                    int maxRel = Math.Max(ExS(160, k), userX - ExS(10, k) - infoX);
                     int cxp = ExS(74, k);
                     int chipTop = ExS(4, k);
                     int chipH = ExS(54, k);
@@ -843,14 +844,14 @@ namespace APP_FRAMEWORK
                     {
                         if (cp == null) continue;
                         int cwp = ExChipW(cp);
-                        if (cxp + cwp > userX - ExS(10, k))
-                            cwp = Math.Max(ExS(52, k), userX - ExS(10, k) - cxp);
+                        if (cxp + cwp > maxRel)
+                            cwp = Math.Max(ExS(52, k), maxRel - cxp);
                         cp.Bounds = new Rectangle(cxp, chipTop, cwp, chipH);
                         ExRoundRegion(cp, ExS(9, k));
                         cxp += cwp + ExS(6, k);
                     }
 
-                    int infoW = Math.Max(ExS(120, k), Math.Min(cxp, powerX - infoX - ExS(8, k)));
+                    int infoW = Math.Max(ExS(160, k), Math.Min(cxp, maxRel));
                     exInfo.Bounds = new Rectangle(infoX, ExS(8, k), infoW, ExS(62, k));
                 }
 
