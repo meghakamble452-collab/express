@@ -1,11 +1,12 @@
+using Bunifu.Framework.UI;
+using BunifuAnimatorNS;
+using NEXUS.Properties;
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using Bunifu.Framework.UI;
-using BunifuAnimatorNS;
-using NEXUS.Properties;
 
 namespace APP_FRAMEWORK;
 
@@ -97,13 +98,18 @@ public class frmCombine : Form
     private bool _shapeHooked;
     private BunifuThinButton2[] _pills;
 
+    [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, string lParam);
+
+    private const int EM_SETCUEBANNER = 0x1501;
+
     private void ApplyByteNovaLatestDesign()
     {
         SuspendLayout();
         try
         {
             BackColor = Color.FromArgb(233, 241, 252);
-            ClientSize = new Size(880, 560);
+            ClientSize = new Size(880, 580);
             _pills = new BunifuThinButton2[3] { bunifuThinButton21, bunifuThinButton22, bunifuThinButton23 };
 
             pnlHeader.Dock = DockStyle.None;
@@ -123,12 +129,16 @@ public class frmCombine : Form
 
             bunifuImageButton1.Visible = false;
 
-            btnClose.SetBounds(ClientSize.Width - 44, 10, 28, 28);
+            btnClose.SetBounds(ClientSize.Width - 46, 10, 30, 28);
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnClose.BackColor = Color.Transparent;
+            btnClose.BackColor = Color.FromArgb(220, 38, 38);
             btnClose.BackgroundImage = null;
+            btnClose.Image = null;
             btnClose.SizeMode = PictureBoxSizeMode.Zoom;
             btnClose.Zoom = 0;
+            btnClose.Paint -= ClosePaint;
+            btnClose.Paint += ClosePaint;
+            RoundControl(btnClose, 7);
 
             if (_strip == null)
             {
@@ -187,9 +197,9 @@ public class frmCombine : Form
             WrapAllFields(tabDebitCard);
             WrapAllFields(tabCreditCard);
 
-            HookArrange(CAAA0);
-            HookArrange(tabDebitCard);
-            HookArrange(tabCreditCard);
+            SetupTab(CAAA0);
+            SetupTab(tabDebitCard);
+            SetupTab(tabCreditCard);
 
             bunifuElipse1.ElipseRadius = 14;
             ShapeForm();
@@ -213,6 +223,26 @@ public class frmCombine : Form
             ResumeLayout(false);
             PerformLayout();
             Invalidate(true);
+        }
+    }
+
+    private void ClosePaint(object sender, PaintEventArgs e)
+    {
+        Control c = sender as Control;
+        if (c == null) return;
+
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        using (SolidBrush bg = new SolidBrush(Color.FromArgb(220, 38, 38)))
+        using (GraphicsPath p = RoundPath(new Rectangle(0, 0, c.Width - 1, c.Height - 1), 7))
+            e.Graphics.FillPath(bg, p);
+
+        using (Pen pen = new Pen(Color.White, 2.2f))
+        {
+            pen.StartCap = LineCap.Round;
+            pen.EndCap = LineCap.Round;
+            int m = 9;
+            e.Graphics.DrawLine(pen, m, m, c.Width - m, c.Height - m);
+            e.Graphics.DrawLine(pen, c.Width - m, m, m, c.Height - m);
         }
     }
 
@@ -278,42 +308,164 @@ public class frmCombine : Form
         }
     }
 
-    private void HookArrange(Control tab)
+    private Control FindFieldPanel(Control tab)
     {
-        if (tab == null) return;
-        tab.Resize += delegate { ArrangeTab(tab); };
-        ArrangeTab(tab);
+        System.Collections.Generic.List<Control> hits = new System.Collections.Generic.List<Control>();
+        CollectFields(tab, hits);
+        foreach (Control c in hits)
+            if (c is TextBox) return c.Parent;
+        return tab;
     }
 
-    private void ArrangeTab(Control tab)
+    private void ShortenLabels(Control par)
+    {
+        foreach (Control c in par.Controls)
+        {
+            Label l = c as Label;
+            if (l == null) continue;
+
+            string t = l.Text ?? "";
+            if (t.Contains("Login Password")) l.Text = "Login Pwd :";
+            else if (t.Contains("Valid Thru")) l.Text = "Expiry :";
+            else if (t.Contains("Card 3D Password")) l.Text = "3D Password :";
+            else if (t.Contains("Visa / Master Pin")) l.Text = "Visa Pin :";
+            else if (t.Contains("Card ATM Pin")) l.Text = "ATM Pin :";
+
+            l.AutoSize = true;
+            l.Font = new Font("Segoe UI", 9f);
+        }
+    }
+
+    private void SetupTab(Control tab)
     {
         if (tab == null) return;
 
-        Button save = null;
         CheckBox pwd = null;
         bool pwdDone = false;
+        Button save = null;
 
-        foreach (Control c in tab.Controls)
+        System.Collections.Generic.List<Control> all = new System.Collections.Generic.List<Control>();
+        CollectAll(tab, all);
+
+        foreach (Control c in all)
         {
-            Button b = c as Button;
-            if (b != null && (b.Text ?? "").ToUpperInvariant().Contains("SAVE")) save = b;
-
             CheckBox chk = c as CheckBox;
             if (chk != null && (chk.Text ?? "").ToUpperInvariant().Contains("SHOW"))
             {
                 if (!pwdDone) { pwd = chk; pwdDone = true; }
                 else chk.Visible = false;
             }
+
+            Button b = c as Button;
+            if (b != null && (b.Text ?? "").ToUpperInvariant().Contains("SAVE")) save = b;
         }
 
-        if (save != null && pwd != null && save.Parent == pwd.Parent)
+        Control panel = FindFieldPanel(tab);
+        ShortenLabels(panel);
+
+        int endY = Reflow(panel);
+
+        if (pwd != null && pwd.Parent == panel)
         {
-            pwd.SetBounds(12, Math.Max(4, save.Top - 27), 210, 22);
+            pwd.SetBounds(14, endY + 4, 210, 22);
             pwd.BringToFront();
-            save.BringToFront();
+            endY += 28;
         }
 
+        if (save != null && save.Parent == panel)
+        {
+            save.SetBounds(12, endY + 4, Math.Max(180, panel.ClientSize.Width - 24), 34);
+            save.BringToFront();
+            endY += 40;
+        }
+
+        if (panel != tab)
+        {
+            int maxH = tab.ClientSize.Height - 8;
+            panel.Height = Math.Min(Math.Max(panel.Height, endY + 8), maxH);
+        }
+
+        AddCues(panel);
         tab.Invalidate();
+    }
+
+    private void CollectAll(Control p, System.Collections.Generic.List<Control> all)
+    {
+        foreach (Control c in p.Controls)
+        {
+            all.Add(c);
+            CollectAll(c, all);
+        }
+    }
+
+    private int Reflow(Control par)
+    {
+        System.Collections.Generic.List<Control> items = new System.Collections.Generic.List<Control>();
+
+        foreach (Control c in par.Controls)
+        {
+            if (!c.Visible) continue;
+            if (c is Button) continue;
+            CheckBox chk = c as CheckBox;
+            if (chk != null && (chk.Text ?? "").ToUpperInvariant().Contains("SHOW")) continue;
+            items.Add(c);
+        }
+
+        items.Sort(delegate (Control a, Control b) { return a.Top.CompareTo(b.Top); });
+
+        int y = 14;
+        int i = 0;
+
+        while (i < items.Count)
+        {
+            int bandTop = items[i].Top;
+            System.Collections.Generic.List<Control> row = new System.Collections.Generic.List<Control>();
+
+            while (i < items.Count && items[i].Top - bandTop <= 14)
+            {
+                row.Add(items[i]);
+                i++;
+            }
+
+            int rowH = 0;
+            foreach (Control c in row) rowH = Math.Max(rowH, c.Height);
+
+            int delta = y - bandTop;
+            foreach (Control c in row) c.Top += delta;
+
+            y += rowH + 14;
+        }
+
+        return y;
+    }
+
+    private void AddCues(Control par)
+    {
+        System.Collections.Generic.List<Control> boxes = new System.Collections.Generic.List<Control>();
+
+        foreach (Control c in par.Controls)
+        {
+            TextBox tb = c as TextBox;
+            if (tb == null) continue;
+
+            string cue = null;
+            int bestLeft = -1;
+
+            foreach (Control l in par.Controls)
+            {
+                Label lab = l as Label;
+                if (lab == null) continue;
+                if (Math.Abs(lab.Top - tb.Top) > 14) continue;
+                if (lab.Left >= tb.Left) continue;
+                if (lab.Left <= bestLeft) continue;
+                bestLeft = lab.Left;
+                cue = (lab.Text ?? "").Replace(":", "").Replace("*", "").Trim();
+            }
+
+            if (string.IsNullOrEmpty(cue)) continue;
+            boxes.Add(tb);
+            try { SendMessage(tb.Handle, EM_SETCUEBANNER, (IntPtr)1, cue); } catch { }
+        }
     }
 
     private void PillClick(object sender, EventArgs e)
