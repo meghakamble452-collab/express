@@ -21,6 +21,7 @@ internal partial class tabIrctcId
     private static readonly Color ExInk = Color.FromArgb(12, 32, 58);
 
     private bool exBuilt;
+    private bool exMin;
     private bool exFormScaled;
     private float exS = 1f;
 
@@ -207,12 +208,12 @@ internal partial class tabIrctcId
         {
             Rectangle wa = Screen.FromControl(f).WorkingArea;
 
-            int w = (int)(1080 * exS);
-            int h = (int)(640 * exS);
+            int w = (int)(920 * exS);
+            int h = (int)(520 * exS);
             if (w > wa.Width - P(40)) w = wa.Width - P(40);
             if (h > wa.Height - P(120)) h = wa.Height - P(120);
-            if (w < P(860)) w = Math.Min(P(860), wa.Width - P(20));
-            if (h < P(540)) h = Math.Min(P(540), wa.Height - P(20));
+            if (w < P(760)) w = Math.Min(P(760), wa.Width - P(20));
+            if (h < P(440)) h = Math.Min(P(440), wa.Height - P(20));
 
             f.MinimumSize = new Size(0, 0);
             f.ClientSize = new Size(w, h);
@@ -393,6 +394,24 @@ internal partial class tabIrctcId
             pnlloader.Paint += ExCardPaint;
 
             ExGrid();
+            // ---- MINIMAL MODE: sirf IRCTC ID list, baaki sab hide ----
+            exMin = true;
+            groupBox1.Visible = false;
+            panel13.Visible = false;
+            exBulk.Visible = false;
+            button4.Visible = false;
+            btnChangePwd.Visible = false;
+            btnChangeQn.Visible = false;
+            btnHideDay.Visible = false;
+            button2.Visible = false;
+            C2AA0.Visible = false;
+            label14.Visible = false;
+            button3.Visible = false;
+            C1AA0.Visible = false;
+            button1.Visible = false;
+            lblMsg.Visible = false;
+            pictureBox1.Visible = false;
+            foreach (Label[] st in exStats) { st[0].Visible = false; st[1].Visible = false; }
             ExModeSync();
 
             if (Parent != null)
@@ -1458,9 +1477,9 @@ internal partial class tabIrctcId
 
         bool compact = H < P(660);
 
-        int footH = P(72);
+        int footH = exMin ? 0 : P(72);
         int footY = H - footH - P(6);
-        int searchH = compact ? P(180) : P(210);
+        int searchH = exMin ? 0 : (compact ? P(180) : P(210));
         int searchY = footY - P(8) - searchH;
 
         int topY = P(10);
@@ -1484,13 +1503,13 @@ internal partial class tabIrctcId
 
             searchY = footY - P(8) - searchH;
             gridY = topY + topH + P(8);
-            gridH = searchY - P(8) - gridY;
+            gridH = searchY - P(8) - gridY; ExPut(groupBox1, M, searchY, innerW, searchH);
             if (gridH < P(120)) gridH = P(120);
         }
 
-        int bulkW = P(240);
+        int bulkW = exMin ? 0 : P(240);
         int bulkX = right - bulkW;
-        int gridW = bulkX - P(12) - M;
+        int gridW = exMin ? innerW : (bulkX - P(12) - M);
 
         SuspendLayout();
         try
@@ -1554,111 +1573,113 @@ internal partial class tabIrctcId
             ExPut(txtbulk, P(12), P(10), bulkW - P(24), bulkH - P(46));
             ExPut(button4, bulkX + bulkW - P(80), bulkY + bulkH - P(30), P(68), P(24));
             ExRound(button4, P(7));
-
-            ExPut(groupBox1, M, searchY, innerW, searchH);
-            ExRound(groupBox1, P(11));
-
-            int s1 = P(30), s2 = s1 + P(32), s3 = s2 + P(30);
-            int rcH = compact ? P(40) : P(66);
-            int s4 = s3 + rcH + P(8);
-
-            x = GX;
-            ExPut(btnChangePwd, x, s1, P(158), P(30)); ExRound(btnChangePwd, P(8)); x += P(166);
-            ExPut(btnChangeQn, x, s1, P(158), P(30)); ExRound(btnChangeQn, P(8)); x += P(176);
-
-            int l14 = ExTextW(label14) + P(8);
-            ExPut(label14, x, s1 + P(4), l14, P(22)); x += l14 + P(10);
-
-            ExPut(exDrop, x, s1, P(104), P(30)); ExRound(exDrop, P(9)); x += P(122);
-            ExPut(btnHideDay, x, s1, P(112), P(30)); ExRound(btnHideDay, P(8));
-
-            x = GX;
-            int rb1 = ExTextW(RadioBdate) + P(24);
-            ExPut(RadioBdate, x, s2, rb1, P(26)); x += rb1 + P(16);
-            int rb2 = ExTextW(RadioJdate) + P(24);
-            ExPut(RadioJdate, x, s2, rb2, P(26)); x += rb2 + P(16);
-            ExPut(RadioPnr, x, s2, ExTextW(RadioPnr) + P(24), P(26));
-
-            int rangeW = Math.Min(P(520), gw - P(400));
-            if (rangeW < P(300)) rangeW = Math.Max(P(260), gw - P(330));
-            int searchFldW = gw - rangeW - P(110) - P(90) - P(30);
-            if (searchFldW < P(140)) searchFldW = P(140);
-
-            ExPut(exRange, GX, s3, rangeW, rcH);
-            ExRound(exRange, P(11));
-
-            int pad = P(12), gap = P(28);
-            int fw = (rangeW - pad * 2 - gap) / 2;
-            int fh = P(34);
-            int fy = (rcH >= P(60)) ? P(8) : (rcH - fh) / 2;
-
-            ExPut(exFDate1, pad, fy, fw, fh); ExRound(exFDate1, P(9));
-            ExPut(B2AAA, P(32), (fh - P(24)) / 2, fw - P(42), P(24));
-
-            ExPut(exArrow, pad + fw + P(2), fy + P(8), P(24), P(18));
-
-            ExPut(exFDate2, pad + fw + gap, fy, fw, fh); ExRound(exFDate2, P(9));
-            ExPut(dtDate2, P(32), (fh - P(24)) / 2, fw - P(42), P(24));
-
-            int px = pad;
-            int py = fy + fh + P(6);
-            bool showPresets = !compact && rcH >= P(60);
-            foreach (Label pl in exPresets)
+            if (!exMin)
             {
-                pl.Visible = showPresets;
-                if (!showPresets) continue;
-                using (Graphics gg = CreateGraphics())
+                ExPut(groupBox1, M, searchY, innerW, searchH);
+                ExRound(groupBox1, P(11));
+
+                int s1 = P(30), s2 = s1 + P(32), s3 = s2 + P(30);
+                int rcH = compact ? P(40) : P(66);
+                int s4 = s3 + rcH + P(8);
+
+                x = GX;
+                ExPut(btnChangePwd, x, s1, P(158), P(30)); ExRound(btnChangePwd, P(8)); x += P(166);
+                ExPut(btnChangeQn, x, s1, P(158), P(30)); ExRound(btnChangeQn, P(8)); x += P(176);
+
+                int l14 = ExTextW(label14) + P(8);
+                ExPut(label14, x, s1 + P(4), l14, P(22)); x += l14 + P(10);
+
+                ExPut(exDrop, x, s1, P(104), P(30)); ExRound(exDrop, P(9)); x += P(122);
+                ExPut(btnHideDay, x, s1, P(112), P(30)); ExRound(btnHideDay, P(8));
+
+                x = GX;
+                int rb1 = ExTextW(RadioBdate) + P(24);
+                ExPut(RadioBdate, x, s2, rb1, P(26)); x += rb1 + P(16);
+                int rb2 = ExTextW(RadioJdate) + P(24);
+                ExPut(RadioJdate, x, s2, rb2, P(26)); x += rb2 + P(16);
+                ExPut(RadioPnr, x, s2, ExTextW(RadioPnr) + P(24), P(26));
+
+                int rangeW = Math.Min(P(520), gw - P(400));
+                if (rangeW < P(300)) rangeW = Math.Max(P(260), gw - P(330));
+                int searchFldW = gw - rangeW - P(110) - P(90) - P(30);
+                if (searchFldW < P(140)) searchFldW = P(140);
+
+                ExPut(exRange, GX, s3, rangeW, rcH);
+                ExRound(exRange, P(11));
+
+                int pad = P(12), gap = P(28);
+                int fw = (rangeW - pad * 2 - gap) / 2;
+                int fh = P(34);
+                int fy = (rcH >= P(60)) ? P(8) : (rcH - fh) / 2;
+
+                ExPut(exFDate1, pad, fy, fw, fh); ExRound(exFDate1, P(9));
+                ExPut(B2AAA, P(32), (fh - P(24)) / 2, fw - P(42), P(24));
+
+                ExPut(exArrow, pad + fw + P(2), fy + P(8), P(24), P(18));
+
+                ExPut(exFDate2, pad + fw + gap, fy, fw, fh); ExRound(exFDate2, P(9));
+                ExPut(dtDate2, P(32), (fh - P(24)) / 2, fw - P(42), P(24));
+
+                int px = pad;
+                int py = fy + fh + P(6);
+                bool showPresets = !compact && rcH >= P(60);
+                foreach (Label pl in exPresets)
                 {
-                    int pw = TextRenderer.MeasureText(gg, pl.Text, pl.Font, new Size(2000, 60), TF_MEASURE).Width + P(22);
-                    ExPut(pl, px, py, pw, P(22));
-                    ExRound(pl, P(11));
-                    px += pw + P(8);
+                    pl.Visible = showPresets;
+                    if (!showPresets) continue;
+                    using (Graphics gg = CreateGraphics())
+                    {
+                        int pw = TextRenderer.MeasureText(gg, pl.Text, pl.Font, new Size(2000, 60), TF_MEASURE).Width + P(22);
+                        ExPut(pl, px, py, pw, P(22));
+                        ExRound(pl, P(11));
+                        px += pw + P(8);
+                    }
                 }
+
+                int sx = GX + rangeW + P(14);
+                ExPut(exFPnr, sx, s3, searchFldW, P(40)); ExRound(exFPnr, P(9));
+                ExPut(txtPnr, P(40), P(9), searchFldW - P(54), P(22));
+
+                ExPut(button2, sx + searchFldW + P(12), s3, P(104), P(40)); ExRound(button2, P(9));
+                ExPut(C2AA0, sx + searchFldW + P(124), s3, P(84), P(40)); ExRound(C2AA0, P(9));
+
+                ExPut(panel13, GX, s4, gw, P(26));
+                ExRound(panel13, P(8));
+                ExPut(label3, P(10), P(4), P(152), P(18));
+                ExPut(lblCurMonbk, P(168), P(4), P(32), P(18));
+                ExPut(label2, P(206), P(4), P(112), P(18));
+                ExPut(B3AAA, P(322), P(4), P(200), P(18));
+                ExPut(lbl7, P(544), P(4), P(32), P(18));
+
+                int sxBadge = M;
+                int syBadge = footY + P(4);
+                for (int i = 0; i < exStats.Count; i++)
+                {
+                    Label cap = exStats[i][0];
+                    Label val = exStats[i][1];
+
+                    int cw;
+                    using (Graphics gg = CreateGraphics())
+                        cw = TextRenderer.MeasureText(gg, cap.Text.Trim().TrimEnd(':'), cap.Font,
+                            new Size(2000, 60), TF_MEASURE).Width + P(46);
+                    if (cw < P(88)) cw = P(88);
+
+                    if (sxBadge + cw + P(34) > W - P(440)) { sxBadge = M; syBadge += P(28); }
+
+                    ExPut(cap, sxBadge, syBadge, cw, P(24));
+                    ExRound(cap, P(12));
+                    ExPut(val, sxBadge + cw + P(4), syBadge + P(2), P(30), P(20));
+                    ExRound(val, P(7));
+                    sxBadge += cw + P(4) + P(30) + P(10);
+                }
+
+                ExPut(lblMsg, sxBadge, syBadge + P(4), P(170), P(18));
+                ExPut(pictureBox1, sxBadge + P(176), syBadge + P(1), P(24), P(24));
+
+                ExPut(button3, W - P(419), footY + P(2), P(110), P(38)); ExRound(button3, P(10));
+                ExPut(C1AA0, W - P(301), footY + P(2), P(115), P(38)); ExRound(C1AA0, P(10));
+                ExPut(button1, W - P(178), footY + P(2), P(150), P(38)); ExRound(button1, P(10));
             }
-
-            int sx = GX + rangeW + P(14);
-            ExPut(exFPnr, sx, s3, searchFldW, P(40)); ExRound(exFPnr, P(9));
-            ExPut(txtPnr, P(40), P(9), searchFldW - P(54), P(22));
-
-            ExPut(button2, sx + searchFldW + P(12), s3, P(104), P(40)); ExRound(button2, P(9));
-            ExPut(C2AA0, sx + searchFldW + P(124), s3, P(84), P(40)); ExRound(C2AA0, P(9));
-
-            ExPut(panel13, GX, s4, gw, P(26));
-            ExRound(panel13, P(8));
-            ExPut(label3, P(10), P(4), P(152), P(18));
-            ExPut(lblCurMonbk, P(168), P(4), P(32), P(18));
-            ExPut(label2, P(206), P(4), P(112), P(18));
-            ExPut(B3AAA, P(322), P(4), P(200), P(18));
-            ExPut(lbl7, P(544), P(4), P(32), P(18));
-
-            int sxBadge = M;
-            int syBadge = footY + P(4);
-            for (int i = 0; i < exStats.Count; i++)
-            {
-                Label cap = exStats[i][0];
-                Label val = exStats[i][1];
-
-                int cw;
-                using (Graphics gg = CreateGraphics())
-                    cw = TextRenderer.MeasureText(gg, cap.Text.Trim().TrimEnd(':'), cap.Font,
-                        new Size(2000, 60), TF_MEASURE).Width + P(46);
-                if (cw < P(88)) cw = P(88);
-
-                if (sxBadge + cw + P(34) > W - P(440)) { sxBadge = M; syBadge += P(28); }
-
-                ExPut(cap, sxBadge, syBadge, cw, P(24));
-                ExRound(cap, P(12));
-                ExPut(val, sxBadge + cw + P(4), syBadge + P(2), P(30), P(20));
-                ExRound(val, P(7));
-                sxBadge += cw + P(4) + P(30) + P(10);
-            }
-
-            ExPut(lblMsg, sxBadge, syBadge + P(4), P(170), P(18));
-            ExPut(pictureBox1, sxBadge + P(176), syBadge + P(1), P(24), P(24));
-
-            ExPut(button3, W - P(419), footY + P(2), P(110), P(38)); ExRound(button3, P(10));
-            ExPut(C1AA0, W - P(301), footY + P(2), P(115), P(38)); ExRound(C1AA0, P(10));
-            ExPut(button1, W - P(178), footY + P(2), P(150), P(38)); ExRound(button1, P(10));
 
             ExPut(pnlloader, M + (gridW / 2) - P(216), gridY + (gridH / 2) - P(32), P(433), P(65));
             ExRound(pnlloader, P(11));

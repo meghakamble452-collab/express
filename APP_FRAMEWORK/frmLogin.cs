@@ -2547,7 +2547,7 @@ public partial class frmLogin : Form
 
     static frmLogin()
     {
-        string text = "27.11.2026";
+        string text = "28.11.2026";
         appversion = text;
         Program.appversion = appversion;
         ENCkey = "";

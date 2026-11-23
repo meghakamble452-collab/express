@@ -41,6 +41,9 @@
     <Compile Update="APP_FRAMEWORK\frmBanks.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="APP_FRAMEWORK\frmBanks.ExpressTheme.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="APP_FRAMEWORK\frmBypass.cs">
       <SubType>Form</SubType>
     </Compile>

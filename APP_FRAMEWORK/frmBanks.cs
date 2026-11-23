@@ -11,7 +11,7 @@ using Microsoft.VisualBasic;
 
 namespace APP_FRAMEWORK;
 
-internal class frmBanks : Form
+internal partial class frmBanks : Form
 {
 	private string string_0;
 
@@ -344,12 +344,13 @@ internal class frmBanks : Form
 		}
 	}
 
-	public frmBanks()
-	{
-		InitializeComponent();
-	}
+    public frmBanks()
+    {
+        InitializeComponent();
+        ApplyBankTheme();
+    }
 
-	private void method_0(object sender, EventArgs e)
+    private void method_0(object sender, EventArgs e)
 	{
 	}
 

@@ -809,9 +809,9 @@ namespace APP_FRAMEWORK
 
                 if (exClockPill != null)
                 {
-                    Font fd = ExCached("Segoe UI Semibold", 9f, FontStyle.Bold, k);
-                    Font ft = ExCached("Segoe UI Semibold", 20f, FontStyle.Bold, k);
-                    Font fc0 = ExCached("Segoe UI Semibold", 9f, FontStyle.Bold, k);
+                    Font fd = ExCached("Segoe UI Semibold", 14f, FontStyle.Bold, k);
+                    Font ft = ExCached("Segoe UI Semibold", 27f, FontStyle.Bold, k);
+                    Font fc0 = ExCached("Segoe UI Semibold", 11f, FontStyle.Bold, k);
                     exDateTxt.Font = fd;
                     exTimeTxt.Font = ft;
                     if (exClockCap != null) exClockCap.Font = fc0;
@@ -819,10 +819,10 @@ namespace APP_FRAMEWORK
                     int cw0 = TextRenderer.MeasureText("Current Time", fc0).Width + ExS(8, k);
                     int dw = TextRenderer.MeasureText("00-00-0000", fd).Width + ExS(4, k);
                     int tw = TextRenderer.MeasureText("00:00:00", ft).Width + ExS(6, k);
-                    int ph = ExS(62, k);
+                    int ph = ExS(70, k);
                     int pw = cw0 + dw + tw + ExS(26, k);
 
-                    exClockPill.Bounds = new Rectangle(clockX, ExS(8, k), pw, ph);
+                    exClockPill.Bounds = new Rectangle(clockX, ExS(4, k), pw, ph);
 
                     int dx = ExS(12, k);
                     if (exClockCap != null) exClockCap.Bounds = new Rectangle(dx, 0, cw0, ph);
