@@ -201,6 +201,8 @@ internal partial class tabIrctcId
     private void ExScaleForm()
     {
         if (exFormScaled) return;
+        Form f0 = FindForm();
+        if (f0 != null) f0.StartPosition = FormStartPosition.Manual;
         exFormScaled = true;
 
         Form f = FindForm();
@@ -1460,16 +1462,22 @@ internal partial class tabIrctcId
         if (!exCentered)
         {
             exCentered = true;
-            Form hf = FindForm();
-            if (hf != null)
+            Timer ct = new Timer();
+            ct.Interval = 500;
+            ct.Tick += delegate
             {
-                BeginInvoke(new MethodInvoker(delegate
-                {
-                    Rectangle a2 = Screen.FromControl(hf).WorkingArea;
-                    hf.Location = new Point(a2.Left + (a2.Width - hf.Width) / 2,
-                                            a2.Top + (a2.Height - hf.Height) / 2);
-                }));
-            }
+                ct.Stop();
+                ct.Dispose();
+                Form hf = FindForm();
+                if (hf == null) return;
+                Rectangle a2 = Screen.FromControl(hf).WorkingArea;
+                int x = a2.Left + (a2.Width - hf.Width) / 2;
+                int y = a2.Top + (a2.Height - hf.Height) / 2;
+                if (x < a2.Left) x = a2.Left;
+                if (y < a2.Top) y = a2.Top;
+                hf.Location = new Point(x, y);
+            };
+            ct.Start();
         }
     }
     private void ExLayout()
@@ -1521,12 +1529,12 @@ internal partial class tabIrctcId
             searchY = footY - P(8) - searchH;
             gridY = topY + topH + P(8);
             gridH = searchY - P(8) - gridY; ExPut(groupBox1, M, searchY, innerW, searchH);
-            if (gridH < P(120)) gridH = P(120);
+            if (gridH < P(240)) gridH = P(240);
         }
 
         int bulkW = exMin ? 0 : P(240);
         int bulkX = right - bulkW;
-        int gridW = exMin ? innerW : (bulkX - P(12) - M);
+        int gridW = innerW;
 
         SuspendLayout();
         try
@@ -1598,16 +1606,18 @@ internal partial class tabIrctcId
             ExPut(button5, btnX, row2, btnW, P(30));
             ExRound(button5, P(9));
 
+            int bulkH = P(96);
+            int gridH2 = Math.Max(P(120), gridH - P(18) - bulkH - P(8));
+
             ExPut(label6, M, gridY, P(160), P(16));
-            ExPut(grdUsers, M, gridY + P(18), gridW, gridH - P(18));
+            ExPut(grdUsers, M, gridY + P(18), innerW, gridH2);
             ExRound(grdUsers, P(9));
 
-            int bulkY = gridY + P(18);
-            int bulkH = gridH - P(18);
-            ExPut(exBulk, bulkX, bulkY, bulkW, bulkH);
+            int bulkY = gridY + P(18) + gridH2 + P(8);
+            ExPut(exBulk, M, bulkY, innerW, bulkH);
             ExRound(exBulk, P(9));
-            ExPut(txtbulk, P(12), P(10), bulkW - P(24), bulkH - P(46));
-            ExPut(button4, bulkX + bulkW - P(80), bulkY + bulkH - P(30), P(68), P(24));
+            ExPut(txtbulk, P(12), P(8), innerW - P(24), bulkH - P(38));
+            ExPut(button4, M + innerW - P(80), bulkY + bulkH - P(28), P(68), P(22));
             ExRound(button4, P(7));
             if (!exMin)
             {
