@@ -1342,21 +1342,16 @@ public partial class frmLogin : Form
                             File.AppendAllText("IRLOG\\v.log", appversion + " vs " + Program.NewVersion + Environment.NewLine);
                             if (appversion != Program.NewVersion)
                             {
-                                string clientID = Program.clientID;
-                                string text36 = "NXDEV2026MASTER";
-                                if (clientID != text36)
-                                {
-                                    Program.bool_IsExeUpdtAvl = true;
-                                    string filoList = Program.FiloList;
-                                    string exeName = Program.ExeName;
-                                    string text37 = "|";
-                                    Program.FiloList = filoList + exeName + text37;
-                                    Program.RunExeUpdater();
-                                    goto IL_0a34;
-                                }
+                                Program.bool_IsExeUpdtAvl = true;
+                                string filoList = Program.FiloList;
+                                string exeName = Program.ExeName;
+                                string text37 = "|";
+                                Program.FiloList = filoList + exeName + text37;
+                                Program.RunExeUpdater();
+                                goto IL_0a34;
                             }
-							//Staticm.Check_File2(0);
-							File.AppendAllText("IRLOG\\t.log", DateTime.Now.ToString("HH:mm:ss.fff") + " C" + Environment.NewLine);
+                            //Staticm.Check_File2(0);
+                            File.AppendAllText("IRLOG\\t.log", DateTime.Now.ToString("HH:mm:ss.fff") + " C" + Environment.NewLine);
 							Staticm.Method_3500();
                             user_Registry(text5);
                             goto IL_0a34;

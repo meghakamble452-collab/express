@@ -805,7 +805,7 @@ namespace APP_FRAMEWORK
                 int userX = powerX - gap - ExS(178, k) - gap - userW;
 
 
-                int clockX = ExS(356, k);
+                int clockX = ExS(330, k);
 
                 if (exClockPill != null)
                 {
@@ -835,7 +835,7 @@ namespace APP_FRAMEWORK
 
                 if (exInfo != null)
                 {
-                    int cxp = ExS(86, k);
+                    int cxp = ExS(74, k);
                     int chipTop = ExS(4, k);
                     int chipH = ExS(54, k);
                     Panel[] chips = { exChId, exChVal, exChVer, exChPay };
@@ -843,8 +843,8 @@ namespace APP_FRAMEWORK
                     {
                         if (cp == null) continue;
                         int cwp = ExChipW(cp);
-                        if (cxp + cwp > powerX - ExS(14, k))
-                            cwp = Math.Max(ExS(64, k), powerX - ExS(14, k) - cxp);
+                        if (cxp + cwp > userX - ExS(10, k))
+                            cwp = Math.Max(ExS(52, k), userX - ExS(10, k) - cxp);
                         cp.Bounds = new Rectangle(cxp, chipTop, cwp, chipH);
                         ExRoundRegion(cp, ExS(9, k));
                         cxp += cwp + ExS(6, k);
