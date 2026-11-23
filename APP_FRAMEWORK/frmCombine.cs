@@ -432,11 +432,8 @@ public class frmCombine : Form
         foreach (Control c in tab.Controls)
         {
             Panel p = c as Panel;
-            if (p == null || p == listPanel || p is FieldBox) continue;
-            p.Visible = false;
+            if (p != null && !(p is FieldBox) && HasListBox(p)) { listPanel = p; break; }
         }
-
-        foreach (Control c in movables) c.BringToFront();
 
         int leftLimit = listPanel != null ? listPanel.Left - 14 : tab.ClientSize.Width - 240;
 
@@ -489,8 +486,10 @@ public class frmCombine : Form
         {
             Panel p = c as Panel;
             if (p == null || p == listPanel || p is FieldBox) continue;
-            if (p.Controls.Count == 0) p.Visible = false;
+            p.Visible = false;
         }
+
+        foreach (Control c in movables) c.BringToFront();
 
         int endY = Reflow(tab);
 
@@ -499,8 +498,6 @@ public class frmCombine : Form
             if (save.Parent != tab) MoveTo(save, tab);
             save.SetBounds(16, endY + 2, Math.Max(200, leftLimit - 30), 36);
             save.BringToFront();
-            foreach (Control c in tab.Controls)
-                if (!(c is Panel) || c is FieldBox) c.BringToFront();
         }
 
         AddCues(tab);
