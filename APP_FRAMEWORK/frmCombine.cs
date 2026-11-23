@@ -124,7 +124,7 @@ public class frmCombine : Form
         try
         {
             BackColor = Color.FromArgb(233, 241, 252);
-            ClientSize = new Size(880, 620);
+            ClientSize = new Size(880, 660);
             _pills = new BunifuThinButton2[3] { bunifuThinButton21, bunifuThinButton22, bunifuThinButton23 };
 
             pnlHeader.Dock = DockStyle.None;
@@ -197,7 +197,7 @@ public class frmCombine : Form
             _strip.Controls.Add(bunifuThinButton22);
             _strip.Controls.Add(bunifuThinButton23);
 
-            BAAAA.SetBounds(18, 118, ClientSize.Width - 36, ClientSize.Height - 136);
+            LayoutBody();
             BAAAA.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             BAAAA.BackColor = Color.White;
             BAAAA.Padding = new Padding(16);
@@ -231,6 +231,7 @@ public class frmCombine : Form
             {
                 _shapeHooked = true;
                 Resize += delegate { ShapeForm(); };
+                Resize += delegate { LayoutBody(); };
             }
 
             method_0();
@@ -247,6 +248,12 @@ public class frmCombine : Form
             PerformLayout();
             Invalidate(true);
         }
+    }
+
+    private void LayoutBody()
+    {
+        if (BAAAA == null) return;
+        BAAAA.SetBounds(18, 118, Math.Max(220, ClientSize.Width - 36), Math.Max(140, ClientSize.Height - 138));
     }
 
     private void CloseEnter(object sender, EventArgs e) { _closeHot = true; btnClose.Invalidate(); }
@@ -349,24 +356,58 @@ public class frmCombine : Form
         }
     }
 
-    private Control FindFieldPanel(Control tab)
+    private bool HasListBox(Control c)
     {
-        System.Collections.Generic.List<Control> hits = new System.Collections.Generic.List<Control>();
-        CollectFields(tab, hits);
-
-        foreach (Control c in hits)
+        foreach (Control k in c.Controls)
         {
-            if (!(c is TextBox)) continue;
-            Control p = c.Parent;
-            while (p != null && p is FieldBox) p = p.Parent;
-            if (p != null) return p;
+            if (k is ListBox) return true;
+            if (HasListBox(k)) return true;
         }
-        return tab;
+        return false;
+    }
+
+    private bool InsideOf(Control c, Control box)
+    {
+        Control p = c.Parent;
+        while (p != null) { if (p == box) return true; p = p.Parent; }
+        return false;
+    }
+
+    private void CollectMovables(Control p, Control skip, System.Collections.Generic.List<Control> list)
+    {
+        foreach (Control c in p.Controls)
+        {
+            if (c == skip) continue;
+
+            if (c is FieldBox) { list.Add(c); continue; }
+            if (c is TextBox || c is ComboBox || c is Label || c is CheckBox) { list.Add(c); continue; }
+            if (c is Button || c is ListBox || c is DataGridView) continue;
+
+            if (c is Panel)
+            {
+                CollectMovables(c, skip, list);
+                continue;
+            }
+        }
+    }
+
+    private void MoveTo(Control c, Control dest)
+    {
+        if (c == null || dest == null || c.Parent == dest || c.Parent == null) return;
+        Point sp = c.Parent.PointToScreen(c.Location);
+        c.Parent.Controls.Remove(c);
+        dest.Controls.Add(c);
+        c.BringToFront();
+        c.Location = dest.PointToClient(sp);
+        c.Anchor = AnchorStyles.Top | AnchorStyles.Left;
     }
 
     private void ShortenLabels(Control par)
     {
-        foreach (Control c in par.Controls)
+        System.Collections.Generic.List<Control> all = new System.Collections.Generic.List<Control>();
+        CollectAll(par, all);
+
+        foreach (Control c in all)
         {
             Label l = c as Label;
             if (l == null) continue;
@@ -383,37 +424,35 @@ public class frmCombine : Form
         }
     }
 
-    private void EnsureWidth(Control f, int min)
-    {
-        if (f == null || f.Width >= min) return;
-
-        f.Width = min;
-
-        Control box = f.Parent;
-        if (box == null) return;
-
-        box.Width = min + 10;
-
-        Control gp = box.Parent;
-        if (gp != null) gp.Width = Math.Max(gp.Width, box.Right + 10);
-    }
-
     private void SetupTab(Control tab)
     {
         if (tab == null) return;
 
-        Control panel = FindFieldPanel(tab);
-        ShortenLabels(panel);
+        Panel listPanel = null;
+        foreach (Control c in tab.Controls)
+        {
+            Panel p = c as Panel;
+            if (p == null || p == listPanel || p is FieldBox) continue;
+            p.Visible = false;
+        }
 
+        foreach (Control c in movables) c.BringToFront();
+
+        int leftLimit = listPanel != null ? listPanel.Left - 14 : tab.ClientSize.Width - 240;
+
+        ShortenLabels(tab);
+
+        Button save = null;
         CheckBox pwd = null;
         bool pwdDone = false;
-        Button save = null;
 
         System.Collections.Generic.List<Control> all = new System.Collections.Generic.List<Control>();
         CollectAll(tab, all);
 
         foreach (Control c in all)
         {
+            if (listPanel != null && InsideOf(c, listPanel)) continue;
+
             CheckBox chk = c as CheckBox;
             if (chk != null && (chk.Text ?? "").ToUpperInvariant().Contains("SHOW"))
             {
@@ -425,39 +464,46 @@ public class frmCombine : Form
             if (b != null && (b.Text ?? "").ToUpperInvariant().Contains("SAVE")) save = b;
         }
 
-        System.Collections.Generic.List<Control> fields = new System.Collections.Generic.List<Control>();
-        CollectFields(tab, fields);
-        foreach (Control f in fields)
+        System.Collections.Generic.List<Control> movables = new System.Collections.Generic.List<Control>();
+        CollectMovables(tab, listPanel, movables);
+
+        foreach (Control c in movables) MoveTo(c, tab);
+
+        foreach (Control c in movables)
         {
-            if (f is ComboBox) EnsureWidth(f, 150);
-            else EnsureWidth(f, 200);
+            TextBox tb = c as TextBox;
+            ComboBox cb = c as ComboBox;
+            if (tb == null && cb == null) continue;
+
+            Control f = (Control)tb ?? cb;
+            int maxW = leftLimit - 24 - f.Left;
+            if (maxW < 100) maxW = 100;
+
+            if (f.Width > maxW) f.Width = maxW;
+            if (f.Width < 130) f.Width = Math.Min(200, maxW);
+
+            if (f.Parent is FieldBox) f.Parent.Width = f.Width + 10;
         }
 
-        int endY = Reflow(panel);
-
-        if (pwd != null)
+        foreach (Control c in tab.Controls)
         {
-            if (pwd.Parent != panel) pwd.Parent = panel;
-            pwd.SetBounds(16, endY + 6, 210, 22);
-            pwd.BringToFront();
-            endY += 30;
+            Panel p = c as Panel;
+            if (p == null || p == listPanel || p is FieldBox) continue;
+            if (p.Controls.Count == 0) p.Visible = false;
         }
+
+        int endY = Reflow(tab);
 
         if (save != null)
         {
-            if (save.Parent != panel) save.Parent = panel;
-            save.SetBounds(14, endY + 6, Math.Max(200, panel.ClientSize.Width - 30), 36);
+            if (save.Parent != tab) MoveTo(save, tab);
+            save.SetBounds(16, endY + 2, Math.Max(200, leftLimit - 30), 36);
             save.BringToFront();
-            endY += 44;
+            foreach (Control c in tab.Controls)
+                if (!(c is Panel) || c is FieldBox) c.BringToFront();
         }
 
-        if (panel != tab)
-        {
-            int maxH = tab.ClientSize.Height - 10;
-            panel.Height = Math.Min(Math.Max(panel.Height, endY + 10), maxH);
-        }
-
-        AddCues(panel);
+        AddCues(tab);
         tab.Invalidate();
     }
 
@@ -470,42 +516,59 @@ public class frmCombine : Form
         }
     }
 
-    private int Reflow(Control par)
+    private int Reflow(Control tab)
     {
         System.Collections.Generic.List<Control> items = new System.Collections.Generic.List<Control>();
 
-        foreach (Control c in par.Controls)
+        foreach (Control c in tab.Controls)
         {
             if (!c.Visible) continue;
-            if (c is Button) continue;
-            CheckBox chk = c as CheckBox;
-            if (chk != null && (chk.Text ?? "").ToUpperInvariant().Contains("SHOW")) continue;
+            if (c is Button || c is Panel) continue;
             items.Add(c);
         }
 
         items.Sort(delegate (Control a, Control b) { return a.Top.CompareTo(b.Top); });
 
-        int y = 18;
-        int i = 0;
+        System.Collections.Generic.List<System.Collections.Generic.List<Control>> rows =
+            new System.Collections.Generic.List<System.Collections.Generic.List<Control>>();
 
+        int i = 0;
         while (i < items.Count)
         {
             int bandTop = items[i].Top;
             System.Collections.Generic.List<Control> row = new System.Collections.Generic.List<Control>();
+            while (i < items.Count && items[i].Top - bandTop <= 14) { row.Add(items[i]); i++; }
+            rows.Add(row);
+        }
 
-            while (i < items.Count && items[i].Top - bandTop <= 16)
-            {
-                row.Add(items[i]);
-                i++;
-            }
+        int sum = 0;
+        foreach (System.Collections.Generic.List<Control> r in rows)
+        {
+            int hh = 0;
+            foreach (Control c in r) hh = Math.Max(hh, c.Height);
+            sum += hh;
+        }
 
-            int rowH = 0;
-            foreach (Control c in row) rowH = Math.Max(rowH, c.Height);
+        int avail = tab.ClientSize.Height - 34 - 50;
+        int gap = 14;
+
+        if (rows.Count > 1)
+        {
+            int free = avail - sum;
+            gap = Math.Max(8, Math.Min(18, free / rows.Count));
+        }
+
+        int y = 16;
+        foreach (System.Collections.Generic.List<Control> r in rows)
+        {
+            int bandTop = r[0].Top;
+            int hh = 0;
+            foreach (Control c in r) hh = Math.Max(hh, c.Height);
 
             int delta = y - bandTop;
-            foreach (Control c in row) c.Top += delta;
+            foreach (Control c in r) c.Top += delta;
 
-            y += rowH + 18;
+            y += hh + gap;
         }
 
         return y;
