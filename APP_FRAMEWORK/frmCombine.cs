@@ -93,57 +93,75 @@ public class frmCombine : Form
     }
 
 
+    private Panel _strip;
+    private bool _shapeHooked;
+
     private void ApplyByteNovaLatestDesign()
     {
         SuspendLayout();
         try
         {
             BackColor = Color.FromArgb(233, 241, 252);
-            ClientSize = new Size(760, 470);
+            ClientSize = new Size(840, 540);
 
             pnlHeader.Dock = DockStyle.None;
-            pnlHeader.SetBounds(0, 0, ClientSize.Width, 42);
+            pnlHeader.SetBounds(0, 0, ClientSize.Width, 46);
             pnlHeader.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            pnlHeader.BackColor = Color.FromArgb(8, 26, 52);
+            pnlHeader.BackColor = Color.FromArgb(12, 38, 72);
             pnlHeader.Paint -= ByteNovaHeaderPaint;
             pnlHeader.Paint += ByteNovaHeaderPaint;
 
             label5.AutoSize = false;
-            label5.SetBounds(16, 9, 480, 24);
+            label5.SetBounds(18, 10, 520, 26);
             label5.Text = "PAYMENT DETAILS   \u2022   BUILD " + Program.appversion;
-            label5.Font = new Font("Segoe UI Semibold", 11F, FontStyle.Bold);
+            label5.Font = new Font("Segoe UI Semibold", 11.5F, FontStyle.Bold);
             label5.ForeColor = Color.White;
             label5.TextAlign = ContentAlignment.MiddleLeft;
             label5.BackColor = Color.Transparent;
 
             bunifuImageButton1.Visible = false;
 
-            btnClose.SetBounds(ClientSize.Width - 40, 8, 28, 26);
+            btnClose.SetBounds(ClientSize.Width - 42, 9, 28, 28);
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnClose.BackColor = Color.Transparent;
             btnClose.BackgroundImage = null;
-            btnClose.BackgroundImageLayout = ImageLayout.Zoom;
             btnClose.SizeMode = PictureBoxSizeMode.Zoom;
             btnClose.Zoom = 0;
 
-            StylePaymentButton(bunifuThinButton21, "NET BANKING", Color.FromArgb(0, 128, 154));
-            StylePaymentButton(bunifuThinButton22, "DEBIT CARD", Color.FromArgb(50, 82, 180));
-            StylePaymentButton(bunifuThinButton23, "CREDIT CARD", Color.FromArgb(104, 60, 180));
+            if (_strip == null)
+            {
+                _strip = new Panel();
+                _strip.Name = "strip";
+                _strip.Paint += StripPaint;
+                Controls.Add(_strip);
+            }
+            _strip.SetBounds(0, 46, ClientSize.Width, 54);
+            _strip.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            _strip.BackColor = Color.FromArgb(214, 232, 252);
 
-            int gap = 8;
-            int left = 12;
-            int buttonWidth = (ClientSize.Width - (left * 2) - (gap * 2)) / 3;
-            bunifuThinButton21.SetBounds(left, 54, buttonWidth, 40);
-            bunifuThinButton22.SetBounds(left + buttonWidth + gap, 54, buttonWidth, 40);
-            bunifuThinButton23.SetBounds(left + ((buttonWidth + gap) * 2), 54, buttonWidth, 40);
+            StylePill(bunifuThinButton21, "NET BANKING");
+            StylePill(bunifuThinButton22, "DEBIT CARD");
+            StylePill(bunifuThinButton23, "CREDIT CARD");
+
+            int gap = 10;
+            int left = 18;
+            int pw = (ClientSize.Width - (left * 2) - (gap * 2)) / 3;
+            bunifuThinButton21.SetBounds(left, 8, pw, 36);
+            bunifuThinButton22.SetBounds(left + pw + gap, 8, pw, 36);
+            bunifuThinButton23.SetBounds(left + ((pw + gap) * 2), 8, pw, 36);
 
             bunifuThinButton21.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             bunifuThinButton22.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             bunifuThinButton23.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
-            BAAAA.SetBounds(12, 104, ClientSize.Width - 24, ClientSize.Height - 116);
+            _strip.Controls.Add(bunifuThinButton21);
+            _strip.Controls.Add(bunifuThinButton22);
+            _strip.Controls.Add(bunifuThinButton23);
+
+            BAAAA.SetBounds(18, 114, ClientSize.Width - 36, ClientSize.Height - 132);
             BAAAA.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             BAAAA.BackColor = Color.White;
+            BAAAA.Padding = new Padding(14);
             BAAAA.Paint -= ByteNovaBodyPanelPaint;
             BAAAA.Paint += ByteNovaBodyPanelPaint;
 
@@ -159,12 +177,25 @@ public class frmCombine : Form
             StyleDeep(tabDebitCard);
             StyleDeep(tabCreditCard);
 
-            bunifuElipse1.ElipseRadius = 6;
+            HookArrange(CAAA0);
+            HookArrange(tabDebitCard);
+            HookArrange(tabCreditCard);
+
+            bunifuElipse1.ElipseRadius = 14;
+            ShapeForm();
+
+            if (!_shapeHooked)
+            {
+                _shapeHooked = true;
+                Resize += delegate { ShapeForm(); };
+            }
 
             method_0();
             CAAA0.Visible = true;
             CAAA0.BringToFront();
             BAAAA.Visible = true;
+            _strip.BringToFront();
+            pnlHeader.BringToFront();
         }
         finally
         {
@@ -172,6 +203,112 @@ public class frmCombine : Form
             PerformLayout();
             Invalidate(true);
         }
+    }
+
+    private void ShapeForm()
+    {
+        if (Width < 40 || Height < 40) return;
+        using (GraphicsPath p = RoundPath(new Rectangle(0, 0, Width, Height), 16))
+            Region = new Region(p);
+    }
+
+    private static GraphicsPath RoundPath(Rectangle r, int rad)
+    {
+        GraphicsPath p = new GraphicsPath();
+        int d = Math.Min(rad * 2, Math.Min(r.Width, r.Height));
+        if (d <= 1) { p.AddRectangle(r); return p; }
+        p.AddArc(r.X, r.Y, d, d, 180, 90);
+        p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+        p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+        p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+        p.CloseFigure();
+        return p;
+    }
+
+    private void HookArrange(Control tab)
+    {
+        if (tab == null) return;
+        tab.Resize += delegate { ArrangeTab(tab); };
+        ArrangeTab(tab);
+    }
+
+    private void ArrangeTab(Control tab)
+    {
+        if (tab == null || tab.ClientSize.Width < 260 || tab.ClientSize.Height < 120) return;
+
+        int pad = 12;
+        int rightW = 250;
+
+        ListBox lb = null;
+        System.Collections.Generic.List<Button> acts = new System.Collections.Generic.List<Button>();
+
+        foreach (Control c in tab.Controls)
+        {
+            if (lb == null)
+            {
+                ListBox x = c as ListBox;
+                if (x != null) lb = x;
+            }
+            Button b = c as Button;
+            if (b != null)
+            {
+                string t = (b.Text ?? "").ToUpperInvariant();
+                if (t.Contains("EDIT") || t.Contains("DEL")) acts.Add(b);
+            }
+        }
+
+        if (lb == null) return;
+
+        int leftLimit = tab.ClientSize.Width - rightW - pad;
+
+        lb.Dock = DockStyle.None;
+        lb.SetBounds(leftLimit, pad, rightW, Math.Max(80, tab.ClientSize.Height - (pad * 2) - 46));
+
+        int bw = (rightW - 16) / 3;
+        for (int i = 0; i < acts.Count; i++)
+            acts[i].SetBounds(leftLimit + i * (bw + 8), lb.Bottom + 10, bw, 32);
+
+        foreach (Control c in tab.Controls)
+        {
+            if (c == lb || acts.Contains(c as Button)) continue;
+            if (c.Right > leftLimit - 8)
+            {
+                int nw = leftLimit - 8 - c.Left;
+                if (nw >= 60) c.Width = nw;
+            }
+        }
+    }
+
+    private void StylePill(BunifuThinButton2 b, string text)
+    {
+        if (b == null) return;
+
+        b.ButtonText = text;
+        b.Font = new Font("Segoe UI Semibold", 9.5F, FontStyle.Bold);
+        b.IdleCornerRadius = 8;
+        b.ActiveCornerRadius = 8;
+        b.IdleBorderThickness = 1;
+        b.ActiveBorderThickness = 1;
+
+        b.IdleFillColor = Color.White;
+        b.IdleForecolor = Color.FromArgb(17, 40, 72);
+        b.IdleLineColor = Color.FromArgb(150, 184, 226);
+
+        b.ActiveFillColor = Color.FromArgb(245, 146, 28);
+        b.ActiveForecolor = Color.White;
+        b.ActiveLineColor = Color.FromArgb(222, 126, 16);
+
+        b.BackColor = Color.FromArgb(214, 232, 252);
+        b.ForeColor = Color.FromArgb(17, 40, 72);
+        b.Cursor = Cursors.Hand;
+    }
+
+    private void StripPaint(object sender, PaintEventArgs e)
+    {
+        Panel p = sender as Panel;
+        if (p == null) return;
+        using (Pen line = new Pen(Color.FromArgb(198, 216, 242), 1f))
+            e.Graphics.DrawLine(line, 0, p.Height - 1, p.Width, p.Height - 1);
     }
 
     private void StyleDeep(Control parent)
@@ -184,17 +321,11 @@ public class frmCombine : Form
                 tb.BorderStyle = BorderStyle.FixedSingle;
                 tb.BackColor = Color.White;
                 tb.ForeColor = Color.FromArgb(17, 40, 72);
-                tb.Font = new Font("Segoe UI", 9.5f);
+                tb.Font = new Font("Segoe UI", 10f);
             }
 
             ComboBox cb = c as ComboBox;
-            if (cb != null)
-            {
-                cb.FlatStyle = FlatStyle.Flat;
-                cb.BackColor = Color.White;
-                cb.ForeColor = Color.FromArgb(17, 40, 72);
-                cb.Font = new Font("Segoe UI", 9.5f);
-            }
+            if (cb != null) StyleCombo(cb);
 
             ListBox lb = c as ListBox;
             if (lb != null)
@@ -202,7 +333,7 @@ public class frmCombine : Form
                 lb.BorderStyle = BorderStyle.FixedSingle;
                 lb.BackColor = Color.White;
                 lb.ForeColor = Color.FromArgb(17, 40, 72);
-                lb.Font = new Font("Segoe UI", 9.5f);
+                lb.Font = new Font("Segoe UI", 10f);
             }
 
             Label l = c as Label;
@@ -246,6 +377,41 @@ public class frmCombine : Form
         }
     }
 
+    private void StyleCombo(ComboBox cb)
+    {
+        cb.FlatStyle = FlatStyle.Flat;
+        cb.BackColor = Color.White;
+        cb.ForeColor = Color.FromArgb(17, 40, 72);
+        cb.Font = new Font("Segoe UI", 10f);
+        cb.DrawMode = DrawMode.OwnerDrawFixed;
+        cb.ItemHeight = 26;
+        cb.MaxDropDownItems = 20;
+        cb.IntegralHeight = false;
+        cb.DropDownHeight = 340;
+        cb.DrawItem -= ComboDraw;
+        cb.DrawItem += ComboDraw;
+    }
+
+    private void ComboDraw(object sender, DrawItemEventArgs e)
+    {
+        ComboBox cb = sender as ComboBox;
+        if (cb == null || e.Index < 0) return;
+
+        bool sel = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+        Rectangle r = e.Bounds;
+
+        using (SolidBrush bg = new SolidBrush(sel ? Color.FromArgb(255, 236, 214) : Color.White))
+            e.Graphics.FillRectangle(bg, r);
+
+        if (sel)
+            using (SolidBrush bar = new SolidBrush(Color.FromArgb(245, 146, 28)))
+                e.Graphics.FillRectangle(bar, r.X, r.Y, 3, r.Height);
+
+        TextRenderer.DrawText(e.Graphics, Convert.ToString(cb.Items[e.Index]), cb.Font,
+            new Rectangle(r.X + 10, r.Y, r.Width - 14, r.Height), Color.FromArgb(17, 40, 72),
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
+    }
+
     private void StyleFlatButton(Button b)
     {
         string t = (b.Text ?? "").ToUpperInvariant();
@@ -255,12 +421,14 @@ public class frmCombine : Form
             bg = Color.FromArgb(220, 38, 38);
         else if (t.Contains("EDIT") || t.Contains("UPDATE"))
             bg = Color.FromArgb(59, 132, 247);
+        else if (t.Contains("SAVE"))
+            bg = Color.FromArgb(245, 146, 28);
 
         b.FlatStyle = FlatStyle.Flat;
         b.FlatAppearance.BorderSize = 0;
         b.BackColor = bg;
         b.ForeColor = Color.White;
-        b.Font = new Font("Segoe UI Semibold", 9f);
+        b.Font = new Font("Segoe UI Semibold", 9.5f);
         b.UseVisualStyleBackColor = false;
         b.Cursor = Cursors.Hand;
     }
@@ -276,32 +444,8 @@ public class frmCombine : Form
         d.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
         d.DefaultCellStyle.BackColor = Color.White;
         d.DefaultCellStyle.ForeColor = Color.FromArgb(17, 40, 72);
-        d.DefaultCellStyle.SelectionBackColor = Color.FromArgb(226, 238, 252);
+        d.DefaultCellStyle.SelectionBackColor = Color.FromArgb(255, 236, 214);
         d.DefaultCellStyle.SelectionForeColor = Color.FromArgb(17, 40, 72);
-    }
-
-    private void StylePaymentButton(BunifuThinButton2 b, string text, Color accent)
-    {
-        if (b == null) return;
-
-        b.ButtonText = text;
-        b.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
-        b.IdleCornerRadius = 5;
-        b.ActiveCornerRadius = 5;
-        b.IdleBorderThickness = 1;
-        b.ActiveBorderThickness = 1;
-
-        b.IdleFillColor = Color.White;
-        b.IdleForecolor = Color.FromArgb(17, 40, 72);
-        b.IdleLineColor = accent;
-
-        b.ActiveFillColor = accent;
-        b.ActiveForecolor = Color.White;
-        b.ActiveLineColor = Color.FromArgb(105, 225, 255);
-
-        b.BackColor = Color.FromArgb(233, 241, 252);
-        b.ForeColor = Color.FromArgb(17, 40, 72);
-        b.Cursor = Cursors.Hand;
     }
 
     private void ByteNovaHeaderPaint(object sender, PaintEventArgs e)
@@ -310,24 +454,27 @@ public class frmCombine : Form
         if (r.Width <= 0 || r.Height <= 0) return;
 
         using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, Color.FromArgb(8, 26, 52), Color.FromArgb(16, 58, 104),
+            r, Color.FromArgb(8, 26, 52), Color.FromArgb(18, 62, 112),
             LinearGradientMode.Horizontal))
             e.Graphics.FillRectangle(bg, r);
 
-        using (SolidBrush lime = new SolidBrush(Color.FromArgb(198, 244, 50)))
-            e.Graphics.FillRectangle(lime, 0, r.Height - 2, r.Width, 2);
+        using (SolidBrush orange = new SolidBrush(Color.FromArgb(245, 146, 28)))
+            e.Graphics.FillRectangle(orange, 0, r.Height - 3, r.Width, 3);
     }
 
     private void ByteNovaBodyPanelPaint(object sender, PaintEventArgs e)
     {
         Control c = sender as Control;
-        if (c == null || c.ClientSize.Width < 2 || c.ClientSize.Height < 2) return;
+        if (c == null || c.ClientSize.Width < 4 || c.ClientSize.Height < 4) return;
 
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         Rectangle r = new Rectangle(0, 0, c.ClientSize.Width - 1, c.ClientSize.Height - 1);
-        using (SolidBrush bg = new SolidBrush(Color.White))
-            e.Graphics.FillRectangle(bg, r);
-        using (Pen p = new Pen(Color.FromArgb(198, 216, 242), 1F))
-            e.Graphics.DrawRectangle(p, r);
+
+        using (GraphicsPath path = RoundPath(r, 12))
+        {
+            using (SolidBrush bg = new SolidBrush(Color.White)) e.Graphics.FillPath(bg, path);
+            using (Pen p = new Pen(Color.FromArgb(198, 216, 242), 1f)) e.Graphics.DrawPath(p, path);
+        }
     }
 
     protected override void Dispose(bool disposing)
