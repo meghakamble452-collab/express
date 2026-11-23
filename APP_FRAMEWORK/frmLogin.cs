@@ -911,7 +911,7 @@ public partial class frmLogin : Form
     private string getLink()
     {
         string text = "";
-        string text2 = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/bytenova";
+        string text2 = "https://expressts.co.in/api/Link.txt";
         string requestUriString = text2;
         int num = 0;
         while (true)
