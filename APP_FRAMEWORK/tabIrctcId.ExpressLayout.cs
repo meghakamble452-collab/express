@@ -21,8 +21,9 @@ internal partial class tabIrctcId
     private static readonly Color ExInk = Color.FromArgb(12, 32, 58);
 
     private bool exBuilt;
-    private bool exMin = true;
+    private bool exMin = false;
     private bool exMinSized;
+    private bool exCentered;
     private bool exFormScaled;
     private float exS = 1f;
 
@@ -396,7 +397,7 @@ internal partial class tabIrctcId
 
             ExGrid();
             // ---- MINIMAL MODE: sirf IRCTC ID list, baaki sab hide ----
-            exMin = true;
+            exMin = false;
             groupBox1.Visible = false;
             panel13.Visible = false;
             exBulk.Visible = false;
@@ -1455,6 +1456,21 @@ internal partial class tabIrctcId
         Rectangle r = Parent.DisplayRectangle;
         if (Location.X != r.X || Location.Y != r.Y) Location = r.Location;
         if (Width != r.Width || Height != r.Height) Size = r.Size;
+
+        if (!exCentered)
+        {
+            exCentered = true;
+            Form hf = FindForm();
+            if (hf != null)
+            {
+                BeginInvoke(new MethodInvoker(delegate
+                {
+                    Rectangle a2 = Screen.FromControl(hf).WorkingArea;
+                    hf.Location = new Point(a2.Left + (a2.Width - hf.Width) / 2,
+                                            a2.Top + (a2.Height - hf.Height) / 2);
+                }));
+            }
+        }
     }
     private void ExLayout()
     {
@@ -1720,6 +1736,21 @@ internal partial class tabIrctcId
             ResumeLayout(false);
             PerformLayout();
             Invalidate(true);
+        }
+
+        if (!exCentered)
+        {
+            exCentered = true;
+            Form hf = FindForm();
+            if (hf != null)
+            {
+                BeginInvoke(new MethodInvoker(delegate
+                {
+                    Rectangle a2 = Screen.FromControl(hf).WorkingArea;
+                    hf.Location = new Point(a2.Left + (a2.Width - hf.Width) / 2,
+                                            a2.Top + (a2.Height - hf.Height) / 2);
+                }));
+            }
         }
     }
 }
