@@ -437,154 +437,155 @@ public static class Program
 			ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 			long num = DateTime.Now.Hour * 10000 + DateTime.Now.Minute * 100 + DateTime.Now.Second;
 			ChromExitTime = (75600L <= num && num <= 81100L) || (95600L <= num && num <= 101100L) || (105600L <= num && num <= 111100L);
-			StartupPath = Application.StartupPath;
-			ExecutablePath = Application.ExecutablePath;
-			string hostUri = "https://expressts.co.in/api/";
-			HostUri = hostUri;
-			Uri = HostUri;
-			DownloadCommonUri = DownloadUri;
-			Staticm.AddFont();
-			if (!smethod_6())
-			{
-				ProcessStartInfo processStartInfo = new ProcessStartInfo();
-				processStartInfo.UseShellExecute = true;
-				processStartInfo.WorkingDirectory = Environment.CurrentDirectory;
-				processStartInfo.FileName = Assembly.GetEntryAssembly().CodeBase;
-				string verb = "runas";
-				processStartInfo.Verb = verb;
-				try
-				{
-					Process.Start(processStartInfo);
-					Environment.Exit(0);
-				}
-				catch
-				{
-					string value = "This application requires elevated credentials in order to operate correctly!";
-					Console.WriteLine(value);
-				}
-			}
-			Application.ApplicationExit += smethod_1;
-			Application.ThreadException += Exception_;
-			AppDomain.CurrentDomain.UnhandledException += smethod_10;
-			Parameters = "";
-			PublicProxy = null;
-			PrivateProxy = new WebProxy();
-			Class28.Registry_Setup();
-			ValidationStep = 1;
-			Control.CheckForIllegalCrossThreadCalls = false;
-			Assembly.GetAssembly(typeof(Program));
-			int_5 = 2;
-			string erPlce = "User Start NGET";
-			ErPlce = erPlce;
-			string text16 = "Program.Main";
-			Class28.smethod_26(text16, ErPlce);
-			try
-			{
-				string variable = "LargeCp";
-				string value2 = "False";
-				Environment.SetEnvironmentVariable(variable, value2, EnvironmentVariableTarget.Process);
-				string variable2 = "AutofillCp";
-				string value3 = "False";
-				Environment.SetEnvironmentVariable(variable2, value3, EnvironmentVariableTarget.Process);
-				string variable3 = "AutoOCR";
-				string value4 = "False";
-				Environment.SetEnvironmentVariable(variable3, value4, EnvironmentVariableTarget.Process);
-				string variable4 = "AutoSubmitCp";
-				string value5 = "False";
-				Environment.SetEnvironmentVariable(variable4, value5, EnvironmentVariableTarget.Process);
-				Random random = new Random();
-				string[] array5 = new string[7]
-				{
-					random.Next(1, 10).ToString(),
-					null,
-					null,
-					null,
-					null,
-					null,
-					null
-				};
-				string text17 = ".";
-				array5[1] = text17;
-				array5[2] = random.Next(1, 20).ToString();
-				string text18 = ".";
-				array5[3] = text18;
-				array5[4] = random.Next(1, 30).ToString();
-				string text19 = ".";
-				array5[5] = text19;
-				array5[6] = random.Next(1, 40).ToString();
-				string_4 = string.Concat(array5);
-			}
-			catch
-			{
-			}
-			ThreadPool.SetMinThreads(40, 40);
-			mySettings.smethod_0();
-			mySettings_0 = mySettings.smethod_1();
-			string variable5 = "perIPlimit";
-			Environment.SetEnvironmentVariable(variable5, mySettings_0.perIPlimit);
-			class28_0 = new Class28();
-			try
-			{
-				string queryOrEventClassName = "SELECT * FROM Win32_ProcessStartTrace";
-				managementEventWatcher = new ManagementEventWatcher(new WqlEventQuery(queryOrEventClassName));
-				managementEventWatcher.EventArrived += smethod_12;
-				managementEventWatcher.Start();
-				string path17 = "Wrong Captcha";
-				if (!Directory.Exists(path17))
-				{
-					string path18 = "Wrong Captcha";
-					Directory.CreateDirectory(path18);
-				}
-			}
-			catch
-			{
-			}
-			class28_0.CkeckAna();
-			mac = Class50.smethod_E00000();
-			string_01 = Class50.smethod_100();
-			clientID = mySettings_0.userID;
-			Check_Debugger();
-			CheckAuthorization("");
-			Download_Data();
-			smethod_16();
-            if (string.IsNullOrEmpty(DBPASS)) DBPASS = "ExpressLocalKey";
-            string path19 = "IRLOG//pwd";
-			if (!File.Exists(path19))
-			{
-				string path20 = "Database.db";
-				if (File.Exists(path20))
-				{
-					string_1A = clientID.Substring(0, 3);
-					goto IL_08a5;
-				}
-			}
-			string_1A = DBPASS;
-			goto IL_08a5;
-			IL_08a5:
-			string_00 = Class28.smethod_15(clearPwd: false, 1);
-			Class30.smethod_4();
-			flag = true;
-			Class30.smethod_11();
-			if (int_Slot > 2)
-			{
-				bool_3 = true;
-			}
-			tabIrctcId tabIrctcId2 = new tabIrctcId();
-			string query = "SELECT * FROM [TBL_USER]";
-			tabIrctcId2.method_IrctcId2(query, "");
-			tabIrctcId2.Dispose();
-			if (!BypassAnalizer)
-			{
-				if (smethod_15())
-				{
-					Application.Exit();
-				}
-				if (!string.IsNullOrEmpty(Class28.smethod_13()))
-				{
-					Application.Exit();
-				}
-			}
-			if ((clientID.ToUpper() == Class33.string_8 || clientID == Class33.string_9) && managementEventWatcher != null)
+                StartupPath = Application.StartupPath;
+                ExecutablePath = Application.ExecutablePath;
+                string hostUri = "https://expressts.co.in/api/";
+                HostUri = hostUri;
+                Uri = HostUri;
+                DownloadCommonUri = DownloadUri;
+                Staticm.AddFont();
+                if (!smethod_6())
+                {
+                ProcessStartInfo processStartInfo = new ProcessStartInfo();
+                processStartInfo.UseShellExecute = true;
+                processStartInfo.WorkingDirectory = Environment.CurrentDirectory;
+                processStartInfo.FileName = Assembly.GetEntryAssembly().CodeBase;
+                string verb = "runas";
+                processStartInfo.Verb = verb;
+                try
+                {
+                Process.Start(processStartInfo);
+                Environment.Exit(0);
+                }
+                catch
+                {
+                string value = "This application requires elevated credentials in order to operate correctly!";
+                Console.WriteLine(value);
+                }
+                }
+                Application.ApplicationExit += smethod_1;
+                Application.ThreadException += Exception_;
+                AppDomain.CurrentDomain.UnhandledException += smethod_10;
+                Parameters = "";
+                PublicProxy = null;
+                PrivateProxy = new WebProxy();
+                Class28.Registry_Setup();
+                ValidationStep = 1;
+                Control.CheckForIllegalCrossThreadCalls = false;
+                Assembly.GetAssembly(typeof(Program));
+                int_5 = 2;
+                string erPlce = "User Start NGET";
+                ErPlce = erPlce;
+                string text16 = "Program.Main";
+                Class28.smethod_26(text16, ErPlce);
+                try
+                {
+                string variable = "LargeCp";
+                string value2 = "False";
+                Environment.SetEnvironmentVariable(variable, value2, EnvironmentVariableTarget.Process);
+                string variable2 = "AutofillCp";
+                string value3 = "False";
+                Environment.SetEnvironmentVariable(variable2, value3, EnvironmentVariableTarget.Process);
+                string variable3 = "AutoOCR";
+                string value4 = "False";
+                Environment.SetEnvironmentVariable(variable3, value4, EnvironmentVariableTarget.Process);
+                string variable4 = "AutoSubmitCp";
+                string value5 = "False";
+                Environment.SetEnvironmentVariable(variable4, value5, EnvironmentVariableTarget.Process);
+                Random random = new Random();
+                string[] array5 = new string[7]
+                {
+                random.Next(1, 10).ToString(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+                };
+                string text17 = ".";
+                array5[1] = text17;
+                array5[2] = random.Next(1, 20).ToString();
+                string text18 = ".";
+                array5[3] = text18;
+                array5[4] = random.Next(1, 30).ToString();
+                string text19 = ".";
+                array5[5] = text19;
+                array5[6] = random.Next(1, 40).ToString();
+                string_4 = string.Concat(array5);
+                }
+                catch
+                {
+                }
+                ThreadPool.SetMinThreads(40, 40);
+                mySettings.smethod_0();
+                mySettings_0 = mySettings.smethod_1();
+                string variable5 = "perIPlimit";
+                Environment.SetEnvironmentVariable(variable5, mySettings_0.perIPlimit);
+                class28_0 = new Class28();
+                try
+                {
+                string queryOrEventClassName = "SELECT * FROM Win32_ProcessStartTrace";
+                managementEventWatcher = new ManagementEventWatcher(new WqlEventQuery(queryOrEventClassName));
+                managementEventWatcher.EventArrived += smethod_12;
+                managementEventWatcher.Start();
+                string path17 = "Wrong Captcha";
+                if (!Directory.Exists(path17))
+                {
+                string path18 = "Wrong Captcha";
+                Directory.CreateDirectory(path18);
+                }
+                }
+                catch
+                {
+                }
+                class28_0.CkeckAna();
+                mac = Class50.smethod_E00000();
+                string_01 = Class50.smethod_100();
+                clientID = mySettings_0.userID;
+                Check_Debugger();
+                CheckAuthorization("");
+                Download_Data();
+                smethod_16();
+                if (string.IsNullOrEmpty(DBPASS)) DBPASS = "ExpressLocalKey";
+                DBPASS = "ExpressLocalKey";
+                string path19 = "IRLOG//pwd";
+                if (!File.Exists(path19))
+                {
+                string path20 = "Database.db";
+                if (File.Exists(path20))
+                {
+                string_1A = clientID.Substring(0, 3);
+                goto IL_08a5;
+                }
+                }
+                string_1A = DBPASS;
+                goto IL_08a5;
+                IL_08a5:
+                string_00 = Class28.smethod_15(clearPwd: false, 1);
+                Class30.smethod_4();
+                flag = true;
+                Class30.smethod_11();
+                if (int_Slot > 2)
+                {
+                bool_3 = true;
+                }
+                tabIrctcId tabIrctcId2 = new tabIrctcId();
+                string query = "SELECT * FROM [TBL_USER]";
+                tabIrctcId2.method_IrctcId2(query, "");
+                tabIrctcId2.Dispose();
+                if (!BypassAnalizer)
+                {
+                if (smethod_15())
+                {
+                Application.Exit();
+                }
+                if (!string.IsNullOrEmpty(Class28.smethod_13()))
+                {
+                Application.Exit();
+                }
+                }
+                if ((clientID.ToUpper() == Class33.string_8 || clientID == Class33.string_9) && managementEventWatcher != null)
 			{
 				managementEventWatcher.Stop();
 				managementEventWatcher.Dispose();

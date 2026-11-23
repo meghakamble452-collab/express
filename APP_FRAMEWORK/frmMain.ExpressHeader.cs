@@ -618,8 +618,8 @@ namespace APP_FRAMEWORK
         {
             object[] m = p.Tag as object[];
             if (m == null) return ExS(90, exK);
-            Font fc = ExCached("Segoe UI Semibold", 11f, FontStyle.Bold, exK);
-            Font fv = ExCached("Segoe UI", 26f, FontStyle.Regular, exK);
+            Font fc = ExCached("Segoe UI Semibold", 9.5f, FontStyle.Bold, exK);
+            Font fv = ExCached("Segoe UI", 20f, FontStyle.Regular, exK);
             return TextRenderer.MeasureText((string)m[0], fc).Width
                  + TextRenderer.MeasureText(Convert.ToString(m[1]), fv).Width
                  + ExS(36, exK);
@@ -675,8 +675,8 @@ namespace APP_FRAMEWORK
                         e.Graphics.DrawPath(pen, path);
                 }
 
-                Font fc = ExCached("Segoe UI Semibold", 11f, FontStyle.Bold, exK);
-                Font fv = ExCached("Segoe UI", 26f, FontStyle.Regular, exK);
+                Font fc = ExCached("Segoe UI Semibold", 9.5f, FontStyle.Bold, exK);
+                Font fv = ExCached("Segoe UI", 20f, FontStyle.Regular, exK);
                 int cw = TextRenderer.MeasureText(cap, fc).Width;
                 int pad = ExS(10, exK);
 
@@ -729,7 +729,7 @@ namespace APP_FRAMEWORK
         private static string ExFmtLeft(TimeSpan t)
         {
             if (t.TotalSeconds <= 0) return "Expired";
-            if (t.TotalDays >= 1) return ((int)t.TotalDays) + " day : " + t.ToString(@"hh\:mm\:ss");
+            if (t.TotalDays >= 1) return ((int)t.TotalDays) + "d : " + t.ToString(@"hh\:mm\:ss");
             if (t.TotalHours >= 1) return t.ToString(@"hh\:mm\:ss");
             if (t.TotalMinutes >= 1) return t.ToString(@"mm\:ss") + " min";
             return ((int)t.TotalSeconds) + " sec";
@@ -846,7 +846,7 @@ namespace APP_FRAMEWORK
                     int maxRel = Math.Max(ExS(160, k), infoRight - ExS(10, k) - infoX);
                     int cxp = ExS(74, k);
                     int chipTop = ExS(4, k);
-                    int chipH = ExS(54, k);
+                    int chipH = ExS(48, k);
                     Panel[] chips = { exChId, exChVal, exChVer, exChPay };
                     foreach (Panel cp in chips)
                     {
@@ -860,7 +860,7 @@ namespace APP_FRAMEWORK
                     }
 
                     int infoW = Math.Max(ExS(160, k), Math.Min(cxp, maxRel));
-                    exInfo.Bounds = new Rectangle(infoX, ExS(8, k), infoW, ExS(62, k));
+                    exInfo.Bounds = new Rectangle(infoX, ExS(8, k), infoW, ExS(56, k));
                 }
 
                 foreach (Control c in exCanvas.Controls)
