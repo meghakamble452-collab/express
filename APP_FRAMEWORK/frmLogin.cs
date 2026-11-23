@@ -900,8 +900,8 @@ public partial class frmLogin : Form
             {
                 cryptoStream.Write(bytes, 0, bytes.Length);
                 cryptoStream.FlushFinalBlock();
-                inArray = memoryStream.ToArray();
-                cryptoStream.Close();
+                inArray = memoryStream.ToArray(); if (appversion != Program.NewVersion)
+                    cryptoStream.Close();
             }
             memoryStream.Close();
         }
@@ -1339,6 +1339,7 @@ public partial class frmLogin : Form
                                     }
                                 }
                             }
+                            File.AppendAllText("IRLOG\\v.log", appversion + " vs " + Program.NewVersion + Environment.NewLine);
                             if (appversion != Program.NewVersion)
                             {
                                 string clientID = Program.clientID;
