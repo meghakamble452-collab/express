@@ -96,75 +96,188 @@ public class frmCombine : Form
     private void ApplyByteNovaLatestDesign()
     {
         SuspendLayout();
+        try
+        {
+            BackColor = Color.FromArgb(233, 241, 252);
+            ClientSize = new Size(760, 470);
 
-        BackColor = Color.FromArgb(4, 15, 29);
-        ClientSize = new Size(753, 406);
+            pnlHeader.Dock = DockStyle.None;
+            pnlHeader.SetBounds(0, 0, ClientSize.Width, 42);
+            pnlHeader.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            pnlHeader.BackColor = Color.FromArgb(8, 26, 52);
+            pnlHeader.Paint -= ByteNovaHeaderPaint;
+            pnlHeader.Paint += ByteNovaHeaderPaint;
 
-        // frmMain-style compact ByteNova header.
-        pnlHeader.Dock = DockStyle.None;
-        pnlHeader.SetBounds(0, 0, ClientSize.Width, 23);
-        pnlHeader.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-        pnlHeader.BackColor = Color.FromArgb(3, 29, 59);
-        pnlHeader.Paint -= ByteNovaHeaderPaint;
-        pnlHeader.Paint += ByteNovaHeaderPaint;
+            label5.AutoSize = false;
+            label5.SetBounds(16, 9, 480, 24);
+            label5.Text = "PAYMENT DETAILS   \u2022   BUILD " + Program.appversion;
+            label5.Font = new Font("Segoe UI Semibold", 11F, FontStyle.Bold);
+            label5.ForeColor = Color.White;
+            label5.TextAlign = ContentAlignment.MiddleLeft;
+            label5.BackColor = Color.Transparent;
 
-        label5.AutoSize = false;
-        label5.SetBounds(9, 1, 300, 21);
-        label5.Text = "PAYMENT DETAILS";
-        label5.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
-        label5.ForeColor = Color.White;
-        label5.TextAlign = ContentAlignment.MiddleLeft;
-        label5.BackColor = Color.Transparent;
+            bunifuImageButton1.Visible = false;
 
-        // Old unused header image stays out of the surface.
-        bunifuImageButton1.Visible = false;
+            btnClose.SetBounds(ClientSize.Width - 40, 8, 28, 26);
+            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnClose.BackColor = Color.Transparent;
+            btnClose.BackgroundImage = null;
+            btnClose.BackgroundImageLayout = ImageLayout.Zoom;
+            btnClose.SizeMode = PictureBoxSizeMode.Zoom;
+            btnClose.Zoom = 0;
 
-        // frmMain-style Close button.
-        btnClose.SetBounds(ClientSize.Width - 27, 1, 22, 21);
-        btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        btnClose.BackColor = Color.Transparent;
-        btnClose.BackgroundImage = null;
-        btnClose.BackgroundImageLayout = ImageLayout.Zoom;
-        btnClose.SizeMode = PictureBoxSizeMode.Zoom;
-        btnClose.Zoom = 0;
+            StylePaymentButton(bunifuThinButton21, "NET BANKING", Color.FromArgb(0, 128, 154));
+            StylePaymentButton(bunifuThinButton22, "DEBIT CARD", Color.FromArgb(50, 82, 180));
+            StylePaymentButton(bunifuThinButton23, "CREDIT CARD", Color.FromArgb(104, 60, 180));
 
-        // Three compact payment-type cards.
-        StylePaymentButton(bunifuThinButton21, "NET BANKING", Color.FromArgb(0, 128, 154));
-        StylePaymentButton(bunifuThinButton22, "DEBIT CARD", Color.FromArgb(50, 82, 180));
-        StylePaymentButton(bunifuThinButton23, "CREDIT CARD", Color.FromArgb(104, 60, 180));
+            int gap = 8;
+            int left = 12;
+            int buttonWidth = (ClientSize.Width - (left * 2) - (gap * 2)) / 3;
+            bunifuThinButton21.SetBounds(left, 54, buttonWidth, 40);
+            bunifuThinButton22.SetBounds(left + buttonWidth + gap, 54, buttonWidth, 40);
+            bunifuThinButton23.SetBounds(left + ((buttonWidth + gap) * 2), 54, buttonWidth, 40);
 
-        int gap = 7;
-        int left = 8;
-        int buttonWidth = (ClientSize.Width - (left * 2) - (gap * 2)) / 3;
-        bunifuThinButton21.SetBounds(left, 44, buttonWidth, 39);
-        bunifuThinButton22.SetBounds(left + buttonWidth + gap, 44, buttonWidth, 39);
-        bunifuThinButton23.SetBounds(left + ((buttonWidth + gap) * 2), 44, buttonWidth, 39);
+            bunifuThinButton21.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            bunifuThinButton22.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            bunifuThinButton23.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
-        bunifuThinButton21.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-        bunifuThinButton22.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-        bunifuThinButton23.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            BAAAA.SetBounds(12, 104, ClientSize.Width - 24, ClientSize.Height - 116);
+            BAAAA.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            BAAAA.BackColor = Color.White;
+            BAAAA.Paint -= ByteNovaBodyPanelPaint;
+            BAAAA.Paint += ByteNovaBodyPanelPaint;
 
-        // Existing payment-tab host fills the remaining body.
-        BAAAA.SetBounds(8, 88, ClientSize.Width - 16, ClientSize.Height - 96);
-        BAAAA.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-        BAAAA.BackColor = Color.FromArgb(8, 27, 45);
-        BAAAA.Paint -= ByteNovaBodyPanelPaint;
-        BAAAA.Paint += ByteNovaBodyPanelPaint;
+            CAAA0.Dock = DockStyle.Fill;
+            tabDebitCard.Dock = DockStyle.Fill;
+            tabCreditCard.Dock = DockStyle.Fill;
 
-        CAAA0.Dock = DockStyle.Fill;
-        tabDebitCard.Dock = DockStyle.Fill;
-        tabCreditCard.Dock = DockStyle.Fill;
+            CAAA0.BackColor = Color.White;
+            tabDebitCard.BackColor = Color.White;
+            tabCreditCard.BackColor = Color.White;
 
-        // Match child backgrounds with the ByteNova shell where supported.
-        CAAA0.BackColor = Color.FromArgb(8, 27, 45);
-        tabDebitCard.BackColor = Color.FromArgb(8, 27, 45);
-        tabCreditCard.BackColor = Color.FromArgb(8, 27, 45);
+            StyleDeep(CAAA0);
+            StyleDeep(tabDebitCard);
+            StyleDeep(tabCreditCard);
 
-        bunifuElipse1.ElipseRadius = 4;
+            bunifuElipse1.ElipseRadius = 6;
 
-        ResumeLayout(false);
-        PerformLayout();
-        Invalidate(true);
+            method_0();
+            CAAA0.Visible = true;
+            CAAA0.BringToFront();
+            BAAAA.Visible = true;
+        }
+        finally
+        {
+            ResumeLayout(false);
+            PerformLayout();
+            Invalidate(true);
+        }
+    }
+
+    private void StyleDeep(Control parent)
+    {
+        foreach (Control c in parent.Controls)
+        {
+            TextBox tb = c as TextBox;
+            if (tb != null)
+            {
+                tb.BorderStyle = BorderStyle.FixedSingle;
+                tb.BackColor = Color.White;
+                tb.ForeColor = Color.FromArgb(17, 40, 72);
+                tb.Font = new Font("Segoe UI", 9.5f);
+            }
+
+            ComboBox cb = c as ComboBox;
+            if (cb != null)
+            {
+                cb.FlatStyle = FlatStyle.Flat;
+                cb.BackColor = Color.White;
+                cb.ForeColor = Color.FromArgb(17, 40, 72);
+                cb.Font = new Font("Segoe UI", 9.5f);
+            }
+
+            ListBox lb = c as ListBox;
+            if (lb != null)
+            {
+                lb.BorderStyle = BorderStyle.FixedSingle;
+                lb.BackColor = Color.White;
+                lb.ForeColor = Color.FromArgb(17, 40, 72);
+                lb.Font = new Font("Segoe UI", 9.5f);
+            }
+
+            Label l = c as Label;
+            if (l != null)
+            {
+                l.ForeColor = Color.FromArgb(17, 40, 72);
+                if (l.BackColor != Color.Transparent) l.BackColor = Color.White;
+            }
+
+            CheckBox chk = c as CheckBox;
+            if (chk != null)
+            {
+                chk.ForeColor = Color.FromArgb(17, 40, 72);
+                chk.BackColor = Color.White;
+            }
+
+            RadioButton rb = c as RadioButton;
+            if (rb != null)
+            {
+                rb.ForeColor = Color.FromArgb(17, 40, 72);
+                rb.BackColor = Color.White;
+            }
+
+            Button b = c as Button;
+            if (b != null) StyleFlatButton(b);
+
+            DataGridView d = c as DataGridView;
+            if (d != null) StyleGrid(d);
+
+            Panel p = c as Panel;
+            if (p != null) p.BackColor = Color.White;
+
+            GroupBox g = c as GroupBox;
+            if (g != null)
+            {
+                g.ForeColor = Color.FromArgb(17, 40, 72);
+                g.BackColor = Color.White;
+            }
+
+            StyleDeep(c);
+        }
+    }
+
+    private void StyleFlatButton(Button b)
+    {
+        string t = (b.Text ?? "").ToUpperInvariant();
+
+        Color bg = Color.FromArgb(245, 146, 28);
+        if (t.Contains("DEL") || t.Contains("CLEAR") || t.Contains("REMOVE"))
+            bg = Color.FromArgb(220, 38, 38);
+        else if (t.Contains("EDIT") || t.Contains("UPDATE"))
+            bg = Color.FromArgb(59, 132, 247);
+
+        b.FlatStyle = FlatStyle.Flat;
+        b.FlatAppearance.BorderSize = 0;
+        b.BackColor = bg;
+        b.ForeColor = Color.White;
+        b.Font = new Font("Segoe UI Semibold", 9f);
+        b.UseVisualStyleBackColor = false;
+        b.Cursor = Cursors.Hand;
+    }
+
+    private void StyleGrid(DataGridView d)
+    {
+        d.EnableHeadersVisualStyles = false;
+        d.BackgroundColor = Color.White;
+        d.BorderStyle = BorderStyle.None;
+        d.GridColor = Color.FromArgb(198, 216, 242);
+        d.RowHeadersVisible = false;
+        d.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(12, 38, 72);
+        d.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+        d.DefaultCellStyle.BackColor = Color.White;
+        d.DefaultCellStyle.ForeColor = Color.FromArgb(17, 40, 72);
+        d.DefaultCellStyle.SelectionBackColor = Color.FromArgb(226, 238, 252);
+        d.DefaultCellStyle.SelectionForeColor = Color.FromArgb(17, 40, 72);
     }
 
     private void StylePaymentButton(BunifuThinButton2 b, string text, Color accent)
@@ -178,16 +291,16 @@ public class frmCombine : Form
         b.IdleBorderThickness = 1;
         b.ActiveBorderThickness = 1;
 
-        b.IdleFillColor = Color.FromArgb(9, 30, 49);
-        b.IdleForecolor = Color.White;
+        b.IdleFillColor = Color.White;
+        b.IdleForecolor = Color.FromArgb(17, 40, 72);
         b.IdleLineColor = accent;
 
         b.ActiveFillColor = accent;
         b.ActiveForecolor = Color.White;
         b.ActiveLineColor = Color.FromArgb(105, 225, 255);
 
-        b.BackColor = Color.FromArgb(4, 15, 29);
-        b.ForeColor = Color.White;
+        b.BackColor = Color.FromArgb(233, 241, 252);
+        b.ForeColor = Color.FromArgb(17, 40, 72);
         b.Cursor = Cursors.Hand;
     }
 
@@ -197,12 +310,12 @@ public class frmCombine : Form
         if (r.Width <= 0 || r.Height <= 0) return;
 
         using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, Color.FromArgb(2, 23, 52), Color.FromArgb(5, 53, 91),
+            r, Color.FromArgb(8, 26, 52), Color.FromArgb(16, 58, 104),
             LinearGradientMode.Horizontal))
             e.Graphics.FillRectangle(bg, r);
 
-        using (Pen cyan = new Pen(Color.FromArgb(198, 244, 50), 1.5F))
-            e.Graphics.DrawLine(cyan, 0, r.Height - 1, r.Width, r.Height - 1);
+        using (SolidBrush lime = new SolidBrush(Color.FromArgb(198, 244, 50)))
+            e.Graphics.FillRectangle(lime, 0, r.Height - 2, r.Width, 2);
     }
 
     private void ByteNovaBodyPanelPaint(object sender, PaintEventArgs e)
@@ -211,9 +324,9 @@ public class frmCombine : Form
         if (c == null || c.ClientSize.Width < 2 || c.ClientSize.Height < 2) return;
 
         Rectangle r = new Rectangle(0, 0, c.ClientSize.Width - 1, c.ClientSize.Height - 1);
-        using (SolidBrush bg = new SolidBrush(Color.FromArgb(8, 27, 45)))
+        using (SolidBrush bg = new SolidBrush(Color.White))
             e.Graphics.FillRectangle(bg, r);
-        using (Pen p = new Pen(Color.FromArgb(31, 105, 137), 1F))
+        using (Pen p = new Pen(Color.FromArgb(198, 216, 242), 1F))
             e.Graphics.DrawRectangle(p, r);
     }
 
