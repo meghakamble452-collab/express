@@ -1658,27 +1658,32 @@ public static class Program
 	}
 
 	public static void RunExeUpdater()
-	{
-		try
-		{
-			string path = "Updater.exe";
-			if (File.Exists(path)) File.Delete(path);
+{
+    try
+    {
+        string path = "Updater.exe";
+        if (File.Exists(path)) File.Delete(path);
 
-			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-			using (WebClient wc = new WebClient())
-			{
-				wc.Headers.Add("User-Agent", "ExpressUpdater");
-				wc.DownloadFile(new Uri("https://expressts.co.in/api/files/Updater.exe"), path);
-			}
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+        ServicePointManager.ServerCertificateValidationCallback = (s, cert, chain, err) => true;
 
-			Process process = new Process();
-			process.StartInfo.FileName = "Updater.exe";
-			process.StartInfo.WorkingDirectory = Application.StartupPath;
-			process.Start();
-			Environment.Exit(0);
-		}
-		catch { }
-	}
+        using (WebClient wc = new WebClient())
+        {
+            wc.Headers.Add("User-Agent", "ExpressUpdater");
+            wc.DownloadFile(new Uri("https://expressts.co.in/api/files/Updater.exe"), path);
+        }
+
+        Process process = new Process();
+        process.StartInfo.FileName = "Updater.exe";
+        process.StartInfo.WorkingDirectory = Application.StartupPath;
+        process.Start();
+        Environment.Exit(0);
+    }
+    catch (Exception ex)
+    {
+        try { File.AppendAllText("IRLOG\\v.log", "UPD-FAIL " + ex.Message + Environment.NewLine); } catch { }
+    }
+}
 
 	internal static Form smethod_7()
 	{
