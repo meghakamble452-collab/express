@@ -97,11 +97,26 @@ public class frmCombine : Form
     private Panel _strip;
     private bool _shapeHooked;
     private BunifuThinButton2[] _pills;
+    private bool _closeHot;
+    private bool _closeDown;
 
     [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = CharSet.Unicode)]
     private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, string lParam);
 
     private const int EM_SETCUEBANNER = 0x1501;
+
+    private static Color Lighten(Color c, float f)
+    {
+        return Color.FromArgb(
+            (int)Math.Min(255, c.R + (255 - c.R) * f),
+            (int)Math.Min(255, c.G + (255 - c.G) * f),
+            (int)Math.Min(255, c.B + (255 - c.B) * f));
+    }
+
+    private static Color Darken(Color c, float f)
+    {
+        return Color.FromArgb((int)(c.R * (1 - f)), (int)(c.G * (1 - f)), (int)(c.B * (1 - f)));
+    }
 
     private void ApplyByteNovaLatestDesign()
     {
@@ -109,7 +124,7 @@ public class frmCombine : Form
         try
         {
             BackColor = Color.FromArgb(233, 241, 252);
-            ClientSize = new Size(880, 580);
+            ClientSize = new Size(880, 620);
             _pills = new BunifuThinButton2[3] { bunifuThinButton21, bunifuThinButton22, bunifuThinButton23 };
 
             pnlHeader.Dock = DockStyle.None;
@@ -129,16 +144,24 @@ public class frmCombine : Form
 
             bunifuImageButton1.Visible = false;
 
-            btnClose.SetBounds(ClientSize.Width - 46, 10, 30, 28);
+            btnClose.SetBounds(ClientSize.Width - 48, 10, 32, 28);
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnClose.BackColor = Color.FromArgb(220, 38, 38);
             btnClose.BackgroundImage = null;
             btnClose.Image = null;
             btnClose.SizeMode = PictureBoxSizeMode.Zoom;
             btnClose.Zoom = 0;
+            btnClose.Cursor = Cursors.Hand;
             btnClose.Paint -= ClosePaint;
             btnClose.Paint += ClosePaint;
-            RoundControl(btnClose, 7);
+            btnClose.MouseEnter -= CloseEnter;
+            btnClose.MouseEnter += CloseEnter;
+            btnClose.MouseLeave -= CloseLeave;
+            btnClose.MouseLeave += CloseLeave;
+            btnClose.MouseDown -= CloseDown;
+            btnClose.MouseDown += CloseDown;
+            btnClose.MouseUp -= CloseUp;
+            btnClose.MouseUp += CloseUp;
+            RoundControl(btnClose, 8);
 
             if (_strip == null)
             {
@@ -177,7 +200,7 @@ public class frmCombine : Form
             BAAAA.SetBounds(18, 118, ClientSize.Width - 36, ClientSize.Height - 136);
             BAAAA.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             BAAAA.BackColor = Color.White;
-            BAAAA.Padding = new Padding(14);
+            BAAAA.Padding = new Padding(16);
             BAAAA.Paint -= ByteNovaBodyPanelPaint;
             BAAAA.Paint += ByteNovaBodyPanelPaint;
 
@@ -226,21 +249,30 @@ public class frmCombine : Form
         }
     }
 
+    private void CloseEnter(object sender, EventArgs e) { _closeHot = true; btnClose.Invalidate(); }
+    private void CloseLeave(object sender, EventArgs e) { _closeHot = false; _closeDown = false; btnClose.Invalidate(); }
+    private void CloseDown(object sender, MouseEventArgs e) { _closeDown = true; btnClose.Invalidate(); }
+    private void CloseUp(object sender, MouseEventArgs e) { _closeDown = false; btnClose.Invalidate(); }
+
     private void ClosePaint(object sender, PaintEventArgs e)
     {
         Control c = sender as Control;
         if (c == null) return;
 
+        Color bg = Color.FromArgb(220, 38, 38);
+        if (_closeDown) bg = Color.FromArgb(170, 26, 26);
+        else if (_closeHot) bg = Color.FromArgb(240, 78, 78);
+
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        using (SolidBrush bg = new SolidBrush(Color.FromArgb(220, 38, 38)))
-        using (GraphicsPath p = RoundPath(new Rectangle(0, 0, c.Width - 1, c.Height - 1), 7))
-            e.Graphics.FillPath(bg, p);
+        using (SolidBrush b = new SolidBrush(bg))
+        using (GraphicsPath p = RoundPath(new Rectangle(0, 0, c.Width - 1, c.Height - 1), 8))
+            e.Graphics.FillPath(b, p);
 
         using (Pen pen = new Pen(Color.White, 2.2f))
         {
             pen.StartCap = LineCap.Round;
             pen.EndCap = LineCap.Round;
-            int m = 9;
+            int m = 10;
             e.Graphics.DrawLine(pen, m, m, c.Width - m, c.Height - m);
             e.Graphics.DrawLine(pen, c.Width - m, m, m, c.Height - m);
         }
@@ -249,6 +281,7 @@ public class frmCombine : Form
     private class FieldBox : Panel
     {
         public bool Active;
+        public bool Hover;
 
         public FieldBox()
         {
@@ -262,12 +295,16 @@ public class frmCombine : Form
             base.OnPaint(e);
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             Rectangle r = new Rectangle(0, 0, Width - 1, Height - 1);
+
+            Color penCol = Color.FromArgb(184, 205, 232);
+            float penW = 1.1f;
+            if (Hover) { penCol = Color.FromArgb(150, 184, 226); penW = 1.3f; }
+            if (Active) { penCol = Color.FromArgb(245, 146, 28); penW = 1.7f; }
+
             using (GraphicsPath p = RoundPath(r, 6))
             {
                 using (SolidBrush b = new SolidBrush(Color.White)) e.Graphics.FillPath(b, p);
-                using (Pen pen = new Pen(Active ? Color.FromArgb(245, 146, 28) : Color.FromArgb(184, 205, 232),
-                                        Active ? 1.7f : 1.1f))
-                    e.Graphics.DrawPath(pen, p);
+                using (Pen pen = new Pen(penCol, penW)) e.Graphics.DrawPath(pen, p);
             }
         }
     }
@@ -305,6 +342,10 @@ public class frmCombine : Form
 
             f.Enter += delegate { box.Active = true; box.Invalidate(); };
             f.Leave += delegate { box.Active = false; box.Invalidate(); };
+            f.MouseEnter += delegate { box.Hover = true; box.Invalidate(); };
+            f.MouseLeave += delegate { box.Hover = false; box.Invalidate(); };
+            box.MouseEnter += delegate { box.Hover = true; box.Invalidate(); };
+            box.MouseLeave += delegate { box.Hover = false; box.Invalidate(); };
         }
     }
 
@@ -312,8 +353,14 @@ public class frmCombine : Form
     {
         System.Collections.Generic.List<Control> hits = new System.Collections.Generic.List<Control>();
         CollectFields(tab, hits);
+
         foreach (Control c in hits)
-            if (c is TextBox) return c.Parent;
+        {
+            if (!(c is TextBox)) continue;
+            Control p = c.Parent;
+            while (p != null && p is FieldBox) p = p.Parent;
+            if (p != null) return p;
+        }
         return tab;
     }
 
@@ -336,9 +383,27 @@ public class frmCombine : Form
         }
     }
 
+    private void EnsureWidth(Control f, int min)
+    {
+        if (f == null || f.Width >= min) return;
+
+        f.Width = min;
+
+        Control box = f.Parent;
+        if (box == null) return;
+
+        box.Width = min + 10;
+
+        Control gp = box.Parent;
+        if (gp != null) gp.Width = Math.Max(gp.Width, box.Right + 10);
+    }
+
     private void SetupTab(Control tab)
     {
         if (tab == null) return;
+
+        Control panel = FindFieldPanel(tab);
+        ShortenLabels(panel);
 
         CheckBox pwd = null;
         bool pwdDone = false;
@@ -360,29 +425,36 @@ public class frmCombine : Form
             if (b != null && (b.Text ?? "").ToUpperInvariant().Contains("SAVE")) save = b;
         }
 
-        Control panel = FindFieldPanel(tab);
-        ShortenLabels(panel);
+        System.Collections.Generic.List<Control> fields = new System.Collections.Generic.List<Control>();
+        CollectFields(tab, fields);
+        foreach (Control f in fields)
+        {
+            if (f is ComboBox) EnsureWidth(f, 150);
+            else EnsureWidth(f, 200);
+        }
 
         int endY = Reflow(panel);
 
-        if (pwd != null && pwd.Parent == panel)
+        if (pwd != null)
         {
-            pwd.SetBounds(14, endY + 4, 210, 22);
+            if (pwd.Parent != panel) pwd.Parent = panel;
+            pwd.SetBounds(16, endY + 6, 210, 22);
             pwd.BringToFront();
-            endY += 28;
+            endY += 30;
         }
 
-        if (save != null && save.Parent == panel)
+        if (save != null)
         {
-            save.SetBounds(12, endY + 4, Math.Max(180, panel.ClientSize.Width - 24), 34);
+            if (save.Parent != panel) save.Parent = panel;
+            save.SetBounds(14, endY + 6, Math.Max(200, panel.ClientSize.Width - 30), 36);
             save.BringToFront();
-            endY += 40;
+            endY += 44;
         }
 
         if (panel != tab)
         {
-            int maxH = tab.ClientSize.Height - 8;
-            panel.Height = Math.Min(Math.Max(panel.Height, endY + 8), maxH);
+            int maxH = tab.ClientSize.Height - 10;
+            panel.Height = Math.Min(Math.Max(panel.Height, endY + 10), maxH);
         }
 
         AddCues(panel);
@@ -413,7 +485,7 @@ public class frmCombine : Form
 
         items.Sort(delegate (Control a, Control b) { return a.Top.CompareTo(b.Top); });
 
-        int y = 14;
+        int y = 18;
         int i = 0;
 
         while (i < items.Count)
@@ -421,7 +493,7 @@ public class frmCombine : Form
             int bandTop = items[i].Top;
             System.Collections.Generic.List<Control> row = new System.Collections.Generic.List<Control>();
 
-            while (i < items.Count && items[i].Top - bandTop <= 14)
+            while (i < items.Count && items[i].Top - bandTop <= 16)
             {
                 row.Add(items[i]);
                 i++;
@@ -433,7 +505,7 @@ public class frmCombine : Form
             int delta = y - bandTop;
             foreach (Control c in row) c.Top += delta;
 
-            y += rowH + 14;
+            y += rowH + 18;
         }
 
         return y;
@@ -441,8 +513,6 @@ public class frmCombine : Form
 
     private void AddCues(Control par)
     {
-        System.Collections.Generic.List<Control> boxes = new System.Collections.Generic.List<Control>();
-
         foreach (Control c in par.Controls)
         {
             TextBox tb = c as TextBox;
@@ -455,7 +525,7 @@ public class frmCombine : Form
             {
                 Label lab = l as Label;
                 if (lab == null) continue;
-                if (Math.Abs(lab.Top - tb.Top) > 14) continue;
+                if (Math.Abs(lab.Top - tb.Top) > 16) continue;
                 if (lab.Left >= tb.Left) continue;
                 if (lab.Left <= bestLeft) continue;
                 bestLeft = lab.Left;
@@ -463,7 +533,6 @@ public class frmCombine : Form
             }
 
             if (string.IsNullOrEmpty(cue)) continue;
-            boxes.Add(tb);
             try { SendMessage(tb.Handle, EM_SETCUEBANNER, (IntPtr)1, cue); } catch { }
         }
     }
@@ -671,8 +740,8 @@ public class frmCombine : Form
         b.Font = new Font("Segoe UI Semibold", 9.5f);
         b.UseVisualStyleBackColor = false;
         b.Cursor = Cursors.Hand;
-        b.FlatAppearance.MouseOverBackColor = bg;
-        b.FlatAppearance.MouseDownBackColor = bg;
+        b.FlatAppearance.MouseOverBackColor = Lighten(bg, 0.16f);
+        b.FlatAppearance.MouseDownBackColor = Darken(bg, 0.16f);
         RoundControl(b, 7);
         b.Resize += delegate { RoundControl(b, 7); };
     }
