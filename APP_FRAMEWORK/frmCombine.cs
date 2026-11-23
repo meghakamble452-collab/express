@@ -95,6 +95,9 @@ public class frmCombine : Form
 
     private Panel _strip;
     private bool _shapeHooked;
+    private System.Collections.Generic.Dictionary<Control, System.Collections.Generic.List<Control>> _fields;
+    private BunifuThinButton2[] _pills;
+    private int _activeTab;
 
     private void ApplyByteNovaLatestDesign()
     {
@@ -103,6 +106,8 @@ public class frmCombine : Form
         {
             BackColor = Color.FromArgb(233, 241, 252);
             ClientSize = new Size(840, 540);
+            _fields = new System.Collections.Generic.Dictionary<Control, System.Collections.Generic.List<Control>>();
+            _pills = new BunifuThinButton2[3] { bunifuThinButton21, bunifuThinButton22, bunifuThinButton23 };
 
             pnlHeader.Dock = DockStyle.None;
             pnlHeader.SetBounds(0, 0, ClientSize.Width, 46);
@@ -139,9 +144,14 @@ public class frmCombine : Form
             _strip.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             _strip.BackColor = Color.FromArgb(214, 232, 252);
 
-            StylePill(bunifuThinButton21, "NET BANKING");
-            StylePill(bunifuThinButton22, "DEBIT CARD");
-            StylePill(bunifuThinButton23, "CREDIT CARD");
+            for (int i = 0; i < 3; i++)
+            {
+                StylePill(_pills[i], i == 0 ? "NET BANKING" : (i == 1 ? "DEBIT CARD" : "CREDIT CARD"));
+                int idx = i;
+                _pills[i].Click -= PillClick;
+                _pills[i].Click += PillClick;
+                _pills[i].Tag = idx;
+            }
 
             int gap = 10;
             int left = 18;
@@ -177,6 +187,10 @@ public class frmCombine : Form
             StyleDeep(tabDebitCard);
             StyleDeep(tabCreditCard);
 
+            BuildFieldFrames(CAAA0);
+            BuildFieldFrames(tabDebitCard);
+            BuildFieldFrames(tabCreditCard);
+
             HookArrange(CAAA0);
             HookArrange(tabDebitCard);
             HookArrange(tabCreditCard);
@@ -196,12 +210,48 @@ public class frmCombine : Form
             BAAAA.Visible = true;
             _strip.BringToFront();
             pnlHeader.BringToFront();
+            MarkPills(0);
         }
         finally
         {
             ResumeLayout(false);
             PerformLayout();
             Invalidate(true);
+        }
+    }
+
+    private void PillClick(object sender, EventArgs e)
+    {
+        BunifuThinButton2 b = sender as BunifuThinButton2;
+        if (b == null || !(b.Tag is int)) return;
+        MarkPills((int)b.Tag);
+    }
+
+    private void MarkPills(int active)
+    {
+        _activeTab = active;
+        for (int i = 0; i < _pills.Length; i++)
+        {
+            BunifuThinButton2 p = _pills[i];
+            if (p == null) continue;
+
+            if (i == active)
+            {
+                p.IdleFillColor = Color.FromArgb(245, 146, 28);
+                p.IdleForecolor = Color.White;
+                p.IdleLineColor = Color.FromArgb(222, 126, 16);
+                p.ActiveFillColor = Color.FromArgb(232, 132, 14);
+                p.ActiveForecolor = Color.White;
+            }
+            else
+            {
+                p.IdleFillColor = Color.White;
+                p.IdleForecolor = Color.FromArgb(17, 40, 72);
+                p.IdleLineColor = Color.FromArgb(150, 184, 226);
+                p.ActiveFillColor = Color.FromArgb(240, 246, 255);
+                p.ActiveForecolor = Color.FromArgb(17, 40, 72);
+            }
+            p.Invalidate();
         }
     }
 
@@ -225,6 +275,41 @@ public class frmCombine : Form
         return p;
     }
 
+    private void BuildFieldFrames(Control tab)
+    {
+        if (tab == null) return;
+
+        System.Collections.Generic.List<Control> list = new System.Collections.Generic.List<Control>();
+        foreach (Control c in tab.Controls)
+            if (c is TextBox || c is ComboBox) list.Add(c);
+
+        _fields[tab] = list;
+        tab.Paint -= FieldsPaint;
+        tab.Paint += FieldsPaint;
+    }
+
+    private void FieldsPaint(object sender, PaintEventArgs e)
+    {
+        Control tab = sender as Control;
+        if (tab == null || _fields == null) return;
+
+        System.Collections.Generic.List<Control> list;
+        if (!_fields.TryGetValue(tab, out list)) return;
+
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+        foreach (Control c in list)
+        {
+            if (!c.Visible) continue;
+            Rectangle r = new Rectangle(c.Left - 4, c.Top - 4, c.Width + 8, c.Height + 8);
+            using (GraphicsPath p = RoundPath(r, 5))
+            {
+                using (SolidBrush fill = new SolidBrush(Color.White)) e.Graphics.FillPath(fill, p);
+                using (Pen pen = new Pen(Color.FromArgb(150, 184, 226), 1.2f)) e.Graphics.DrawPath(pen, p);
+            }
+        }
+    }
+
     private void HookArrange(Control tab)
     {
         if (tab == null) return;
@@ -234,49 +319,77 @@ public class frmCombine : Form
 
     private void ArrangeTab(Control tab)
     {
-        if (tab == null || tab.ClientSize.Width < 260 || tab.ClientSize.Height < 120) return;
+        if (tab == null || tab.ClientSize.Width < 300 || tab.ClientSize.Height < 160) return;
 
         int pad = 12;
         int rightW = 250;
 
         ListBox lb = null;
+        Button save = null;
+        CheckBox pwd = null;
+        bool pwdDone = false;
         System.Collections.Generic.List<Button> acts = new System.Collections.Generic.List<Button>();
 
         foreach (Control c in tab.Controls)
         {
-            if (lb == null)
-            {
-                ListBox x = c as ListBox;
-                if (x != null) lb = x;
-            }
+            if (lb == null) { ListBox x = c as ListBox; if (x != null) lb = x; }
+
             Button b = c as Button;
             if (b != null)
             {
                 string t = (b.Text ?? "").ToUpperInvariant();
-                if (t.Contains("EDIT") || t.Contains("DEL")) acts.Add(b);
+                if (t.Contains("SAVE")) save = b;
+                else if (t.Contains("EDIT") || t.Contains("DEL")) acts.Add(b);
+            }
+
+            CheckBox chk = c as CheckBox;
+            if (chk != null)
+            {
+                string ct = (chk.Text ?? "").ToUpperInvariant();
+                if (ct.Contains("SHOW"))
+                {
+                    if (!pwdDone) { pwd = chk; pwdDone = true; }
+                    else chk.Visible = false;
+                }
             }
         }
 
         if (lb == null) return;
 
         int leftLimit = tab.ClientSize.Width - rightW - pad;
+        int h = tab.ClientSize.Height;
 
         lb.Dock = DockStyle.None;
-        lb.SetBounds(leftLimit, pad, rightW, Math.Max(80, tab.ClientSize.Height - (pad * 2) - 46));
+        lb.SetBounds(leftLimit, pad, rightW, Math.Max(80, h - (pad * 2) - 46));
 
         int bw = (rightW - 16) / 3;
         for (int i = 0; i < acts.Count; i++)
             acts[i].SetBounds(leftLimit + i * (bw + 8), lb.Bottom + 10, bw, 32);
 
+        if (save != null)
+        {
+            save.SetBounds(14, h - 46, leftLimit - 22, 34);
+            save.BringToFront();
+        }
+
+        if (pwd != null)
+        {
+            pwd.SetBounds(16, h - 78, leftLimit - 30, 22);
+            pwd.BringToFront();
+        }
+
         foreach (Control c in tab.Controls)
         {
-            if (c == lb || acts.Contains(c as Button)) continue;
-            if (c.Right > leftLimit - 8)
+            if (c == lb || c == save || c == pwd || acts.Contains(c as Button)) continue;
+            if (c is Label || c is CheckBox || c is RadioButton) continue;
+            if (c.Right > leftLimit - 10)
             {
-                int nw = leftLimit - 8 - c.Left;
+                int nw = leftLimit - 10 - c.Left;
                 if (nw >= 60) c.Width = nw;
             }
         }
+
+        tab.Invalidate();
     }
 
     private void StylePill(BunifuThinButton2 b, string text)
@@ -289,15 +402,6 @@ public class frmCombine : Form
         b.ActiveCornerRadius = 8;
         b.IdleBorderThickness = 1;
         b.ActiveBorderThickness = 1;
-
-        b.IdleFillColor = Color.White;
-        b.IdleForecolor = Color.FromArgb(17, 40, 72);
-        b.IdleLineColor = Color.FromArgb(150, 184, 226);
-
-        b.ActiveFillColor = Color.FromArgb(245, 146, 28);
-        b.ActiveForecolor = Color.White;
-        b.ActiveLineColor = Color.FromArgb(222, 126, 16);
-
         b.BackColor = Color.FromArgb(214, 232, 252);
         b.ForeColor = Color.FromArgb(17, 40, 72);
         b.Cursor = Cursors.Hand;
@@ -318,7 +422,7 @@ public class frmCombine : Form
             TextBox tb = c as TextBox;
             if (tb != null)
             {
-                tb.BorderStyle = BorderStyle.FixedSingle;
+                tb.BorderStyle = BorderStyle.None;
                 tb.BackColor = Color.White;
                 tb.ForeColor = Color.FromArgb(17, 40, 72);
                 tb.Font = new Font("Segoe UI", 10f);
@@ -331,7 +435,7 @@ public class frmCombine : Form
             if (lb != null)
             {
                 lb.BorderStyle = BorderStyle.FixedSingle;
-                lb.BackColor = Color.White;
+                lb.BackColor = Color.FromArgb(250, 252, 255);
                 lb.ForeColor = Color.FromArgb(17, 40, 72);
                 lb.Font = new Font("Segoe UI", 10f);
             }
@@ -339,7 +443,7 @@ public class frmCombine : Form
             Label l = c as Label;
             if (l != null)
             {
-                l.ForeColor = Color.FromArgb(17, 40, 72);
+                l.ForeColor = Color.FromArgb(30, 56, 92);
                 if (l.BackColor != Color.Transparent) l.BackColor = Color.White;
             }
 
@@ -348,6 +452,7 @@ public class frmCombine : Form
             {
                 chk.ForeColor = Color.FromArgb(17, 40, 72);
                 chk.BackColor = Color.White;
+                chk.Font = new Font("Segoe UI", 9f);
             }
 
             RadioButton rb = c as RadioButton;
@@ -421,8 +526,6 @@ public class frmCombine : Form
             bg = Color.FromArgb(220, 38, 38);
         else if (t.Contains("EDIT") || t.Contains("UPDATE"))
             bg = Color.FromArgb(59, 132, 247);
-        else if (t.Contains("SAVE"))
-            bg = Color.FromArgb(245, 146, 28);
 
         b.FlatStyle = FlatStyle.Flat;
         b.FlatAppearance.BorderSize = 0;
