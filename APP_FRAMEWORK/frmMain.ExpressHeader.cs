@@ -198,7 +198,7 @@ namespace APP_FRAMEWORK
             exCanvas.Controls.Add(exInfo);
 
             exChId = ExInfoChip("USER ID", Convert.ToString(Program.clientID), Color.White);
-            exChVer = ExInfoChip("VERSION", ExVersion, Color.White);
+            exChVer = ExInfoChip("VERSION", Program.appversion, Color.White);
             exChPay = ExInfoChip("PAYMENT", string.IsNullOrEmpty(Program.KeyStatus) ? "—" : Program.KeyStatus,
                 Program.KeyStatus == "Paid" ? Color.FromArgb(198, 255, 220) : Color.FromArgb(255, 208, 176));
             exChVal = ExInfoChip("VALIDITY", "—", Color.White);
@@ -802,7 +802,15 @@ namespace APP_FRAMEWORK
                 int closeX = right - closeW;
                 int powerX = closeX - gap - closeW;
                 int userW = ExS(124, k);
-                int userX = powerX - gap - ExS(178, k) - gap - userW;
+
+                bool hasUser = false;
+                foreach (Control c in exCanvas.Controls)
+                {
+                    if (c.Tag is object[] tt && (int)tt[1] == 1) { hasUser = true; break; }
+                }
+
+                int userX = hasUser ? (powerX - gap - ExS(24, k) - gap - userW) : powerX;
+                int infoRight = hasUser ? userX : powerX;
 
 
                 int clockX = ExS(330, k);
@@ -835,7 +843,7 @@ namespace APP_FRAMEWORK
 
                 if (exInfo != null)
                 {
-                    int maxRel = Math.Max(ExS(160, k), userX - ExS(10, k) - infoX);
+                    int maxRel = Math.Max(ExS(160, k), infoRight - ExS(10, k) - infoX);
                     int cxp = ExS(74, k);
                     int chipTop = ExS(4, k);
                     int chipH = ExS(54, k);

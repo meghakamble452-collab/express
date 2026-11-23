@@ -2543,7 +2543,7 @@ public partial class frmLogin : Form
 
     static frmLogin()
     {
-        string text = "28.11.2026";
+        string text = "0.0.1";
         try
         {
             if (File.Exists("ver.txt"))
