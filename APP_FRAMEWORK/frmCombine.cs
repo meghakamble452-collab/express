@@ -478,6 +478,8 @@ public class frmCombine : Form
             leftLimit = lb.Left - 14;
         }
 
+        if (leftLimit < 240) leftLimit = tab.ClientSize.Width - 240;
+
         ShortenLabels(tab);
 
         Button save = null;
@@ -503,24 +505,6 @@ public class frmCombine : Form
         CollectMovables(tab, listHost, movables);
 
         foreach (Control c in movables) MoveTo(c, tab);
-
-        foreach (Control c in movables)
-        {
-            Control f = c;
-            if (c is FieldBox && c.Controls.Count > 0) f = c.Controls[0];
-
-            TextBox tb = f as TextBox;
-            ComboBox cb = f as ComboBox;
-            if (tb == null && cb == null) continue;
-
-            int maxW = leftLimit - 24 - f.Left;
-            if (maxW < 120) maxW = 120;
-
-            if (f.Width > maxW) f.Width = maxW;
-            if (f.Width < 150) f.Width = Math.Min(200, maxW);
-
-            if (f.Parent is FieldBox) f.Parent.Width = f.Width + 10;
-        }
 
         foreach (Control c in tab.Controls)
         {
@@ -594,30 +578,55 @@ public class frmCombine : Form
             int delta = y - bandTop;
             foreach (Control c in row) c.Top += delta;
 
-            int fields = 0;
-            foreach (Control c in row) if (!(c is Label)) fields++;
+            System.Collections.Generic.List<System.Collections.Generic.List<Control>> cells =
+                new System.Collections.Generic.List<System.Collections.Generic.List<Control>>();
 
-            int x = 16;
+            System.Collections.Generic.List<Control> cell = null;
+
             foreach (Control c in row)
             {
-                if (c is Label)
+                bool hasField = false;
+                if (cell != null) foreach (Control k in cell) if (!(k is Label)) hasField = true;
+
+                if (c is Label && (cell == null || hasField))
                 {
-                    c.Left = x;
-                    x += c.Width + 10;
-                    continue;
+                    cell = new System.Collections.Generic.List<Control>();
+                    cells.Add(cell);
+                }
+                else if (cell == null)
+                {
+                    cell = new System.Collections.Generic.List<Control>();
+                    cells.Add(cell);
                 }
 
-                int remaining = leftLimit - x - 8;
-                int w;
-                if (fields > 1) w = Math.Max(70, (remaining - (10 * (fields - 1))) / fields);
-                else w = Math.Max(90, remaining);
+                cell.Add(c);
+            }
 
-                c.Left = x;
-                c.Width = w;
-                if (c is FieldBox) c.Height = Math.Max(34, c.Height);
+            int cellsLeft = cells.Count;
+            int x = 16;
 
-                x += w + 10;
-                fields--;
+            foreach (System.Collections.Generic.List<Control> cl in cells)
+            {
+                int labelW = 0;
+                foreach (Control c in cl) if (c is Label) labelW = Math.Max(labelW, c.Width);
+
+                int room = leftLimit - x - 8;
+                int cellW = Math.Max(labelW + 90, room / Math.Max(1, cellsLeft));
+                int fx = x + labelW + 8;
+
+                foreach (Control c in cl)
+                {
+                    if (c is Label) { c.Left = x; continue; }
+
+                    int w = Math.Max(70, cellW - labelW - 8);
+                    c.Left = fx;
+                    c.Width = w;
+                    if (c is FieldBox) c.Height = Math.Max(34, c.Height);
+                    fx += w;
+                }
+
+                x += cellW + 10;
+                cellsLeft--;
             }
 
             y += 44;
