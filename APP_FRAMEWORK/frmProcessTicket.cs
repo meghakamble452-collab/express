@@ -2086,22 +2086,31 @@ internal class frmProcessTicket : Form
 
         SuspendLayout();
         FormBorderStyle = FormBorderStyle.None;
-        BackColor = Color.FromArgb(1, 9, 18);
+        BackColor = XH_BG;
         ForeColor = Color.White;
         DoubleBuffered = true;
 
         Paint -= ByteNovaProcessFormPaint;
         Paint += ByteNovaProcessFormPaint;
 
-        // Real form header. It stays outside TCntrl and therefore remains visible.
+        // Real form header (theme ribbon). It stays outside TCntrl and therefore remains visible.
         if (PanelHelder != null)
         {
             PanelHelder.Dock = DockStyle.Top;
-            PanelHelder.Height = 24;
-            PanelHelder.BackColor = Color.FromArgb(3, 20, 40);
-            PanelHelder.Padding = new Padding(36, 0, 38, 0);
+            PanelHelder.Height = XH_HEAD;
+            PanelHelder.BackColor = XH_HEAD_L;
+            PanelHelder.Padding = new Padding(42, 0, 44, 3);
+            try
+            {
+                typeof(Control).GetProperty("DoubleBuffered",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                    .SetValue(PanelHelder, true, null);
+            }
+            catch { }
             PanelHelder.Paint -= ByteNovaHeaderPaint;
             PanelHelder.Paint += ByteNovaHeaderPaint;
+            PanelHelder.Resize -= XhPlaceClose;
+            PanelHelder.Resize += XhPlaceClose;
             PanelHelder.BringToFront();
         }
 
@@ -2111,41 +2120,48 @@ internal class frmProcessTicket : Form
             formName.AutoSize = false;
             formName.ForeColor = Color.White;
             formName.BackColor = Color.Transparent;
-            formName.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
+            formName.Font = new Font("Segoe UI Semibold", 10.5F);
             formName.TextAlign = ContentAlignment.MiddleLeft;
+            formName.UseCompatibleTextRendering = false;
             formName.Padding = new Padding(0, 0, 0, 0);
+            formName.TextChanged -= XhNameChanged;
+            formName.TextChanged += XhNameChanged;
             formName.BringToFront();
         }
 
         if (btnClose != null)
         {
-            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnClose.Size = new Size(26, 22);
-            btnClose.Location = new Point(Math.Max(0, PanelHelder.Width - 30), 1);
+            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            btnClose.Size = new Size(30, 24);
             btnClose.BackColor = Color.Transparent;
             btnClose.Image = null;
             btnClose.ImageActive = null;
             btnClose.BackgroundImage = null;
+            btnClose.Cursor = Cursors.Hand;
             btnClose.Paint -= ByteNovaClosePaint;
             btnClose.Paint += ByteNovaClosePaint;
-            btnClose.BringToFront();
+            btnClose.MouseEnter += delegate { xhCloseHot = true; btnClose.Invalidate(); };
+            btnClose.MouseLeave += delegate { xhCloseHot = false; xhCloseDown = false; btnClose.Invalidate(); };
+            btnClose.MouseDown += delegate { xhCloseDown = true; btnClose.Invalidate(); };
+            btnClose.MouseUp += delegate { xhCloseDown = false; if (!btnClose.IsDisposed) btnClose.Invalidate(); };
+            XhPlaceClose(null, EventArgs.Empty);
         }
 
-        // Body begins below the new 34px header.
+        // Body begins below the header.
         if (pnl != null)
         {
-            pnl.Top = 24;
+            pnl.Top = XH_HEAD;
             pnl.Left = 2;
-            pnl.BackColor = Color.FromArgb(2, 16, 31);
+            pnl.BackColor = XH_BG;
         }
 
         if (panel1 != null)
         {
-            panel1.BackColor = Color.FromArgb(0, 155, 215);
+            panel1.BackColor = XH_FRAME;
         }
         if (panel2 != null)
         {
-            panel2.BackColor = Color.FromArgb(0, 155, 215);
+            panel2.BackColor = XH_FRAME;
         }
 
         ResumeLayout(true);
@@ -2158,11 +2174,33 @@ internal class frmProcessTicket : Form
         if (ClientSize.Width < 2 || ClientSize.Height < 2) return;
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         Rectangle r = new Rectangle(0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
-        using (LinearGradientBrush b = new LinearGradientBrush(r,
-            Color.FromArgb(3, 22, 39), Color.FromArgb(1, 8, 17), LinearGradientMode.Vertical))
+        using (SolidBrush b = new SolidBrush(XH_BG))
             e.Graphics.FillRectangle(b, r);
-        using (Pen p = new Pen(Color.FromArgb(198, 244, 50), 1.4F))
+        using (Pen p = new Pen(XH_FRAME, 1F))
             e.Graphics.DrawRectangle(p, r);
+    }
+
+    // ===== Express theme header (visual only) =====
+    private static readonly Color XH_BG = Color.FromArgb(236, 242, 251);
+    private static readonly Color XH_FRAME = Color.FromArgb(178, 196, 226);
+    private static readonly Color XH_HEAD_L = Color.FromArgb(14, 52, 120);
+    private static readonly Color XH_HEAD_R = Color.FromArgb(30, 96, 196);
+    private static readonly Color XH_ORANGE = Color.FromArgb(245, 146, 28);
+    private const int XH_HEAD = 36;
+    private bool xhCloseHot, xhCloseDown;
+    private readonly Font xhFInfo = new Font("Segoe UI Semibold", 9F);
+
+    private void XhPlaceClose(object sender, EventArgs e)
+    {
+        if (btnClose == null || btnClose.IsDisposed || PanelHelder == null) return;
+        btnClose.Location = new Point(Math.Max(0, PanelHelder.Width - btnClose.Width - 8),
+            Math.Max(0, (PanelHelder.Height - 3 - btnClose.Height) / 2));
+        btnClose.BringToFront();
+    }
+
+    private void XhNameChanged(object sender, EventArgs e)
+    {
+        if (PanelHelder != null && !PanelHelder.IsDisposed) PanelHelder.Invalidate(true);
     }
 
     private void ByteNovaHeaderPaint(object sender, PaintEventArgs e)
@@ -2170,44 +2208,49 @@ internal class frmProcessTicket : Form
         Panel c = sender as Panel;
         if (c == null || c.Width < 2 || c.Height < 2) return;
 
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        Rectangle r = new Rectangle(0, 0, c.Width - 1, c.Height - 1);
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        Rectangle r = new Rectangle(0, 0, c.Width, c.Height);
 
-        using (LinearGradientBrush b = new LinearGradientBrush(
-            r, Color.FromArgb(4, 38, 67), Color.FromArgb(21, 39, 92),
-            LinearGradientMode.Horizontal))
-        {
-            ColorBlend blend = new ColorBlend();
-            blend.Positions = new float[] { 0F, .42F, .75F, 1F };
-            blend.Colors = new Color[] {
-                Color.FromArgb(3, 27, 52),
-                Color.FromArgb(0, 112, 158),
-                Color.FromArgb(22, 67, 155),
-                Color.FromArgb(64, 35, 116)
-            };
-            b.InterpolationColors = blend;
-            e.Graphics.FillRectangle(b, r);
-        }
+        // Theme ribbon: deep blue -> blue, bhagwa underline (no purple).
+        using (LinearGradientBrush b = new LinearGradientBrush(r, XH_HEAD_L, XH_HEAD_R, LinearGradientMode.Horizontal))
+            g.FillRectangle(b, r);
+        using (SolidBrush shine = new SolidBrush(Color.FromArgb(18, 255, 255, 255)))
+            g.FillRectangle(shine, 0, 0, c.Width, (c.Height - 3) / 2);
+        using (SolidBrush o = new SolidBrush(XH_ORANGE))
+            g.FillRectangle(o, 0, c.Height - 3, c.Width, 3);
 
-        using (Pen border = new Pen(Color.FromArgb(198, 244, 50), 1F))
-            e.Graphics.DrawRectangle(border, r);
+        // Login / browser icon on a white badge.
+        int h = c.Height - 3;
+        Rectangle badge = new Rectangle(9, (h - 26) / 2, 26, 26);
+        using (SolidBrush sh = new SolidBrush(Color.FromArgb(50, 0, 0, 0)))
+            g.FillEllipse(sh, badge.X, badge.Y + 1, badge.Width, badge.Height);
+        using (SolidBrush wb = new SolidBrush(Color.White))
+            g.FillEllipse(wb, badge);
+        DrawByteNovaHeaderLoginIcon(g, new Rectangle(badge.X + 4, badge.Y + 4, 18, 18), _byteNovaHeaderLoginIcon);
 
-        // Dynamic header icon/logo moved upward in the compact header.
-        DrawByteNovaHeaderLoginIcon(e.Graphics, new Rectangle(8, 1, 20, 20), _byteNovaHeaderLoginIcon);
-
-        // Ticket name stays on the left; Date of Journey | Quota | Class replaces IRCTC AUTOMATION.
+        // Ticket name is the formName label; Train | Date | Quota | Class sits beside it in a glass pill.
         string ticketName = (formName != null) ? formName.Text : string.Empty;
-        using (Font titleFont = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold))
+        Font nameFont = formName != null ? formName.Font : xhFInfo;
+        Size ns = TextRenderer.MeasureText(g, ticketName, nameFont, Size.Empty, TextFormatFlags.NoPadding);
+        string info = _byteNovaHeaderJourneyInfo ?? "";
+        if (info.Length > 0)
         {
-            SizeF ticketSize = e.Graphics.MeasureString(ticketName, titleFont);
-            float infoX = (37F + ticketSize.Width + 8F) - 5F;
-
-            // Train No | Date | Quota | Class — larger and clean white for maximum readability.
-            using (Font sf = new Font("Segoe UI Black", 8.6F, FontStyle.Bold))
-            using (Brush sb = new SolidBrush(Color.White))
+            int px = c.Padding.Left + ns.Width + 10;
+            int maxRight = (btnClose != null ? btnClose.Left : c.Width) - 8;
+            Size isz = TextRenderer.MeasureText(g, info, xhFInfo, Size.Empty, TextFormatFlags.NoPadding);
+            int pw = Math.Min(isz.Width + 18, Math.Max(0, maxRight - px));
+            if (pw > 24)
             {
-                string info = _byteNovaHeaderJourneyInfo ?? "";
-                e.Graphics.DrawString(info, sf, sb, infoX, 3.5F);
+                Rectangle pill = new Rectangle(px, (h - 22) / 2, pw, 22);
+                using (GraphicsPath pp = XtArt.Round(pill, 11))
+                {
+                    using (SolidBrush pb = new SolidBrush(Color.FromArgb(42, 255, 255, 255))) g.FillPath(pb, pp);
+                    using (Pen pen = new Pen(Color.FromArgb(70, 255, 255, 255))) g.DrawPath(pen, pp);
+                }
+                TextRenderer.DrawText(g, info, xhFInfo, new Rectangle(pill.X + 9, pill.Y, pill.Width - 14, pill.Height),
+                    Color.White, TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine |
+                    TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
             }
         }
     }
@@ -2215,6 +2258,11 @@ internal class frmProcessTicket : Form
     private void DrawByteNovaHeaderLoginIcon(Graphics g, Rectangle r, string app)
     {
         g.SmoothingMode = SmoothingMode.AntiAlias;
+
+        // Express theme: same realistic icons as the login buttons (ticket when nothing is chosen yet).
+        XtArt.Brand(g, r, app);
+        return;
+#pragma warning disable CS0162 // old ByteNova icons kept below for reference
 
         if (string.Equals(app, "Chrome", StringComparison.OrdinalIgnoreCase))
         {
@@ -2279,34 +2327,39 @@ internal class frmProcessTicket : Form
         }
     }
 
+#pragma warning restore CS0162
+
     private void ByteNovaClosePaint(object sender, PaintEventArgs e)
     {
         Control c = sender as Control;
         if (c == null) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
 
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        e.Graphics.Clear(Color.Transparent);
+        // Repaint the ribbon gradient underneath so the old image never shows through.
+        Control p = c.Parent;
+        int pw = p != null ? Math.Max(1, p.Width) : c.Width;
+        int ph = p != null ? Math.Max(1, p.Height) : c.Height;
+        Rectangle pr = new Rectangle(-c.Left, -c.Top, pw, ph);
+        using (LinearGradientBrush bg = new LinearGradientBrush(pr, XH_HEAD_L, XH_HEAD_R, LinearGradientMode.Horizontal))
+            g.FillRectangle(bg, 0, 0, c.Width, c.Height);
+        using (SolidBrush shine = new SolidBrush(Color.FromArgb(18, 255, 255, 255)))
+            g.FillRectangle(shine, 0, 0, c.Width, Math.Max(0, (ph - 3) / 2 - c.Top));
 
-        Rectangle r = new Rectangle(1, 1, c.Width - 3, c.Height - 3);
+        RectangleF r = new RectangleF(0.5f, xhCloseDown ? 1.5f : 0.5f, c.Width - 2, c.Height - 2);
+        Color fill = xhCloseDown ? Color.FromArgb(185, 28, 28)
+                   : xhCloseHot ? Color.FromArgb(232, 67, 67)
+                   : Color.FromArgb(40, 255, 255, 255);
+        Color line = xhCloseHot || xhCloseDown ? Color.FromArgb(254, 202, 202) : Color.FromArgb(95, 255, 255, 255);
+        XtArt.Fill(g, r, 7, fill, line);
 
-        // Same ByteNova/frmMain family look: dark navy surface + sky-blue edge.
-        using (LinearGradientBrush bg = new LinearGradientBrush(
-            r,
-            Color.FromArgb(4, 35, 65),
-            Color.FromArgb(2, 18, 42),
-            LinearGradientMode.Vertical))
-            e.Graphics.FillRectangle(bg, r);
-
-        using (Pen border = new Pen(Color.FromArgb(198, 244, 50), 1.2F))
-            e.Graphics.DrawRectangle(border, r);
-
-        int pad = 7;
-        using (Pen p = new Pen(Color.FromArgb(185, 240, 255), 2F))
+        float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f;
+        using (Pen x = new Pen(Color.White, 2.2F))
         {
-            p.StartCap = LineCap.Round;
-            p.EndCap = LineCap.Round;
-            e.Graphics.DrawLine(p, pad, pad, c.Width - pad, c.Height - pad);
-            e.Graphics.DrawLine(p, c.Width - pad, pad, pad, c.Height - pad);
+            x.StartCap = LineCap.Round;
+            x.EndCap = LineCap.Round;
+            g.DrawLine(x, cx - 5.5f, cy - 5.5f, cx + 5.5f, cy + 5.5f);
+            g.DrawLine(x, cx + 5.5f, cy - 5.5f, cx - 5.5f, cy + 5.5f);
         }
     }
 

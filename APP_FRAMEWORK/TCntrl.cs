@@ -929,7 +929,7 @@ internal class TCntrl : UserControl
 
         // The visible ByteNova status strip is painted by ByteNovaReferencePaint,
         // therefore repaint the whole TCntrl instead of only lblStatus.
-        Invalidate(new Rectangle(7, 7, 316, 27));
+        Invalidate(XtStatusRepaintRect);
         Update();
     }
 
@@ -951,7 +951,7 @@ internal class TCntrl : UserControl
         _byteNovaFinalSuccessDesign = true;
 
         SuspendLayout();
-        Size = new Size(330, 176);
+        Size = new Size(XT_W, XT_H);
 
         // Hide only while the final success/reference surface is being painted.
         Control[] finalHidden =
@@ -1786,7 +1786,7 @@ internal class TCntrl : UserControl
     private void RestoreApprovedGeometry()
     {
         if (!_byteNovaLargeLayoutApplied) return;
-        Size = new Size(330, 176);
+        Size = new Size(XT_W, XT_H);
         HideLegacyStatusOverlayControls();
         if (lblClass != null) { lblClass.Visible = false; lblClass.SendToBack(); }
         if (lblDate != null) { lblDate.Visible = false; lblDate.SendToBack(); }
@@ -1795,13 +1795,13 @@ internal class TCntrl : UserControl
         if (label5 != null) label5.Visible = false;
         if (lblBrand != null) lblBrand.Visible = false;
         if (lblClass != null) { lblClass.Visible = false; lblClass.SendToBack(); }
-        if (cboTrain != null) cboTrain.SetBounds(197, 41, 64, 21);
-        if (cboQuota != null) { cboQuota.SetBounds(265, 41, 58, 21); cboQuota.Visible = true; cboQuota.BringToFront(); }
-        if (cboID != null) cboID.SetBounds(70, 76, 87, 22);
-        if (cboSlot != null) cboSlot.SetBounds(201, 76, 58, 22);
-        if (BtnOpenPair != null) BtnOpenPair.SetBounds(264, 75, 59, 24);
-        if (chkConfirmation != null) chkConfirmation.SetBounds(12, 108, 54, 22);
-        if (cboGateway != null) cboGateway.SetBounds(131, 108, 189, 22);
+        if (cboTrain != null) cboTrain.SetBounds(XT_TRAIN.X, XT_TRAIN.Y, XT_TRAIN.Width, XT_TRAIN.Height);
+        if (cboQuota != null) { cboQuota.SetBounds(XT_QUOTA.X, XT_QUOTA.Y, XT_QUOTA.Width, XT_QUOTA.Height); cboQuota.Visible = true; cboQuota.BringToFront(); }
+        if (cboID != null) cboID.SetBounds(XT_ID.X, XT_ID.Y, XT_ID.Width, XT_ID.Height);
+        if (cboSlot != null) cboSlot.SetBounds(XT_SLOT.X, XT_SLOT.Y, XT_SLOT.Width, XT_SLOT.Height);
+        if (BtnOpenPair != null) BtnOpenPair.SetBounds(XT_PAIR.X, XT_PAIR.Y, XT_PAIR.Width, XT_PAIR.Height);
+        if (chkConfirmation != null) chkConfirmation.SetBounds(XT_STOP.X, XT_STOP.Y, XT_STOP.Width, XT_STOP.Height);
+        if (cboGateway != null) cboGateway.SetBounds(XT_GATE.X, XT_GATE.Y, XT_GATE.Width, XT_GATE.Height);
 
         if (_byteNovaLoginCompleted)
         {
@@ -1809,10 +1809,7 @@ internal class TCntrl : UserControl
         }
         else
         {
-            LayoutReferenceButton(WebLogin, 6, 139, 77, 32, "Chrome", "C", Color.FromArgb(12, 88, 190));
-            LayoutReferenceButton(btnDish, 87, 139, 77, 32, "Edge", "E", Color.FromArgb(72, 44, 170));
-            LayoutReferenceButton(btnWeb3, 168, 139, 77, 32, "Brave", "B", Color.FromArgb(178, 98, 10));
-            LayoutReferenceButton(AppLogin_, 249, 139, 75, 32, "APP", "A", Color.FromArgb(0, 126, 100));
+            XtLayoutLoginButtons();
         }
         ApplyByteNovaDisabledComboTextToAll();
         Invalidate();
@@ -1835,9 +1832,9 @@ internal class TCntrl : UserControl
 
         SuspendLayout();
         AutoScaleMode = AutoScaleMode.None;
-        Size = new Size(330, 176);
-        MinimumSize = new Size(330, 176);
-        BackColor = Color.FromArgb(1, 13, 31);
+        Size = new Size(XT_W, XT_H);
+        MinimumSize = new Size(XT_W, XT_H);
+        BackColor = XT_BG;
 
         // Re-parent only the existing functional controls. No option/event is deleted.
         Control[] keep =
@@ -1866,7 +1863,12 @@ internal class TCntrl : UserControl
         if (lbl_Detail != null) lbl_Detail.Visible = false;
 
         // Values shown in the reference card.
-        SetCompactValue(lblJourney, 70, 41, 82, 20, ContentAlignment.MiddleLeft);
+        SetCompactValue(lblJourney, XT_JOURNEY.X, XT_JOURNEY.Y, XT_JOURNEY.Width, XT_JOURNEY.Height, ContentAlignment.MiddleLeft);
+        if (lblJourney != null)
+        {
+            lblJourney.ForeColorChanged -= XtJourneyColorGuard;
+            lblJourney.ForeColorChanged += XtJourneyColorGuard;
+        }
         if (lblTrainNo != null) lblTrainNo.Visible = false;
 
         // Journey shows FROM_TO; Train No uses the existing functional train ComboBox.
@@ -1877,40 +1879,53 @@ internal class TCntrl : UserControl
             lblJourney.BringToFront();
         }
         if (lblTrainNo != null) lblTrainNo.Visible = false;
-        if (cboTrain != null) { cboTrain.SetBounds(197, 41, 64, 21); cboTrain.Visible = true; cboTrain.BringToFront(); }
-        if (cboClass != null) { cboClass.SetBounds(0, 0, 1, 1); }   // retained; compact detail value is painted
-        if (cboQuota != null) { cboQuota.SetBounds(265, 41, 58, 21); cboQuota.Visible = true; cboQuota.BringToFront(); }
+        if (cboTrain != null) { cboTrain.SetBounds(XT_TRAIN.X, XT_TRAIN.Y, XT_TRAIN.Width, XT_TRAIN.Height); cboTrain.Visible = true; cboTrain.BringToFront(); }
+        // retained for the logic (value/class), parked far outside the visible area so it never shows ("2S" box)
+        if (cboClass != null) { cboClass.SetBounds(-2000, -2000, 60, 22); cboClass.TabStop = false; }
+        if (cboQuota != null) { cboQuota.SetBounds(XT_QUOTA.X, XT_QUOTA.Y, XT_QUOTA.Width, XT_QUOTA.Height); cboQuota.Visible = true; cboQuota.BringToFront(); }
 
         // IRCTC ID + Slot + Pair.
-        if (cboID != null) { cboID.SetBounds(70, 76, 87, 22); cboID.Visible = true; cboID.BringToFront(); }
-        if (cboSlot != null) { cboSlot.SetBounds(201, 76, 58, 22); cboSlot.Visible = true; cboSlot.BringToFront(); }
+        if (cboID != null) { cboID.SetBounds(XT_ID.X, XT_ID.Y, XT_ID.Width, XT_ID.Height); cboID.Visible = true; cboID.BringToFront(); }
+        if (cboSlot != null) { cboSlot.SetBounds(XT_SLOT.X, XT_SLOT.Y, XT_SLOT.Width, XT_SLOT.Height); cboSlot.Visible = true; cboSlot.BringToFront(); }
         if (BtnOpenPair != null)
         {
-            BtnOpenPair.SetBounds(264, 75, 59, 24);
+            BtnOpenPair.SetBounds(XT_PAIR.X, XT_PAIR.Y, XT_PAIR.Width, XT_PAIR.Height);
             BtnOpenPair.Text = "";
+            BtnOpenPair.Image = null;
             BtnOpenPair.Visible = true;
             BtnOpenPair.UseVisualStyleBackColor = false;
             BtnOpenPair.FlatStyle = FlatStyle.Flat;
-            BtnOpenPair.FlatAppearance.BorderSize = 1;
-            BtnOpenPair.FlatAppearance.BorderColor = Color.FromArgb(0, 235, 195);
-            BtnOpenPair.BackColor = Color.FromArgb(0, 145, 118);
+            BtnOpenPair.FlatAppearance.BorderSize = 0;
+            BtnOpenPair.FlatAppearance.MouseOverBackColor = Color.White;
+            BtnOpenPair.FlatAppearance.MouseDownBackColor = Color.White;
+            BtnOpenPair.BackColor = Color.White;
+            BtnOpenPair.Region = null;                 // smooth painted corners instead of a jagged region
+            BtnOpenPair.Cursor = Cursors.Hand;
+            XtHookHover(BtnOpenPair);
             BtnOpenPair.Paint -= ByteNovaPairButtonPaint;
             BtnOpenPair.Paint += ByteNovaPairButtonPaint;
-            ApplyRoundedRegion(BtnOpenPair, 6);
             BtnOpenPair.BringToFront();
         }
 
         // Stop + payment gateway.
         if (chkConfirmation != null)
         {
-            chkConfirmation.SetBounds(12, 108, 54, 22);
+            chkConfirmation.SetBounds(XT_STOP.X, XT_STOP.Y, XT_STOP.Width, XT_STOP.Height);
             chkConfirmation.Text = "Payment Stop";
+            chkConfirmation.AutoSize = false;
+            chkConfirmation.Font = xtFCheck;
+            chkConfirmation.ForeColor = XT_TEXT;
+            chkConfirmation.BackColor = Color.White;
+            chkConfirmation.Cursor = Cursors.Hand;
+            chkConfirmation.Paint -= XtTogglePaint;      // drawn as a slider switch
+            chkConfirmation.Paint += XtTogglePaint;
+            XtHookHover(chkConfirmation);
             chkConfirmation.Visible = true;
             chkConfirmation.BringToFront();
         }
         if (cboGateway != null)
         {
-            cboGateway.SetBounds(131, 108, 189, 22);
+            cboGateway.SetBounds(XT_GATE.X, XT_GATE.Y, XT_GATE.Width, XT_GATE.Height);
             cboGateway.Visible = true;
             cboGateway.BringToFront();
         }
@@ -1939,10 +1954,7 @@ internal class TCntrl : UserControl
             BtnOpenPair.Invalidate();
         }
 
-        LayoutReferenceButton(WebLogin, 6, 139, 77, 32, "Chrome", "C", Color.FromArgb(12, 88, 190));
-        LayoutReferenceButton(btnDish, 87, 139, 77, 32, "Edge", "E", Color.FromArgb(72, 44, 170));
-        LayoutReferenceButton(btnWeb3, 168, 139, 77, 32, "Brave", "B", Color.FromArgb(178, 98, 10));
-        LayoutReferenceButton(AppLogin_, 249, 139, 75, 32, "APP", "A", Color.FromArgb(0, 126, 100));
+        XtLayoutLoginButtons();
 
         ApplyByteNovaDisabledComboTextToAll();
 
@@ -2022,26 +2034,48 @@ internal class TCntrl : UserControl
         Button b = sender as Button;
         if (b == null) return;
 
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        using (Brush bg = new SolidBrush(Color.FromArgb(0, 145, 118)))
-            e.Graphics.FillRectangle(bg, b.ClientRectangle);
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.Clear(Color.White);   // sits on the white card
 
-        // Proper chain-link icon.
-        using (Pen p = new Pen(Color.White, 1.5F))
+        int st = XtState(b);
+        bool on = b.Enabled;
+        RectangleF r = new RectangleF(0.5f, st == 2 ? 1.5f : 0.5f, b.Width - 2, b.Height - 3);
+
+        // Bhagwa gradient pill; brighter on hover, deeper + pressed on click, washed out when disabled.
+        Color top = Color.FromArgb(252, 170, 66), bot = Color.FromArgb(236, 122, 8);
+        if (st == 1) { top = XtMix(top, Color.White, 0.16f); bot = XtMix(bot, Color.White, 0.10f); }
+        if (st == 2) { top = XtMix(top, Color.Black, 0.12f); bot = XtMix(bot, Color.Black, 0.16f); }
+        if (!on) { top = XtMix(top, Color.White, 0.6f); bot = XtMix(bot, Color.White, 0.6f); }
+        if (st != 2 && on)
+            XtFill(g, new RectangleF(r.X, r.Y + 1.5f, r.Width, r.Height), r.Height / 2, Color.FromArgb(st == 1 ? 90 : 55, 234, 124, 10), Color.Empty);
+        using (GraphicsPath path = XtRound(r, r.Height / 2))
+        using (LinearGradientBrush bg = new LinearGradientBrush(r, top, bot, LinearGradientMode.Vertical))
+        {
+            g.FillPath(bg, path);
+            // glossy top half
+            RectangleF gloss = new RectangleF(r.X + 2, r.Y + 1.5f, r.Width - 4, r.Height / 2 - 1);
+            using (GraphicsPath gp = XtRound(gloss, gloss.Height / 2))
+            using (SolidBrush gb = new SolidBrush(Color.FromArgb(st == 2 ? 20 : 45, 255, 255, 255)))
+                g.FillPath(gb, gp);
+        }
+
+        Size ts = TextRenderer.MeasureText(g, "Pair", xtFBtn, Size.Empty, TextFormatFlags.NoPadding);
+        int gw = 17 + 5 + ts.Width;
+        int x = (int)(r.X + (r.Width - gw) / 2);
+        float cy = r.Y + r.Height / 2f;
+
+        // chain-link icon
+        using (Pen p = new Pen(Color.White, 1.8F))
         {
             p.StartCap = LineCap.Round;
             p.EndCap = LineCap.Round;
-            RectangleF leftLink = new RectangleF(8, (b.Height - 10) / 2f, 12, 8);
-            RectangleF rightLink = new RectangleF(16, (b.Height - 10) / 2f, 12, 8);
-            e.Graphics.DrawArc(p, leftLink, 45, 270);
-            e.Graphics.DrawArc(p, rightLink, 225, 270);
-            e.Graphics.DrawLine(p, 16, b.Height / 2f, 21, b.Height / 2f);
+            g.DrawArc(p, new RectangleF(x, cy - 4.5f, 10, 9), 45, 270);
+            g.DrawArc(p, new RectangleF(x + 7, cy - 4.5f, 10, 9), 225, 270);
+            g.DrawLine(p, x + 5.5f, cy, x + 11.5f, cy);
         }
-
-        Rectangle textRect = new Rectangle(30, 0, Math.Max(1, b.Width - 32), b.Height);
-        using (Font f = new Font("Segoe UI Semibold", 7F, FontStyle.Bold))
-            TextRenderer.DrawText(e.Graphics, "Pair", f, textRect, Color.White,
-                TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.NoPadding);
+        TextRenderer.DrawText(g, "Pair", xtFBtn, new Rectangle(x + 22, (int)cy - ts.Height / 2 - 1, ts.Width + 4, ts.Height + 2),
+            Color.White, TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
     }
 
     private void LockByteNovaCompactLayout()
@@ -2064,11 +2098,8 @@ internal class TCntrl : UserControl
             BottomPanel.SendToBack();
         }
 
-        Size = new Size(330, 176);
-        LayoutReferenceButton(WebLogin, 6, 139, 77, 32, "Chrome", "C", Color.FromArgb(12, 88, 190));
-        LayoutReferenceButton(btnDish, 87, 139, 77, 32, "Edge", "E", Color.FromArgb(72, 44, 170));
-        LayoutReferenceButton(btnWeb3, 168, 139, 77, 32, "Brave", "B", Color.FromArgb(178, 98, 10));
-        LayoutReferenceButton(AppLogin_, 249, 139, 75, 32, "APP", "A", Color.FromArgb(0, 126, 100));
+        Size = new Size(XT_W, XT_H);
+        XtLayoutLoginButtons();
 
         if (lblAvailability != null) lblAvailability.Visible = false;
         if (lblTime != null) lblTime.Visible = false;
@@ -2085,24 +2116,24 @@ internal class TCntrl : UserControl
         {
             // Square panel: remove any legacy rounded/curved Region.
             BottomPanel.Region = null;
-            BottomPanel.BackColor = Color.FromArgb(18, 52, 82);
+            BottomPanel.BackColor = XT_BG;
         }
 
         // Bottom status text: larger + bold.
         if (lblAvailability != null)
         {
             lblAvailability.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
-            lblAvailability.ForeColor = Color.FromArgb(220, 245, 255);
+            lblAvailability.ForeColor = XT_GREEN;
         }
         if (lblTime != null)
         {
             lblTime.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            lblTime.ForeColor = Color.FromArgb(220, 245, 255);
+            lblTime.ForeColor = XT_NAVY;
         }
 
-        // Keep BottomPanel visually merged with the main ByteNova window.
+        // Keep BottomPanel visually merged with the main window.
         if (BottomPanel != null)
-            BottomPanel.BackColor = Color.FromArgb(18, 52, 82);
+            BottomPanel.BackColor = XT_BG;
 
         if (!_byteNovaLargeLayoutApplied) return;
 
@@ -2131,10 +2162,10 @@ internal class TCntrl : UserControl
         {
             BottomPanel.Dock = DockStyle.None;
             BottomPanel.Visible = true;
-            BottomPanel.BackColor = Color.FromArgb(22, 20, 58);
+            BottomPanel.BackColor = XT_BG;
             // Screenshot target: fill the complete lower free area edge-to-edge.
             // Start immediately after the Stop/Gateway row and extend to the client bottom.
-            int bottomTop = 134;
+            int bottomTop = XT_BTN_Y - 2;
             int bottomHeight = Math.Max(1, ClientSize.Height - bottomTop);
             BottomPanel.Margin = Padding.Empty;
             BottomPanel.Padding = Padding.Empty;
@@ -2166,8 +2197,8 @@ internal class TCntrl : UserControl
             // Leave room for the availability icon painted inside the curved card.
             lblAvailability.Padding = new Padding(30, 0, 5, 0);
             lblAvailability.BackColor = Color.Transparent;
-            lblAvailability.ForeColor = Color.FromArgb(55, 245, 180);
-            lblAvailability.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lblAvailability.ForeColor = XT_GREEN;
+            lblAvailability.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             lblAvailability.Visible = true;
             lblAvailability.BringToFront();
         }
@@ -2187,8 +2218,8 @@ internal class TCntrl : UserControl
             // Leave room for the clock icon painted inside the right curved card.
             lblTime.Padding = new Padding(24, 0, 8, 0);
             lblTime.BackColor = Color.Transparent;
-            lblTime.ForeColor = Color.White;
-            lblTime.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            lblTime.ForeColor = XT_NAVY;
+            lblTime.Font = new Font("Segoe UI", 11.5F, FontStyle.Bold);
             lblTime.Visible = true;
             lblTime.BringToFront();
         }
@@ -2210,7 +2241,7 @@ internal class TCntrl : UserControl
         if (c == null || c.Width < 2 || c.Height < 2) return;
 
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        using (SolidBrush bg = new SolidBrush(Color.FromArgb(18, 52, 82)))
+        using (SolidBrush bg = new SolidBrush(XT_BG))
             e.Graphics.FillRectangle(bg, c.ClientRectangle);
 
         // frmMain-style curved card behind Get Availability.
@@ -2228,8 +2259,12 @@ internal class TCntrl : UserControl
         }
 
         Rectangle border = new Rectangle(0, 0, Math.Max(0, c.ClientSize.Width - 1), Math.Max(0, c.ClientSize.Height - 1));
-        using (Pen p = new Pen(Color.FromArgb(91, 211, 255), 1F))
-            e.Graphics.DrawRectangle(p, border);
+        using (Pen p = new Pen(XT_FRAME, 1F))
+        {
+            e.Graphics.DrawLine(p, border.Left, border.Top, border.Left, border.Bottom);
+            e.Graphics.DrawLine(p, border.Right, border.Top, border.Right, border.Bottom);
+            e.Graphics.DrawLine(p, border.Left, border.Bottom, border.Right, border.Bottom);
+        }
     }
 
     private void DrawByteNovaAvailabilityIcon(Graphics g, Rectangle bounds)
@@ -2240,8 +2275,8 @@ internal class TCntrl : UserControl
         int y = bounds.Y + (bounds.Height - size) / 2;
         Rectangle icon = new Rectangle(x, y, size, size);
 
-        using (Pen p = new Pen(Color.FromArgb(55, 245, 180), 1.5F))
-        using (SolidBrush dot = new SolidBrush(Color.FromArgb(55, 245, 180)))
+        using (Pen p = new Pen(XT_ORANGE, 1.5F))
+        using (SolidBrush dot = new SolidBrush(XT_ORANGE))
         {
             p.StartCap = LineCap.Round;
             p.EndCap = LineCap.Round;
@@ -2263,7 +2298,7 @@ internal class TCntrl : UserControl
         int y = bounds.Y + (bounds.Height - size) / 2;
         Rectangle clock = new Rectangle(x, y, size, size);
 
-        using (Pen p = new Pen(Color.FromArgb(91, 211, 255), 1.6F))
+        using (Pen p = new Pen(XT_BLUE, 1.6F))
         {
             p.StartCap = LineCap.Round;
             p.EndCap = LineCap.Round;
@@ -2284,16 +2319,15 @@ internal class TCntrl : UserControl
         int radius = Math.Min(10, Math.Max(5, r.Height / 2));
 
         using (GraphicsPath path = ByteNovaBottomRoundedRect(r, radius))
-        using (LinearGradientBrush fill = new LinearGradientBrush(
-            r,
-            Color.FromArgb(7, 40, 68),
-            Color.FromArgb(5, 24, 48),
-            LinearGradientMode.Vertical))
-        using (Pen border = new Pen(Color.FromArgb(198, 244, 50), 1.4F))
+        using (SolidBrush fill = new SolidBrush(Color.White))
+        using (Pen border = new Pen(XT_CARD_LINE, 1F))
         {
             g.FillPath(fill, path);
             g.DrawPath(border, path);
         }
+        // small bhagwa accent on the left edge of each card
+        using (SolidBrush o = new SolidBrush(XT_ORANGE))
+            g.FillRectangle(o, r.X + 1, r.Y + radius / 2 + 2, 3, Math.Max(2, r.Height - radius - 4));
     }
 
     private GraphicsPath ByteNovaBottomRoundedRect(Rectangle r, int radius)
@@ -2317,7 +2351,7 @@ internal class TCntrl : UserControl
             return;
         }
 
-        Invalidate(new Rectangle(7, 7, 316, 27));
+        Invalidate(XtStatusRepaintRect);
         Update();
     }
 
@@ -2328,8 +2362,10 @@ internal class TCntrl : UserControl
         label.SetBounds(x, y, w, h);
         label.TextAlign = align;
         label.BackColor = Color.Transparent;
-        label.ForeColor = Color.FromArgb(225, 235, 255);
-        label.Font = new Font("Segoe UI Semibold", 7.5F, FontStyle.Bold);
+        label.ForeColor = XT_NAVY;
+        label.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
+        label.AutoEllipsis = true;
+        label.UseCompatibleTextRendering = false;
         label.Visible = true;
         label.BringToFront();
     }
@@ -2344,19 +2380,22 @@ internal class TCntrl : UserControl
         b.Visible = true;
         b.UseVisualStyleBackColor = false;
         b.FlatStyle = FlatStyle.Flat;
-        b.FlatAppearance.BorderSize = 1;
-        b.FlatAppearance.BorderColor = ControlPaint.Light(accent, .25F);
-        b.BackColor = accent;
+        b.FlatAppearance.BorderSize = 0;
+        b.FlatAppearance.MouseOverBackColor = XT_BG;
+        b.FlatAppearance.MouseDownBackColor = XT_BG;
+        b.BackColor = XT_BG;
         b.ForeColor = Color.White;
-        b.Font = new Font("Segoe UI Semibold", 7F, FontStyle.Bold);
+        b.Font = xtFBtn;
         b.Image = null;
         b.Text = "";
+        b.Cursor = Cursors.Hand;
         b.Tag = new object[] { text, glyph, accent };
+        b.Region = null;               // corners are painted smooth (a Region gives jagged edges)
+        XtHookHover(b);
 
         b.Paint -= ByteNovaActionButtonPaint;
         b.Paint += ByteNovaActionButtonPaint;
 
-        ApplyRoundedRegion(b, 7);
         b.BringToFront();
         b.Invalidate();
     }
@@ -2367,44 +2406,49 @@ internal class TCntrl : UserControl
         if (b == null || !(b.Tag is object[] data) || data.Length < 3) return;
 
         string text = Convert.ToString(data[0]);
-        Color accent = (Color)data[2];
+        Color accent = XtLoginAccent(text, (Color)data[2]);
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.Clear(b.Parent != null && b.Parent != this ? b.Parent.BackColor : XT_BG);
 
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        int st = XtState(b);
+        bool on = b.Enabled;
+        RectangleF r = new RectangleF(0.5f, st == 2 ? 1.5f : 0.5f, b.Width - 2, b.Height - 3);
 
-        Rectangle r = new Rectangle(1, 1, b.Width - 3, b.Height - 3);
+        // Clean white tile with the real brand icon; the brand colour shows on hover / press.
+        Color face = st == 2 ? XtMix(accent, Color.White, 0.80f)
+                   : st == 1 ? XtMix(accent, Color.White, 0.90f)
+                   : Color.White;
+        Color line = st == 0 ? XT_FIELD_LINE : accent;
+        if (st != 2 && on)   // soft drop shadow
+            XtFill(g, new RectangleF(r.X, r.Y + 1.5f, r.Width, r.Height), 8,
+                st == 1 ? Color.FromArgb(60, accent) : Color.FromArgb(40, 30, 64, 120), Color.Empty);
+        XtFill(g, r, 8, face, line);
+        if (st != 0)        // brand-coloured base line
+            using (GraphicsPath clip = XtRound(r, 8))
+            {
+                Region oldClip = g.Clip;
+                g.SetClip(clip, CombineMode.Intersect);
+                using (SolidBrush ab = new SolidBrush(accent))
+                    g.FillRectangle(ab, r.X, r.Bottom - 3, r.Width, 3);
+                g.Clip = oldClip;
+            }
 
-        // Soft glow
-        using (GraphicsPath glowPath = ByteNovaButtonRound(r, 7))
-        using (Pen glow = new Pen(Color.FromArgb(70, 0, 200, 255), 3F))
-            e.Graphics.DrawPath(glow, glowPath);
-
-        // Gradient face
-        using (GraphicsPath path = ByteNovaButtonRound(r, 6))
-        using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, ControlPaint.Light(accent, 0.30F), ControlPaint.Dark(accent, 0.25F),
-            LinearGradientMode.Vertical))
-        using (Pen border = new Pen(Color.FromArgb(198, 244, 50), 1.1F))
+        Size ts = TextRenderer.MeasureText(g, text, xtFBtn, Size.Empty, TextFormatFlags.NoPadding);
+        int icon = 18;
+        int gw = icon + 6 + ts.Width;
+        bool withIcon = gw <= r.Width - 8;
+        if (!withIcon) gw = ts.Width;
+        int x = (int)(r.X + (r.Width - gw) / 2);
+        int cy = (int)(r.Y + r.Height / 2);
+        if (withIcon)
         {
-            e.Graphics.FillPath(bg, path);
-            e.Graphics.DrawPath(border, path);
-
-            // Top shine
-            Rectangle shine = new Rectangle(r.X + 2, r.Y + 2, r.Width - 4, Math.Max(2, r.Height / 2));
-            using (LinearGradientBrush sb = new LinearGradientBrush(
-                shine, Color.FromArgb(70, 255, 255, 255), Color.FromArgb(0, 255, 255, 255),
-                LinearGradientMode.Vertical))
-            using (GraphicsPath sp = ByteNovaButtonRound(shine, 5))
-                e.Graphics.FillPath(sb, sp);
+            XtArt.Brand(g, new RectangleF(x, cy - icon / 2f, icon, icon), text);
+            x += icon + 6;
         }
-
-        Rectangle iconRect = new Rectangle(9, (b.Height - 18) / 2, 18, 18);
-        DrawAppIcon(e.Graphics, iconRect, text);
-
-        Rectangle textRect = new Rectangle(31, 0, Math.Max(1, b.Width - 34), b.Height);
-        using (Font tf = new Font("Segoe UI Semibold", 7.2F, FontStyle.Bold))
-            TextRenderer.DrawText(e.Graphics, text, tf, textRect, Color.White,
-                TextFormatFlags.VerticalCenter | TextFormatFlags.Left |
-                TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
+        Color tc = !on ? Color.FromArgb(148, 163, 184) : st == 0 ? XT_TEXT : XtMix(accent, Color.Black, 0.25f);
+        TextRenderer.DrawText(g, text, xtFBtn, new Rectangle(x, cy - ts.Height / 2 - 1, ts.Width + 4, ts.Height + 2),
+            tc, TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
     }
 
     private GraphicsPath ByteNovaButtonRound(Rectangle r, int radius)
@@ -2489,62 +2533,75 @@ internal class TCntrl : UserControl
 
         if (_byteNovaFinalSuccessDesign)
         {
+            // The success screen is drawn on a 330 x 176 grid; centre + scale it into the bigger control.
+            g.Clear(Color.FromArgb(4, 13, 30));
+            float s = Math.Min(Width / 330f, Height / 176f);
+            GraphicsState gs = g.Save();
+            g.TranslateTransform((Width - 330 * s) / 2f, (Height - 176 * s) / 2f);
+            g.ScaleTransform(s, s);
             DrawByteNovaFinalSuccessReference(g);
+            g.Restore(gs);
             return;
         }
 
         // No header here. frmProcessTicket owns the window header.
-        Rectangle outer = new Rectangle(2, 2, Width - 5, Height - 5);
-        using (Pen glow = new Pen(Color.FromArgb(0, 195, 255), 1.5F))
-            g.DrawRectangle(glow, outer);
-        using (Pen inner = new Pen(Color.FromArgb(55, 75, 120, 255), 1F))
-            g.DrawRectangle(inner, new Rectangle(5, 5, Width - 11, Height - 11));
+        g.Clear(XT_BG);
+        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-        // Status strip starts at the top of TCntrl.
-        // IMPORTANT: this is the status surface the user actually sees.
+        // ---- status strip (same rectangle the blink timer repaints) ----
         bool statusBlinking = timer_1 != null && timer_1.Enabled;
-        Color statusTop = statusBlinking
-            ? (_byteNovaStatusBlinkOn ? Color.FromArgb(0, 128, 205) : Color.FromArgb(190, 140, 10))
-            : Color.FromArgb(0, 118, 168);
-        Color statusBottom = statusBlinking
-            ? (_byteNovaStatusBlinkOn ? Color.FromArgb(0, 62, 120) : Color.FromArgb(120, 82, 5))
-            : Color.FromArgb(1, 52, 88);
-        Color statusTextColor = Color.White;
-        Color statusDotColor = Color.FromArgb(0, 245, 185);
+        bool orangePhase = statusBlinking && !_byteNovaStatusBlinkOn;
+        Color sL = orangePhase ? Color.FromArgb(234, 124, 10) : XT_HEAD_L;
+        Color sR = orangePhase ? Color.FromArgb(251, 166, 60) : XT_HEAD_R;
+        Rectangle sr = XT_STATUS;
+        using (GraphicsPath sp = XtRound(new RectangleF(sr.X, sr.Y, sr.Width - 1, sr.Height - 1), 7))
+        using (LinearGradientBrush sb = new LinearGradientBrush(sr, sL, sR, LinearGradientMode.Horizontal))
+            g.FillPath(sb, sp);
+        using (SolidBrush o = new SolidBrush(orangePhase ? XT_HEAD_L : XT_ORANGE))
+            g.FillRectangle(o, sr.X + 7, sr.Bottom - 3, sr.Width - 15, 2);
 
-        Rectangle statusBlinkRect = new Rectangle(7, 7, 316, 27);
-        using (LinearGradientBrush statusBg = new LinearGradientBrush(
-            statusBlinkRect, statusTop, statusBottom, LinearGradientMode.Vertical))
-            g.FillRectangle(statusBg, statusBlinkRect);
-        using (Pen statusBorder = new Pen(Color.FromArgb(198, 244, 50), 1.2F))
-            g.DrawRectangle(statusBorder, statusBlinkRect);
-        using (Pen innerLine = new Pen(Color.FromArgb(90, 150, 240, 255), 1F))
-            g.DrawRectangle(innerLine, new Rectangle(9, 9, 312, 23));
+        Color dotC = statusBlinking ? Color.White : Color.FromArgb(74, 222, 128);
+        using (SolidBrush halo = new SolidBrush(Color.FromArgb(70, dotC)))
+            g.FillEllipse(halo, sr.X + 8, sr.Y + sr.Height / 2 - 7, 13, 13);
+        using (SolidBrush dot = new SolidBrush(dotC))
+            g.FillEllipse(dot, sr.X + 11, sr.Y + sr.Height / 2 - 4, 7, 7);
 
-        using (Brush dot = new SolidBrush(statusDotColor))
-            g.FillEllipse(dot, 15, 17, 9, 9);
-        using (Font f = new Font("Segoe UI Semibold", 10F, FontStyle.Bold))
-        using (Brush b = new SolidBrush(statusTextColor))
-        {
-            string liveStatus = (lblStatus != null && !string.IsNullOrWhiteSpace(lblStatus.Text))
-                ? lblStatus.Text.Trim()
-                : "Ready [ Bkg Fare Limit : 0 ]";
-            g.DrawString(liveStatus, f, b, new RectangleF(30, 12, 215, 16));
-        }
+        string liveStatus = (lblStatus != null && !string.IsNullOrWhiteSpace(lblStatus.Text))
+            ? lblStatus.Text.Trim()
+            : "Ready [ Bkg Fare Limit : 0 ]";
+        TextRenderer.DrawText(g, liveStatus, xtFStatus,
+            new Rectangle(sr.X + 25, sr.Y, sr.Width - 31, sr.Height - 1), Color.White,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis |
+            TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
 
-        DrawReferenceCard(g, new Rectangle(7, 37, 316, 29), Color.FromArgb(20, 90, 170));
-        DrawMiniIcon(g, 14, 44, "⌖");
-        DrawCaption(g, "Journey", 31, 45);
-        DrawCaption(g, "Train No.", 140, 45);
-        DrawMiniIcon(g, 184, 44, "#");
+        // ---- row 1 : Journey + Train / Quota ----
+        XtCard(g, XT_ROW1);
+        int cy1 = XT_ROW1.Y + XT_ROW1.Height / 2;
+        XtGlyph(g, "pin", new Rectangle(XT_ROW1.X + 10, cy1 - 6, 12, 12));
+        XtCaption(g, "Journey", XT_ROW1.X + 26, cy1, XT_JOURNEY.X - (XT_ROW1.X + 26) - 2);
+        XtGlyph(g, "train", new Rectangle(XT_JOURNEY.Right + 4, cy1 - 6, 12, 12));
+        XtCaption(g, "Train", XT_JOURNEY.Right + 19, cy1, XT_TRAIN.X - 3 - (XT_JOURNEY.Right + 19) - 2);
 
-        DrawReferenceCard(g, new Rectangle(7, 70, 316, 33), Color.FromArgb(20, 90, 170));
-        DrawMiniIcon(g, 14, 78, "I");
-        DrawCaption(g, "IRCTC ID", 31, 79);
-        DrawMiniIcon(g, 168, 78, "S");
-        DrawCaption(g, "Slot", 184, 79);
+        // ---- row 2 : IRCTC ID + Slot + Pair ----
+        XtCard(g, XT_ROW2);
+        int cy2 = XT_ROW2.Y + XT_ROW2.Height / 2;
+        XtGlyph(g, "user", new Rectangle(XT_ROW2.X + 10, cy2 - 6, 12, 12));
+        XtCaption(g, "IRCTC ID", XT_ROW2.X + 26, cy2, XT_ID.X - 3 - (XT_ROW2.X + 26) - 2);
+        XtGlyph(g, "clock", new Rectangle(XT_ID.Right + 6, cy2 - 6, 12, 12));
+        XtCaption(g, "Slot", XT_ID.Right + 21, cy2, XT_SLOT.X - 3 - (XT_ID.Right + 21) - 1);
 
-        DrawReferenceCard(g, new Rectangle(7, 105, 316, 28), Color.FromArgb(20, 90, 170));
+        // ---- row 3 : Payment Stop + gateway ----
+        XtCard(g, XT_ROW3);
+        using (Pen sep = new Pen(XT_CARD_LINE))
+            g.DrawLine(sep, XT_GATE.X - 8, XT_ROW3.Y + 8, XT_GATE.X - 8, XT_ROW3.Bottom - 8);
+
+        // ---- custom dropdown boxes behind the (region-clipped) combos ----
+        foreach (ComboBox c in XtVisibleCombos())
+            XtPaintComboBox(g, c);
+
+        // outer frame of the control
+        using (Pen p = new Pen(XT_FRAME))
+            g.DrawRectangle(p, 0, 0, Width - 1, Height - 1);
     }
 
     private void DrawByteNovaFinalSuccessReference(Graphics g)
@@ -3012,7 +3069,8 @@ internal class TCntrl : UserControl
     {
         if (combo == null) return;
 
-        combo.DrawMode = DrawMode.OwnerDrawFixed;
+        combo.DrawMode = DrawMode.OwnerDrawVariable;   // tall, roomy rows in the open list
+        XtHookCombo(combo);
         combo.DrawItem -= ByteNovaCombo_DrawItem;
         combo.DrawItem += ByteNovaCombo_DrawItem;
         combo.EnabledChanged -= ByteNovaCombo_EnabledChanged;
@@ -3028,9 +3086,12 @@ internal class TCntrl : UserControl
         combo.VisibleChanged -= ByteNovaComboVisualChanged;
         combo.VisibleChanged += ByteNovaComboVisualChanged;
 
-        combo.BackColor = Color.FromArgb(3, 29, 59);
-        combo.ForeColor = Color.White;
+        combo.BackColor = Color.White;
+        combo.ForeColor = XT_TEXT;
         combo.FlatStyle = FlatStyle.Flat;
+        combo.Font = xtFCombo;
+        combo.ItemHeight = 16;
+        combo.Cursor = Cursors.Hand;
 
         UpdateByteNovaDisabledComboCover(combo);
     }
@@ -3059,8 +3120,8 @@ internal class TCntrl : UserControl
         {
             cover = new Label();
             cover.AutoSize = false;
-            cover.BackColor = Color.FromArgb(3, 29, 59);
-            cover.ForeColor = Color.FromArgb(255, 215, 0);
+            cover.BackColor = Color.White;
+            cover.ForeColor = XT_LOCKED;
             cover.Font = combo.Font;
             cover.TextAlign = ContentAlignment.MiddleLeft;
             cover.Padding = new Padding(4, 0, 18, 0);
@@ -3075,10 +3136,19 @@ internal class TCntrl : UserControl
             combo.Parent.Controls.Add(cover);
         }
 
-        cover.Bounds = combo.Bounds;
+        if (combo.Parent == this)
+        {
+            XtSkinCombo(combo);
+            cover.Bounds = XtBox(combo);
+        }
+        else
+        {
+            cover.Bounds = combo.Bounds;
+        }
         cover.Font = combo.Font;
         cover.Text = combo.Text;
-        cover.Visible = combo.Visible && !combo.Enabled;
+        // cboClass is parked off-screen (value only) - it must never get a visible cover.
+        cover.Visible = combo != cboClass && combo.Visible && !combo.Enabled && combo.Right > 0 && combo.Bottom > 0;
 
         if (cover.Visible)
         {
@@ -3096,31 +3166,22 @@ internal class TCntrl : UserControl
         Label cover = sender as Label;
         if (cover == null || cover.Width < 2 || cover.Height < 2) return;
 
-        Rectangle r = new Rectangle(0, 0, cover.Width - 1, cover.Height - 1);
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
 
-        // Completely cover the native disabled white ComboBox surface.
-        using (Brush bg = new SolidBrush(Color.FromArgb(3, 29, 59)))
-            e.Graphics.FillRectangle(bg, r);
+        // Completely cover the native disabled ComboBox surface (it sits on a white card).
+        g.Clear(Color.White);
+        XtFill(g, new RectangleF(0.5f, 0.5f, cover.Width - 2, cover.Height - 2), 6,
+            Color.FromArgb(255, 247, 237), Color.FromArgb(253, 186, 116));
 
-        using (Pen border = new Pen(Color.FromArgb(3, 29, 59), 2F))
-            e.Graphics.DrawRectangle(border, r);
-
-        // Small ByteNova dropdown arrow; no white system arrow/background.
-        Point[] arrow =
-        {
-            new Point(Math.Max(2, cover.Width - 13), Math.Max(3, cover.Height / 2 - 2)),
-            new Point(Math.Max(2, cover.Width - 5),  Math.Max(3, cover.Height / 2 - 2)),
-            new Point(Math.Max(2, cover.Width - 9),  Math.Min(cover.Height - 3, cover.Height / 2 + 3))
-        };
-        using (Brush arrowBrush = new SolidBrush(Color.FromArgb(255, 215, 0)))
-            e.Graphics.FillPolygon(arrowBrush, arrow);
+        // small lock: the value is fixed after login
+        XtGlyph(g, "lock", new Rectangle(cover.Width - 16, cover.Height / 2 - 5, 9, 10), XT_LOCKED);
 
         string text = cover.Text ?? "";
-        Rectangle textRect = new Rectangle(4, 0, Math.Max(1, cover.Width - 20), cover.Height);
-        TextRenderer.DrawText(
-            e.Graphics, text, cover.Font, textRect,
-            Color.FromArgb(255, 215, 0),
-            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+        Rectangle textRect = new Rectangle(8, 0, Math.Max(1, cover.Width - 27), cover.Height);
+        TextRenderer.DrawText(g, text, xtFComboBold, textRect, XT_LOCKED,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis |
+            TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
     }
 
     private void ByteNovaCombo_DrawItem(object sender, DrawItemEventArgs e)
@@ -3128,21 +3189,49 @@ internal class TCntrl : UserControl
         ComboBox combo = sender as ComboBox;
         if (combo == null || e.Index < 0) return;
 
-        // Always paint the item/display area Navy Blue so Windows never leaves it white.
-        using (Brush bg = new SolidBrush(Color.FromArgb(3, 29, 59)))
-            e.Graphics.FillRectangle(bg, e.Bounds);
-
+        Graphics g = e.Graphics;
+        bool edit = (e.State & DrawItemState.ComboBoxEdit) != 0;
+        bool sel = !edit && (e.State & DrawItemState.Selected) != 0;
+        bool current = !edit && e.Index == combo.SelectedIndex;
         string itemText = combo.GetItemText(combo.Items[e.Index]);
-        Color textColor = combo.Enabled
-            ? Color.White
-            : Color.FromArgb(255, 215, 0);
 
-        using (Brush b = new SolidBrush(textColor))
+        using (Brush b = new SolidBrush(Color.White))
+            g.FillRectangle(b, e.Bounds);
+
+        if (edit)
         {
-            Rectangle r = e.Bounds;
-            r.X += 3;
-            e.Graphics.DrawString(itemText, combo.Font, b, r);
+            // the closed field: bold value, no focus rectangle (the painted box shows focus)
+            TextRenderer.DrawText(g, itemText, xtFComboBold,
+                new Rectangle(e.Bounds.X + 4, e.Bounds.Y, e.Bounds.Width - 5, e.Bounds.Height),
+                combo.Enabled ? XT_TEXT : XT_LOCKED,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis |
+                TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
+            return;
         }
+
+        // open list row
+        if (sel)
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            XtFill(g, new RectangleF(e.Bounds.X + 3, e.Bounds.Y + 2, e.Bounds.Width - 7, e.Bounds.Height - 4), 5,
+                Color.FromArgb(255, 237, 213), Color.Empty);
+            XtFill(g, new RectangleF(e.Bounds.X + 3, e.Bounds.Y + 5, 3, e.Bounds.Height - 10), 1.5f, XT_ORANGE, Color.Empty);
+        }
+
+        Color textColor = sel ? Color.FromArgb(154, 52, 18) : current ? XT_BLUE : XT_TEXT;
+        Rectangle r = new Rectangle(e.Bounds.X + 12, e.Bounds.Y, e.Bounds.Width - 30, e.Bounds.Height);
+        TextRenderer.DrawText(g, itemText, sel || current ? xtFComboBold : xtFCombo, r, textColor,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis |
+            TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
+
+        if (current)   // tick for the value that is currently chosen
+            using (Pen t = new Pen(sel ? XT_ORANGE : XT_BLUE, 1.7F))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                t.StartCap = LineCap.Round; t.EndCap = LineCap.Round;
+                float cx = e.Bounds.Right - 14, cy = e.Bounds.Y + e.Bounds.Height / 2f;
+                g.DrawLines(t, new[] { new PointF(cx - 4, cy), new PointF(cx - 1, cy + 3), new PointF(cx + 4, cy - 3) });
+            }
     }
 
     private void ApplyByteNovaDisabledComboTextToAll()
@@ -3212,10 +3301,10 @@ internal class TCntrl : UserControl
         foreach (ComboBox c in combos)
         {
             if (c == null) continue;
-            c.BackColor = Color.FromArgb(7, 27, 45);
-            c.ForeColor = Color.White;
+            c.BackColor = Color.White;
+            c.ForeColor = XT_TEXT;
             c.FlatStyle = FlatStyle.Flat;
-            c.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Regular);
+            c.Font = xtFCombo;
         }
 
         // Existing buttons only - use restrained different accent colors for quick recognition.
@@ -3485,12 +3574,343 @@ internal class TCntrl : UserControl
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         Rectangle r = new Rectangle(0, 0, Width - 1, Height - 1);
 
-        using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, Color.FromArgb(4, 28, 47), Color.FromArgb(1, 9, 18), LinearGradientMode.Vertical))
+        using (SolidBrush bg = new SolidBrush(XT_BG))
             e.Graphics.FillRectangle(bg, r);
 
-        using (Pen glow = new Pen(Color.FromArgb(198, 244, 50), 1F))
-            e.Graphics.DrawRectangle(glow, r);
+        using (Pen frame = new Pen(XT_FRAME, 1F))
+            e.Graphics.DrawRectangle(frame, r);
+    }
+
+    // =====================================================================
+    // Express theme (light + bhagwa) - shared visual helpers for TCntrl.
+    // Only painting / geometry; no ticket, login or booking logic here.
+    // =====================================================================
+    private static readonly Color XT_BG = Color.FromArgb(236, 242, 251);
+    private static readonly Color XT_ORANGE = Color.FromArgb(245, 146, 28);
+    private static readonly Color XT_BLUE = Color.FromArgb(37, 99, 235);
+    private static readonly Color XT_NAVY = Color.FromArgb(15, 42, 92);
+    private static readonly Color XT_TEXT = Color.FromArgb(30, 41, 59);
+    private static readonly Color XT_MUTED = Color.FromArgb(100, 116, 139);
+    private static readonly Color XT_GREEN = Color.FromArgb(21, 128, 61);
+    private static readonly Color XT_LOCKED = Color.FromArgb(194, 65, 12);
+    private static readonly Color XT_CARD_LINE = Color.FromArgb(220, 228, 241);
+    private static readonly Color XT_FIELD_LINE = Color.FromArgb(203, 213, 225);
+    private static readonly Color XT_FRAME = Color.FromArgb(178, 196, 226);
+    private static readonly Color XT_HEAD_L = Color.FromArgb(14, 52, 120);
+    private static readonly Color XT_HEAD_R = Color.FromArgb(30, 96, 196);
+
+    // Control size. frmProcessTicket is AutoSize, so the window grows with it.
+    private const int XT_W = 460, XT_H = 248;
+    private static readonly Rectangle XT_STATUS = new Rectangle(10, 10, 440, 34);
+    private static readonly Rectangle XT_ROW1 = new Rectangle(10, 52, 440, 42);
+    private static readonly Rectangle XT_ROW2 = new Rectangle(10, 100, 440, 42);
+    private static readonly Rectangle XT_ROW3 = new Rectangle(10, 148, 440, 42);
+    // real control bounds (combos are 22px tall; their painted box is 3px larger all round)
+    private static readonly Rectangle XT_JOURNEY = new Rectangle(100, 62, 118, 22);
+    private static readonly Rectangle XT_TRAIN = new Rectangle(284, 62, 82, 22);
+    private static readonly Rectangle XT_QUOTA = new Rectangle(376, 62, 70, 22);
+    private static readonly Rectangle XT_ID = new Rectangle(100, 110, 120, 22);
+    private static readonly Rectangle XT_SLOT = new Rectangle(284, 110, 78, 22);
+    private static readonly Rectangle XT_PAIR = new Rectangle(370, 107, 76, 28);
+    private static readonly Rectangle XT_STOP = new Rectangle(20, 157, 150, 24);
+    private static readonly Rectangle XT_GATE = new Rectangle(188, 158, 258, 22);
+    private const int XT_BTN_Y = 198, XT_BTN_H = 40, XT_ARROW_W = 20;
+
+    private static Rectangle XtStatusRepaintRect
+    {
+        get { return Rectangle.Inflate(XT_STATUS, 2, 2); }
+    }
+
+    private readonly Font xtFStatus = new Font("Segoe UI Semibold", 10.5F);
+    private readonly Font xtFCaption = new Font("Segoe UI Semibold", 8.5F);
+    private readonly Font xtFCombo = new Font("Segoe UI", 9F);
+    private readonly Font xtFComboBold = new Font("Segoe UI Semibold", 9F);
+    private readonly Font xtFCheck = new Font("Segoe UI Semibold", 9F);
+    private readonly Font xtFBtn = new Font("Segoe UI Semibold", 9.5F);
+
+    private readonly Dictionary<Control, int> xtHover = new Dictionary<Control, int>();
+    private ComboBox xtHotCombo;
+    private bool xtParentHooked;
+
+    private void XtLayoutLoginButtons()
+    {
+        int gap = 6, x = XT_ROW1.X, w = (XT_ROW1.Width - gap * 3) / 4;
+        LayoutReferenceButton(WebLogin, x, XT_BTN_Y, w, XT_BTN_H, "Chrome", "C", Color.FromArgb(37, 99, 235));
+        LayoutReferenceButton(btnDish, x + (w + gap), XT_BTN_Y, w, XT_BTN_H, "Edge", "E", Color.FromArgb(0, 120, 212));
+        LayoutReferenceButton(btnWeb3, x + (w + gap) * 2, XT_BTN_Y, w, XT_BTN_H, "Brave", "B", Color.FromArgb(251, 84, 43));
+        LayoutReferenceButton(AppLogin_, x + (w + gap) * 3, XT_BTN_Y, XT_ROW1.Width - (w + gap) * 3, XT_BTN_H, "APP", "A", Color.FromArgb(22, 163, 74));
+        XtHookParent();
+    }
+
+    private static Color XtLoginAccent(string text, Color fallback)
+    {
+        switch ((text ?? "").ToUpperInvariant())
+        {
+            case "CHROME": return Color.FromArgb(37, 99, 235);
+            case "EDGE": return Color.FromArgb(0, 120, 212);
+            case "BRAVE": return Color.FromArgb(251, 84, 43);
+            case "APP": return Color.FromArgb(22, 163, 74);
+            default: return fallback;
+        }
+    }
+
+    private void XtJourneyColorGuard(object sender, EventArgs e)
+    {
+        // Login code turns the value gold (made for a dark skin); on the light skin use dark bhagwa.
+        Label l = sender as Label;
+        if (l == null) return;
+        Color c = l.ForeColor;
+        Color want = (c.R > 200 && c.G > 150 && c.B < 80) ? XT_LOCKED
+                   : (c.ToArgb() == XT_LOCKED.ToArgb() ? XT_LOCKED : XT_NAVY);
+        if (c.ToArgb() != want.ToArgb()) l.ForeColor = want;
+    }
+
+    private void XtHookHover(Control c)
+    {
+        if (c == null || xtHover.ContainsKey(c)) return;
+        xtHover[c] = 0;
+        c.MouseEnter += delegate { xtHover[c] = 1; c.Invalidate(); };
+        c.MouseLeave += delegate { xtHover[c] = 0; c.Invalidate(); };
+        c.MouseDown += delegate (object s, MouseEventArgs e) { if (e.Button == MouseButtons.Left) { xtHover[c] = 2; c.Invalidate(); } };
+        c.MouseUp += delegate
+        {
+            if (c.IsDisposed) return;
+            xtHover[c] = c.ClientRectangle.Contains(c.PointToClient(MousePosition)) ? 1 : 0;
+            c.Invalidate();
+        };
+        c.EnabledChanged += delegate { xtHover[c] = 0; c.Invalidate(); };
+    }
+
+    private int XtState(Control c)
+    {
+        int s;
+        return c != null && xtHover.TryGetValue(c, out s) ? s : 0;
+    }
+
+    // ---------- custom dropdown frame ----------
+
+    private static Rectangle XtBox(Control c)
+    {
+        return new Rectangle(c.Left - 3, c.Top - 3, c.Width + 6, c.Height + 6);
+    }
+
+    private IEnumerable<ComboBox> XtVisibleCombos()
+    {
+        ComboBox[] all = { cboTrain, cboQuota, cboID, cboSlot, cboGateway };
+        foreach (ComboBox c in all)
+            if (c != null && !c.IsDisposed && c.Parent == this && c.Visible && c.Width > 8)
+                yield return c;
+    }
+
+    private void XtSkinCombo(ComboBox combo)
+    {
+        // Hide the native border + arrow; the box and chevron are painted by TCntrl.
+        if (combo.Width > 24 && combo.Height > 4)
+            combo.Region = new Region(new Rectangle(1, 1, combo.Width - XT_ARROW_W - 1, combo.Height - 2));
+
+        // open list as wide as its longest option (+ room for tick and scrollbar), never cut text
+        int widest = 0;
+        try
+        {
+            foreach (object it in combo.Items)
+                widest = Math.Max(widest, TextRenderer.MeasureText(combo.GetItemText(it), xtFComboBold).Width);
+        }
+        catch { }
+        int want = widest + 12 + 30 + SystemInformation.VerticalScrollBarWidth;
+        combo.DropDownWidth = Math.Min(420, Math.Max(combo.Width + 6, want));
+        combo.MaxDropDownItems = 10;
+        if (combo.Parent != null) combo.Parent.Invalidate(Rectangle.Inflate(XtBox(combo), 2, 2));
+    }
+
+    private void XtHookCombo(ComboBox combo)
+    {
+        if (combo == null || xtHover.ContainsKey(combo)) return;
+        xtHover[combo] = 0;
+        combo.MouseEnter += delegate { xtHotCombo = combo; XtInvBox(combo); };
+        combo.MouseLeave += delegate { if (xtHotCombo == combo) { xtHotCombo = null; XtInvBox(combo); } };
+        combo.GotFocus += delegate { XtInvBox(combo); };
+        combo.LostFocus += delegate { XtInvBox(combo); };
+        combo.DropDown += delegate { XtInvBox(combo); };
+        combo.DropDownClosed += delegate { XtInvBox(combo); };
+        combo.MeasureItem += delegate (object s, MeasureItemEventArgs e) { e.ItemHeight = 24; };
+    }
+
+    private void XtInvBox(ComboBox combo)
+    {
+        if (combo != null && combo.Parent != null && !combo.Parent.IsDisposed)
+            combo.Parent.Invalidate(Rectangle.Inflate(XtBox(combo), 2, 2));
+    }
+
+    private void XtHookParent()
+    {
+        if (xtParentHooked) return;
+        xtParentHooked = true;
+        MouseDown += delegate (object s, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left) return;
+            foreach (ComboBox c in XtVisibleCombos())
+            {
+                if (!c.Enabled || !XtBox(c).Contains(e.Location)) continue;
+                c.Focus();
+                c.DroppedDown = true;
+                return;
+            }
+        };
+        MouseMove += delegate (object s, MouseEventArgs e)
+        {
+            ComboBox hit = null;
+            foreach (ComboBox c in XtVisibleCombos())
+                if (c.Enabled && XtBox(c).Contains(e.Location)) { hit = c; break; }
+            if (hit != xtHotCombo)
+            {
+                ComboBox old = xtHotCombo;
+                xtHotCombo = hit;
+                XtInvBox(old);
+                XtInvBox(hit);
+            }
+            Cursor = hit != null ? Cursors.Hand : Cursors.Default;
+        };
+        MouseLeave += delegate
+        {
+            if (xtHotCombo == null) return;
+            Point p = PointToClient(MousePosition);
+            if (XtBox(xtHotCombo).Contains(p)) return;
+            ComboBox old = xtHotCombo;
+            xtHotCombo = null;
+            XtInvBox(old);
+        };
+    }
+
+    private void XtPaintComboBox(Graphics g, ComboBox c)
+    {
+        Rectangle b = XtBox(c);
+        bool open = c.DroppedDown, focus = c.Focused || open, hot = c == xtHotCombo;
+        Color line = open || focus ? XT_BLUE : hot ? XT_ORANGE : XT_FIELD_LINE;
+        if (focus)
+            XtArt.Fill(g, new RectangleF(b.X - 1.5f, b.Y - 1.5f, b.Width + 2, b.Height + 2), 8, Color.FromArgb(46, XT_BLUE), Color.Empty);
+        XtArt.Fill(g, new RectangleF(b.X, b.Y, b.Width - 1, b.Height - 1), 6, Color.White, line);
+
+        // chevron zone
+        int zx = c.Right - XT_ARROW_W;
+        using (Pen sep = new Pen(Color.FromArgb(232, 237, 245)))
+            g.DrawLine(sep, zx, b.Y + 5, zx, b.Bottom - 6);
+        float cx = zx + XT_ARROW_W / 2f + 1, cy = b.Y + b.Height / 2f;
+        using (Pen p = new Pen(open || focus ? XT_BLUE : hot ? XT_ORANGE : XT_MUTED, 1.7F))
+        {
+            p.StartCap = LineCap.Round; p.EndCap = LineCap.Round; p.LineJoin = LineJoin.Round;
+            if (open)
+                g.DrawLines(p, new[] { new PointF(cx - 4, cy + 2), new PointF(cx, cy - 2), new PointF(cx + 4, cy + 2) });
+            else
+                g.DrawLines(p, new[] { new PointF(cx - 4, cy - 2), new PointF(cx, cy + 2), new PointF(cx + 4, cy - 2) });
+        }
+    }
+
+    // ---------- small drawing helpers ----------
+
+    private static Color XtMix(Color a, Color b, float t) { return XtArt.Mix(a, b, t); }
+    private static GraphicsPath XtRound(RectangleF r, float rad) { return XtArt.Round(r, rad); }
+    private static void XtFill(Graphics g, RectangleF r, float rad, Color fill, Color border) { XtArt.Fill(g, r, rad, fill, border); }
+
+    private static void XtCard(Graphics g, Rectangle r)
+    {
+        XtArt.Fill(g, new RectangleF(r.X, r.Y + 1.5f, r.Width - 1, r.Height - 1), 9, Color.FromArgb(215, 226, 243), Color.Empty);
+        XtArt.Fill(g, new RectangleF(r.X, r.Y, r.Width - 1, r.Height - 1), 9, Color.White, XT_CARD_LINE);
+        XtArt.Fill(g, new RectangleF(r.X + 1, r.Y + 9, 3, r.Height - 18), 1.5f, XT_ORANGE, Color.Empty);
+    }
+
+    private void XtCaption(Graphics g, string text, int x, int cy, int maxW)
+    {
+        TextRenderer.DrawText(g, text, xtFCaption, new Rectangle(x, cy - 9, Math.Max(4, maxW), 18), XT_MUTED,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine |
+            TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
+    }
+
+    private static void XtGlyph(Graphics g, string kind, Rectangle r)
+    {
+        XtGlyph(g, kind, r, XT_ORANGE);
+    }
+
+    private static void XtGlyph(Graphics g, string kind, Rectangle r, Color c)
+    {
+        SmoothingMode old = g.SmoothingMode;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        float x = r.X, y = r.Y, w = r.Width, h = r.Height;
+        using (Pen p = new Pen(c, 1.5F))
+        using (SolidBrush b = new SolidBrush(c))
+        {
+            p.StartCap = LineCap.Round; p.EndCap = LineCap.Round; p.LineJoin = LineJoin.Round;
+            switch (kind)
+            {
+                case "pin":
+                    g.DrawEllipse(p, x + w * 0.2f, y, w * 0.6f, h * 0.6f);
+                    g.FillEllipse(b, x + w * 0.42f, y + h * 0.2f, w * 0.16f, h * 0.16f);
+                    g.DrawLine(p, x + w * 0.5f, y + h * 0.62f, x + w * 0.5f, y + h);
+                    break;
+                case "train":
+                    using (GraphicsPath tp = XtArt.Round(new RectangleF(x + w * 0.15f, y, w * 0.7f, h * 0.78f), 2))
+                        g.DrawPath(p, tp);
+                    g.DrawLine(p, x + w * 0.15f, y + h * 0.42f, x + w * 0.85f, y + h * 0.42f);
+                    g.DrawLine(p, x + w * 0.3f, y + h * 0.82f, x + w * 0.15f, y + h);
+                    g.DrawLine(p, x + w * 0.7f, y + h * 0.82f, x + w * 0.85f, y + h);
+                    break;
+                case "user":
+                    g.DrawEllipse(p, x + w * 0.3f, y, w * 0.4f, h * 0.42f);
+                    g.DrawArc(p, x + w * 0.08f, y + h * 0.5f, w * 0.84f, h * 0.9f, 180, 180);
+                    break;
+                case "clock":
+                    g.DrawEllipse(p, x, y, w, h);
+                    g.DrawLine(p, x + w / 2, y + h * 0.25f, x + w / 2, y + h / 2);
+                    g.DrawLine(p, x + w / 2, y + h / 2, x + w * 0.72f, y + h * 0.62f);
+                    break;
+                case "lock":
+                    g.FillRectangle(b, x, y + h * 0.45f, w, h * 0.55f);
+                    g.DrawArc(p, x + w * 0.18f, y, w * 0.64f, h * 0.8f, 180, 180);
+                    break;
+            }
+        }
+        g.SmoothingMode = old;
+    }
+
+    // ---------- "Payment Stop" slider toggle ----------
+
+    private void XtTogglePaint(object sender, PaintEventArgs e)
+    {
+        CheckBox c = sender as CheckBox;
+        if (c == null) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.Clear(c.Parent == this ? Color.White : (c.Parent != null ? c.Parent.BackColor : Color.White));
+
+        int st = XtState(c);
+        bool on = c.Checked;
+        float th = 18, tw = 34, ty = (c.Height - th) / 2f;
+        RectangleF track = new RectangleF(1, ty, tw, th);
+        Color tFill = on ? XT_ORANGE : Color.FromArgb(203, 213, 225);
+        if (st == 1) tFill = on ? XtArt.Mix(tFill, Color.White, 0.12f) : Color.FromArgb(186, 198, 214);
+        if (st == 2) tFill = XtArt.Mix(tFill, Color.Black, 0.12f);
+        if (!c.Enabled) tFill = XtArt.Mix(tFill, Color.White, 0.5f);
+        if (on && st != 2)
+            XtArt.Fill(g, RectangleF.Inflate(track, 2, 2), th / 2 + 2, Color.FromArgb(50, XT_ORANGE), Color.Empty);
+        XtArt.Fill(g, track, th / 2, tFill, Color.Empty);
+
+        float kd = th - 4;
+        float kx = on ? track.Right - kd - 2 : track.X + 2;
+        using (SolidBrush sh = new SolidBrush(Color.FromArgb(45, 0, 0, 0)))
+            g.FillEllipse(sh, kx, ty + 3, kd, kd);
+        using (SolidBrush kb = new SolidBrush(Color.White))
+            g.FillEllipse(kb, kx, ty + 2, kd, kd);
+        if (on)
+            using (Pen tick = new Pen(XT_ORANGE, 1.5F))
+            {
+                tick.StartCap = LineCap.Round; tick.EndCap = LineCap.Round;
+                float cx = kx + kd / 2, cy = ty + 2 + kd / 2;
+                g.DrawLines(tick, new[] { new PointF(cx - 3, cy), new PointF(cx - 1, cy + 2.5f), new PointF(cx + 3.5f, cy - 2.5f) });
+            }
+
+        TextRenderer.DrawText(g, c.Text, xtFCheck, new Rectangle((int)tw + 8, 0, c.Width - (int)tw - 8, c.Height),
+            on ? XT_LOCKED : XT_TEXT,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine |
+            TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
     }
 
     private void ByteNovaModernPanelPaint(object sender, PaintEventArgs e)
@@ -5339,5 +5759,157 @@ internal class TCntrl : UserControl
         string text3 = "SUCCESS-APP";
         label.Text = text3;
         method_4();
+    }
+}
+
+// Express theme drawing kit shared by TCntrl and frmProcessTicket (visual only).
+internal static class XtArt
+{
+    public static Color Mix(Color a, Color b, float t)
+    {
+        return Color.FromArgb(a.A,
+            (int)(a.R + (b.R - a.R) * t),
+            (int)(a.G + (b.G - a.G) * t),
+            (int)(a.B + (b.B - a.B) * t));
+    }
+
+    public static GraphicsPath Round(RectangleF r, float rad)
+    {
+        GraphicsPath p = new GraphicsPath();
+        float d = Math.Min(rad * 2, Math.Min(r.Width, r.Height));
+        if (d < 1) { p.AddRectangle(r); return p; }
+        p.AddArc(r.X, r.Y, d, d, 180, 90);
+        p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+        p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+        p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+        p.CloseFigure();
+        return p;
+    }
+
+    public static void Fill(Graphics g, RectangleF r, float rad, Color fill, Color border)
+    {
+        if (r.Width < 1 || r.Height < 1) return;
+        using (GraphicsPath p = Round(r, rad))
+        {
+            using (SolidBrush b = new SolidBrush(fill)) g.FillPath(b, p);
+            if (border.A > 0) using (Pen pen = new Pen(border, 1F)) g.DrawPath(pen, p);
+        }
+    }
+
+    /// <summary>Brand-like icons: "Chrome", "Edge", "Brave", "APP"; anything else draws a ticket.</summary>
+    public static void Brand(Graphics g, RectangleF r, string app)
+    {
+        SmoothingMode old = g.SmoothingMode;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        float x = r.X, y = r.Y, w = r.Width, h = r.Height;
+        string a = (app ?? "").Trim().ToUpperInvariant();
+
+        if (a == "CHROME")
+        {
+            Fan(g, r, 210, Color.FromArgb(234, 67, 53), Color.FromArgb(214, 48, 39));
+            Fan(g, r, 330, Color.FromArgb(253, 205, 50), Color.FromArgb(244, 180, 0));
+            Fan(g, r, 90, Color.FromArgb(52, 168, 83), Color.FromArgb(30, 142, 62));
+            RectangleF ring = new RectangleF(x + w * 0.27f, y + h * 0.27f, w * 0.46f, h * 0.46f);
+            using (SolidBrush wb = new SolidBrush(Color.White)) g.FillEllipse(wb, ring);
+            RectangleF core = RectangleF.Inflate(ring, -w * 0.05f, -h * 0.05f);
+            using (LinearGradientBrush bb = new LinearGradientBrush(core, Color.FromArgb(91, 151, 245), Color.FromArgb(26, 115, 232), LinearGradientMode.Vertical))
+                g.FillEllipse(bb, core);
+        }
+        else if (a == "EDGE")
+        {
+            using (LinearGradientBrush lb = new LinearGradientBrush(r, Color.FromArgb(53, 196, 112), Color.FromArgb(12, 89, 164), LinearGradientMode.BackwardDiagonal))
+            {
+                ColorBlend cb = new ColorBlend();
+                cb.Positions = new[] { 0f, 0.45f, 1f };
+                cb.Colors = new[] { Color.FromArgb(19, 82, 165), Color.FromArgb(17, 135, 215), Color.FromArgb(75, 210, 120) };
+                lb.InterpolationColors = cb;
+                g.FillEllipse(lb, r);
+            }
+            // the curling wave
+            using (SolidBrush lite = new SolidBrush(Color.FromArgb(70, 214, 236)))
+                g.FillEllipse(lite, x + w * 0.14f, y + h * 0.44f, w * 0.7f, h * 0.44f);
+            using (SolidBrush pocket = new SolidBrush(Color.FromArgb(12, 59, 138)))
+                g.FillEllipse(pocket, x + w * 0.4f, y + h * 0.42f, w * 0.44f, h * 0.3f);
+            using (Pen hl = new Pen(Color.FromArgb(150, 255, 255, 255), Math.Max(1f, w * 0.07f)))
+            {
+                hl.StartCap = LineCap.Round; hl.EndCap = LineCap.Round;
+                g.DrawArc(hl, x + w * 0.12f, y + h * 0.12f, w * 0.76f, h * 0.76f, 200, 70);
+            }
+        }
+        else if (a == "BRAVE")
+        {
+            PointF[] shield =
+            {
+                new PointF(x + w * 0.30f, y + h * 0.02f), new PointF(x + w * 0.70f, y + h * 0.02f),
+                new PointF(x + w * 0.80f, y + h * 0.13f), new PointF(x + w * 0.96f, y + h * 0.13f),
+                new PointF(x + w * 0.90f, y + h * 0.36f), new PointF(x + w * 0.80f, y + h * 0.76f),
+                new PointF(x + w * 0.50f, y + h * 0.98f), new PointF(x + w * 0.20f, y + h * 0.76f),
+                new PointF(x + w * 0.10f, y + h * 0.36f), new PointF(x + w * 0.04f, y + h * 0.13f),
+                new PointF(x + w * 0.20f, y + h * 0.13f)
+            };
+            using (LinearGradientBrush ob = new LinearGradientBrush(r, Color.FromArgb(255, 112, 32), Color.FromArgb(236, 60, 30), LinearGradientMode.Vertical))
+                g.FillPolygon(ob, shield);
+            using (SolidBrush wb = new SolidBrush(Color.White))
+            {
+                // eyes + muzzle of the lion
+                g.FillPolygon(wb, new[] { new PointF(x + w * 0.24f, y + h * 0.40f), new PointF(x + w * 0.42f, y + h * 0.44f), new PointF(x + w * 0.30f, y + h * 0.50f) });
+                g.FillPolygon(wb, new[] { new PointF(x + w * 0.76f, y + h * 0.40f), new PointF(x + w * 0.58f, y + h * 0.44f), new PointF(x + w * 0.70f, y + h * 0.50f) });
+                g.FillPolygon(wb, new[] { new PointF(x + w * 0.38f, y + h * 0.62f), new PointF(x + w * 0.62f, y + h * 0.62f), new PointF(x + w * 0.50f, y + h * 0.80f) });
+            }
+        }
+        else if (a == "APP")
+        {
+            Color c = Color.FromArgb(61, 200, 120);
+            using (SolidBrush b = new SolidBrush(c))
+            using (Pen p = new Pen(c, Math.Max(1f, w * 0.07f)))
+            {
+                p.StartCap = LineCap.Round; p.EndCap = LineCap.Round;
+                g.DrawLine(p, x + w * 0.32f, y + h * 0.12f, x + w * 0.24f, y + h * 0.02f);
+                g.DrawLine(p, x + w * 0.68f, y + h * 0.12f, x + w * 0.76f, y + h * 0.02f);
+                g.FillPie(b, x + w * 0.16f, y + h * 0.08f, w * 0.68f, h * 0.56f, 180, 180);
+                using (GraphicsPath body = Round(new RectangleF(x + w * 0.16f, y + h * 0.40f, w * 0.68f, h * 0.42f), w * 0.08f))
+                    g.FillPath(b, body);
+                using (Pen limb = new Pen(c, Math.Max(1.4f, w * 0.12f)))
+                {
+                    limb.StartCap = LineCap.Round; limb.EndCap = LineCap.Round;
+                    g.DrawLine(limb, x + w * 0.05f, y + h * 0.46f, x + w * 0.05f, y + h * 0.68f);
+                    g.DrawLine(limb, x + w * 0.95f, y + h * 0.46f, x + w * 0.95f, y + h * 0.68f);
+                    g.DrawLine(limb, x + w * 0.36f, y + h * 0.84f, x + w * 0.36f, y + h * 0.96f);
+                    g.DrawLine(limb, x + w * 0.64f, y + h * 0.84f, x + w * 0.64f, y + h * 0.96f);
+                }
+                using (SolidBrush wb = new SolidBrush(Color.White))
+                {
+                    g.FillEllipse(wb, x + w * 0.32f, y + h * 0.22f, w * 0.09f, h * 0.09f);
+                    g.FillEllipse(wb, x + w * 0.59f, y + h * 0.22f, w * 0.09f, h * 0.09f);
+                }
+                using (Pen gap = new Pen(Color.White, Math.Max(1f, h * 0.04f)))
+                    g.DrawLine(gap, x + w * 0.16f, y + h * 0.39f, x + w * 0.84f, y + h * 0.39f);
+            }
+        }
+        else
+        {
+            // ticket
+            Color c = Color.FromArgb(245, 146, 28);
+            using (GraphicsPath tp = Round(new RectangleF(x + w * 0.05f, y + h * 0.2f, w * 0.9f, h * 0.6f), w * 0.1f))
+            using (SolidBrush b = new SolidBrush(c))
+                g.FillPath(b, tp);
+            using (SolidBrush wb = new SolidBrush(Color.White))
+            {
+                g.FillEllipse(wb, x - w * 0.04f, y + h * 0.42f, w * 0.18f, h * 0.16f);
+                g.FillEllipse(wb, x + w * 0.86f, y + h * 0.42f, w * 0.18f, h * 0.16f);
+            }
+            using (Pen d = new Pen(Color.White, 1F))
+            {
+                d.DashStyle = DashStyle.Dot;
+                g.DrawLine(d, x + w * 0.64f, y + h * 0.26f, x + w * 0.64f, y + h * 0.74f);
+            }
+        }
+        g.SmoothingMode = old;
+    }
+
+    private static void Fan(Graphics g, RectangleF r, float start, Color c1, Color c2)
+    {
+        using (LinearGradientBrush b = new LinearGradientBrush(r, c1, c2, start + 60))
+            g.FillPie(b, r.X, r.Y, r.Width, r.Height, start, 120);
     }
 }
