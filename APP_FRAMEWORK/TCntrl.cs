@@ -1809,10 +1809,10 @@ internal class TCntrl : UserControl
         }
         else
         {
-            LayoutReferenceButton(WebLogin, 8, 139, 76, 31, "Chrome", "C", Color.FromArgb(0, 102, 225));
-            LayoutReferenceButton(btnDish, 88, 139, 76, 31, "Edge", "E", Color.FromArgb(80, 45, 185));
-            LayoutReferenceButton(btnWeb3, 168, 139, 76, 31, "Brave", "B", Color.FromArgb(175, 108, 5));
-            LayoutReferenceButton(AppLogin_, 248, 139, 74, 31, "APP", "A", Color.FromArgb(0, 128, 105));
+            LayoutReferenceButton(WebLogin, 6, 139, 77, 32, "Chrome", "C", Color.FromArgb(12, 88, 190));
+            LayoutReferenceButton(btnDish, 87, 139, 77, 32, "Edge", "E", Color.FromArgb(72, 44, 170));
+            LayoutReferenceButton(btnWeb3, 168, 139, 77, 32, "Brave", "B", Color.FromArgb(178, 98, 10));
+            LayoutReferenceButton(AppLogin_, 249, 139, 75, 32, "APP", "A", Color.FromArgb(0, 126, 100));
         }
         ApplyByteNovaDisabledComboTextToAll();
         Invalidate();
@@ -1939,10 +1939,10 @@ internal class TCntrl : UserControl
             BtnOpenPair.Invalidate();
         }
 
-        LayoutReferenceButton(WebLogin, 8, 139, 76, 31, "Chrome", "C", Color.FromArgb(0, 102, 225));
-        LayoutReferenceButton(btnDish, 88, 139, 76, 31, "Edge", "E", Color.FromArgb(80, 45, 185));
-        LayoutReferenceButton(btnWeb3, 168, 139, 76, 31, "Brave", "B", Color.FromArgb(175, 108, 5));
-        LayoutReferenceButton(AppLogin_, 248, 139, 74, 31, "APP", "A", Color.FromArgb(0, 128, 105));
+        LayoutReferenceButton(WebLogin, 6, 139, 77, 32, "Chrome", "C", Color.FromArgb(12, 88, 190));
+        LayoutReferenceButton(btnDish, 87, 139, 77, 32, "Edge", "E", Color.FromArgb(72, 44, 170));
+        LayoutReferenceButton(btnWeb3, 168, 139, 77, 32, "Brave", "B", Color.FromArgb(178, 98, 10));
+        LayoutReferenceButton(AppLogin_, 249, 139, 75, 32, "APP", "A", Color.FromArgb(0, 126, 100));
 
         ApplyByteNovaDisabledComboTextToAll();
 
@@ -2065,10 +2065,10 @@ internal class TCntrl : UserControl
         }
 
         Size = new Size(330, 176);
-        LayoutReferenceButton(WebLogin, 8, 139, 76, 31, "Chrome", "C", Color.FromArgb(0, 102, 225));
-        LayoutReferenceButton(btnDish, 88, 139, 76, 31, "Edge", "E", Color.FromArgb(80, 45, 185));
-        LayoutReferenceButton(btnWeb3, 168, 139, 76, 31, "Brave", "B", Color.FromArgb(175, 108, 5));
-        LayoutReferenceButton(AppLogin_, 248, 139, 74, 31, "APP", "A", Color.FromArgb(0, 128, 105));
+        LayoutReferenceButton(WebLogin, 6, 139, 77, 32, "Chrome", "C", Color.FromArgb(12, 88, 190));
+        LayoutReferenceButton(btnDish, 87, 139, 77, 32, "Edge", "E", Color.FromArgb(72, 44, 170));
+        LayoutReferenceButton(btnWeb3, 168, 139, 77, 32, "Brave", "B", Color.FromArgb(178, 98, 10));
+        LayoutReferenceButton(AppLogin_, 249, 139, 75, 32, "APP", "A", Color.FromArgb(0, 126, 100));
 
         if (lblAvailability != null) lblAvailability.Visible = false;
         if (lblTime != null) lblTime.Visible = false;
@@ -2370,16 +2370,53 @@ internal class TCntrl : UserControl
         Color accent = (Color)data[2];
 
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        using (Brush bg = new SolidBrush(accent))
-            e.Graphics.FillRectangle(bg, b.ClientRectangle);
 
-        Rectangle iconRect = new Rectangle(7, (b.Height - 20) / 2, 20, 20);
+        Rectangle r = new Rectangle(1, 1, b.Width - 3, b.Height - 3);
+
+        // Soft glow
+        using (GraphicsPath glowPath = ByteNovaButtonRound(r, 7))
+        using (Pen glow = new Pen(Color.FromArgb(70, 0, 200, 255), 3F))
+            e.Graphics.DrawPath(glow, glowPath);
+
+        // Gradient face
+        using (GraphicsPath path = ByteNovaButtonRound(r, 6))
+        using (LinearGradientBrush bg = new LinearGradientBrush(
+            r, ControlPaint.Light(accent, 0.30F), ControlPaint.Dark(accent, 0.25F),
+            LinearGradientMode.Vertical))
+        using (Pen border = new Pen(Color.FromArgb(198, 244, 50), 1.1F))
+        {
+            e.Graphics.FillPath(bg, path);
+            e.Graphics.DrawPath(border, path);
+
+            // Top shine
+            Rectangle shine = new Rectangle(r.X + 2, r.Y + 2, r.Width - 4, Math.Max(2, r.Height / 2));
+            using (LinearGradientBrush sb = new LinearGradientBrush(
+                shine, Color.FromArgb(70, 255, 255, 255), Color.FromArgb(0, 255, 255, 255),
+                LinearGradientMode.Vertical))
+            using (GraphicsPath sp = ByteNovaButtonRound(shine, 5))
+                e.Graphics.FillPath(sb, sp);
+        }
+
+        Rectangle iconRect = new Rectangle(9, (b.Height - 18) / 2, 18, 18);
         DrawAppIcon(e.Graphics, iconRect, text);
 
-        Rectangle textRect = new Rectangle(31, 0, b.Width - 34, b.Height);
-        using (Font tf = new Font("Segoe UI Semibold", 7F, FontStyle.Bold))
+        Rectangle textRect = new Rectangle(31, 0, Math.Max(1, b.Width - 34), b.Height);
+        using (Font tf = new Font("Segoe UI Semibold", 7.2F, FontStyle.Bold))
             TextRenderer.DrawText(e.Graphics, text, tf, textRect, Color.White,
-                TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis);
+                TextFormatFlags.VerticalCenter | TextFormatFlags.Left |
+                TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
+    }
+
+    private GraphicsPath ByteNovaButtonRound(Rectangle r, int radius)
+    {
+        GraphicsPath path = new GraphicsPath();
+        int d = radius * 2;
+        path.AddArc(r.X, r.Y, d, d, 180, 90);
+        path.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+        path.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+        path.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+        path.CloseFigure();
+        return path;
     }
 
     private void DrawAppIcon(Graphics g, Rectangle r, string app)
@@ -2466,20 +2503,23 @@ internal class TCntrl : UserControl
         // Status strip starts at the top of TCntrl.
         // IMPORTANT: this is the status surface the user actually sees.
         bool statusBlinking = timer_1 != null && timer_1.Enabled;
-        Color statusCardColor = statusBlinking
-            ? (_byteNovaStatusBlinkOn ? Color.FromArgb(0, 120, 215) : Color.FromArgb(255, 193, 7))
-            : Color.FromArgb(0, 175, 215);
-        // Only the BACKGROUND blinks. Status text/dot remain fixed and readable.
+        Color statusTop = statusBlinking
+            ? (_byteNovaStatusBlinkOn ? Color.FromArgb(0, 128, 205) : Color.FromArgb(190, 140, 10))
+            : Color.FromArgb(0, 118, 168);
+        Color statusBottom = statusBlinking
+            ? (_byteNovaStatusBlinkOn ? Color.FromArgb(0, 62, 120) : Color.FromArgb(120, 82, 5))
+            : Color.FromArgb(1, 52, 88);
         Color statusTextColor = Color.White;
-        Color statusDotColor = Color.FromArgb(0, 240, 185);
+        Color statusDotColor = Color.FromArgb(0, 245, 185);
 
-        // DrawReferenceCard's Color parameter controls ONLY its border.
-        // Fill the status card ourselves so the complete BACKGROUND actually blinks.
         Rectangle statusBlinkRect = new Rectangle(7, 7, 316, 27);
-        using (SolidBrush statusBg = new SolidBrush(statusCardColor))
+        using (LinearGradientBrush statusBg = new LinearGradientBrush(
+            statusBlinkRect, statusTop, statusBottom, LinearGradientMode.Vertical))
             g.FillRectangle(statusBg, statusBlinkRect);
-        using (Pen statusBorder = new Pen(Color.FromArgb(0, 215, 255), 1.2F))
+        using (Pen statusBorder = new Pen(Color.FromArgb(198, 244, 50), 1.2F))
             g.DrawRectangle(statusBorder, statusBlinkRect);
+        using (Pen innerLine = new Pen(Color.FromArgb(90, 150, 240, 255), 1F))
+            g.DrawRectangle(innerLine, new Rectangle(9, 9, 312, 23));
 
         using (Brush dot = new SolidBrush(statusDotColor))
             g.FillEllipse(dot, 15, 17, 9, 9);
@@ -2895,11 +2935,15 @@ internal class TCntrl : UserControl
     private void DrawReferenceCard(Graphics g, Rectangle r, Color edge)
     {
         using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, Color.FromArgb(5, 32, 58), Color.FromArgb(2, 16, 36),
+            r, Color.FromArgb(7, 40, 68), Color.FromArgb(2, 17, 36),
             LinearGradientMode.Vertical))
             g.FillRectangle(bg, r);
-        using (Pen p = new Pen(edge, 1F))
+
+        using (Pen p = new Pen(Color.FromArgb(26, 105, 160), 1F))
             g.DrawRectangle(p, r);
+
+        using (Pen accent = new Pen(Color.FromArgb(198, 244, 50), 2F))
+            g.DrawLine(accent, r.X, r.Y + 2, r.X, r.Bottom - 2);
     }
 
     private void DrawCaption(Graphics g, string text, float x, float y)

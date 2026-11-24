@@ -774,62 +774,85 @@ internal class frmManageTicket : Form
     {
         SuspendLayout();
 
-        BackColor = Color.FromArgb(2, 13, 27);
-        ForeColor = Color.FromArgb(232, 247, 255);
+        FormBorderStyle = FormBorderStyle.None;
+        BackColor = Color.FromArgb(2, 11, 22);
+        ForeColor = Color.FromArgb(236, 248, 255);
         DoubleBuffered = true;
+        Padding = new Padding(1);
 
         if (pnlHeader != null)
         {
-            pnlHeader.BackColor = Color.FromArgb(3, 29, 59);
+            pnlHeader.BackColor = Color.FromArgb(4, 30, 56);
+            pnlHeader.Height = 28;
             pnlHeader.Paint -= ByteNovaManageHeaderPaint;
             pnlHeader.Paint += ByteNovaManageHeaderPaint;
         }
 
         if (B2AAA != null)
         {
+            B2AAA.Text = "TOTAL TICKET";
             B2AAA.ForeColor = Color.White;
             B2AAA.BackColor = Color.Transparent;
-            B2AAA.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
+            B2AAA.Font = new Font("Segoe UI Black", 9.5F, FontStyle.Bold);
+            B2AAA.Location = new Point(10, 6);
+        }
+
+        if (lblCount != null)
+        {
+            lblCount.ForeColor = Color.FromArgb(198, 244, 50);
+            lblCount.Font = new Font("Segoe UI Black", 9.5F, FontStyle.Bold);
+            lblCount.BackColor = Color.Transparent;
+            lblCount.Location = new Point(B2AAA != null ? B2AAA.Right + 10 : 90, 6);
+            lblCount.BringToFront();
         }
 
         if (btnClose != null)
         {
-            btnClose.BackColor = Color.FromArgb(5, 43, 77);
+            btnClose.BackColor = Color.Transparent;
             btnClose.Zoom = 0;
             btnClose.Cursor = Cursors.Hand;
+            btnClose.Size = new Size(24, 22);
+            btnClose.Location = new Point(Math.Max(0, pnlHeader.Width - 30), 3);
+            btnClose.Paint -= ByteNovaManageClosePaint;
+            btnClose.Paint += ByteNovaManageClosePaint;
             btnClose.BringToFront();
         }
 
         if (grdUsers != null)
         {
             grdUsers.EnableHeadersVisualStyles = false;
-            grdUsers.BackgroundColor = Color.FromArgb(31, 19, 43);
+            grdUsers.BackgroundColor = Color.FromArgb(3, 17, 31);
             grdUsers.BorderStyle = BorderStyle.None;
-            grdUsers.GridColor = Color.FromArgb(28, 83, 112);
+            grdUsers.GridColor = Color.FromArgb(20, 62, 92);
             grdUsers.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
             grdUsers.RowHeadersVisible = false;
             grdUsers.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-            grdUsers.ColumnHeadersHeight = 30;
-            grdUsers.RowTemplate.Height = 28;
+            grdUsers.ColumnHeadersHeight = 28;
+            grdUsers.RowTemplate.Height = 30;
+            grdUsers.SelectionMode = DataGridViewSelectionMode.CellSelect;
 
-            grdUsers.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(5, 49, 80);
-            grdUsers.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(100, 225, 255);
-            grdUsers.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(5, 49, 80);
-            grdUsers.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.White;
-            grdUsers.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
+            grdUsers.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(6, 44, 74);
+            grdUsers.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(120, 230, 255);
+            grdUsers.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(6, 44, 74);
+            grdUsers.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.FromArgb(120, 230, 255);
+            grdUsers.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Bold);
             grdUsers.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-            grdUsers.DefaultCellStyle.BackColor = Color.FromArgb(7, 29, 48);
+            grdUsers.DefaultCellStyle.BackColor = Color.FromArgb(5, 22, 38);
             grdUsers.DefaultCellStyle.ForeColor = Color.White;
-            grdUsers.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 105, 155);
+            grdUsers.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 78, 120);
             grdUsers.DefaultCellStyle.SelectionForeColor = Color.White;
-            grdUsers.DefaultCellStyle.Font = new Font("Segoe UI", 8.2F, FontStyle.Regular);
+            grdUsers.DefaultCellStyle.Font = new Font("Segoe UI", 8F);
             grdUsers.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-            grdUsers.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(9, 37, 59);
+            grdUsers.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(7, 27, 45);
             grdUsers.AlternatingRowsDefaultCellStyle.ForeColor = Color.White;
-            grdUsers.AlternatingRowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 105, 155);
+            grdUsers.AlternatingRowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 78, 120);
             grdUsers.AlternatingRowsDefaultCellStyle.SelectionForeColor = Color.White;
+
+            // Buttons ke cell khud paint honge - system flat look hataya
+            grdUsers.CellPainting -= ByteNovaManageCellPainting;
+            grdUsers.CellPainting += ByteNovaManageCellPainting;
 
             foreach (DataGridViewColumn col in grdUsers.Columns)
             {
@@ -837,10 +860,8 @@ internal class frmManageTicket : Form
                 if (bc != null)
                 {
                     bc.FlatStyle = FlatStyle.Flat;
-                    bc.DefaultCellStyle.BackColor = Color.FromArgb(8, 57, 88);
-                    bc.DefaultCellStyle.ForeColor = Color.White;
-                    bc.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 135, 185);
-                    bc.DefaultCellStyle.SelectionForeColor = Color.White;
+                    bc.DefaultCellStyle.BackColor = Color.Transparent;
+                    bc.DefaultCellStyle.SelectionBackColor = Color.Transparent;
                     bc.DefaultCellStyle.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Bold);
                 }
 
@@ -848,27 +869,27 @@ internal class frmManageTicket : Form
                 if (cc != null)
                 {
                     cc.FlatStyle = FlatStyle.Flat;
-                    cc.DefaultCellStyle.BackColor = Color.White;
-                    cc.DefaultCellStyle.ForeColor = Color.Black;
-                    cc.DefaultCellStyle.SelectionBackColor = Color.FromArgb(220, 245, 255);
-                    cc.DefaultCellStyle.SelectionForeColor = Color.Black;
+                    cc.DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox;
+                    cc.DefaultCellStyle.BackColor = Color.FromArgb(4, 26, 44);
+                    cc.DefaultCellStyle.ForeColor = Color.FromArgb(255, 215, 90);
+                    cc.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 78, 120);
+                    cc.DefaultCellStyle.SelectionForeColor = Color.White;
                 }
             }
         }
 
         if (grpOpen != null)
         {
-            grpOpen.BackColor = Color.FromArgb(5, 27, 47);
-            grpOpen.ForeColor = Color.FromArgb(80, 220, 255);
+            grpOpen.BackColor = Color.FromArgb(4, 22, 40);
+            grpOpen.ForeColor = Color.FromArgb(120, 225, 255);
             grpOpen.Paint -= ByteNovaManageGroupPaint;
             grpOpen.Paint += ByteNovaManageGroupPaint;
         }
 
-        ByteNovaManageButton(btnNew, Color.FromArgb(0, 110, 165), Color.FromArgb(198, 244, 50));
-        ByteNovaManageButton(btnSubmitAll, Color.FromArgb(0, 118, 150), Color.FromArgb(65, 235, 225));
-        ByteNovaManageButton(btnDeleteAll, Color.FromArgb(125, 38, 58), Color.FromArgb(255, 100, 125));
+        ByteNovaManageButton(btnNew, Color.FromArgb(0, 120, 88), Color.FromArgb(0, 235, 190));
+        ByteNovaManageButton(btnSubmitAll, Color.FromArgb(0, 92, 148), Color.FromArgb(0, 210, 255));
+        ByteNovaManageButton(btnDeleteAll, Color.FromArgb(126, 30, 48), Color.FromArgb(255, 105, 125));
 
-        // Helper buttons remain available to their existing handlers but do not disturb the compact layout.
         if (btnSubmit != null) btnSubmit.Visible = false;
         if (btnEdit != null) btnEdit.Visible = false;
         if (btnDelete != null) btnDelete.Visible = false;
@@ -883,29 +904,25 @@ internal class frmManageTicket : Form
         ByteNovaManageRadio(radioVPair);
         ByteNovaManageRadio(C1AA0);
 
-        if (lblCount != null)
-        {
-            lblCount.ForeColor = Color.FromArgb(80, 230, 255);
-            lblCount.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
-            lblCount.BackColor = Color.Transparent;
-        }
-        if (label2 != null)
-        {
-            label2.ForeColor = Color.FromArgb(220, 240, 250);
-            label2.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
-            label2.BackColor = Color.Transparent;
-        }
+        if (chkAutoWEB != null) chkAutoWEB.ForeColor = Color.FromArgb(200, 235, 250);
+        if (chkAutoAPP != null) chkAutoAPP.ForeColor = Color.FromArgb(200, 235, 250);
+        if (radioVPair != null) radioVPair.ForeColor = Color.FromArgb(200, 235, 250);
+        if (C1AA0 != null) C1AA0.ForeColor = Color.FromArgb(200, 235, 250);
+
+        if (label2 != null) label2.ForeColor = Color.FromArgb(120, 225, 255);
 
         Paint -= ByteNovaManageFormPaint;
         Paint += ByteNovaManageFormPaint;
 
         ResumeLayout(false);
         PerformLayout();
+        Invalidate(true);
     }
 
     private void ByteNovaManageButton(Button b, Color back, Color border)
     {
         if (b == null) return;
+
         b.FlatStyle = FlatStyle.Flat;
         b.FlatAppearance.BorderSize = 1;
         b.FlatAppearance.BorderColor = border;
@@ -914,6 +931,9 @@ internal class frmManageTicket : Form
         b.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
         b.UseVisualStyleBackColor = false;
         b.Cursor = Cursors.Hand;
+        b.FlatAppearance.MouseOverBackColor = ControlPaint.Light(back, 0.18F);
+        b.FlatAppearance.MouseDownBackColor = ControlPaint.Dark(back, 0.12F);
+        b.Height = 30;
     }
 
     private void ByteNovaManageInput(ComboBox c)
@@ -947,30 +967,146 @@ internal class frmManageTicket : Form
     private void ByteNovaManageHeaderPaint(object sender, PaintEventArgs e)
     {
         Control c = sender as Control;
-        if (c == null || c.Width < 2 || c.Height < 2) return;
-        Rectangle r = c.ClientRectangle;
+        if (c == null || c.Width < 4 || c.Height < 4) return;
+
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        Rectangle r = new Rectangle(0, 0, c.Width, c.Height);
+
         using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, Color.FromArgb(2, 23, 52), Color.FromArgb(5, 53, 91),
+            r, Color.FromArgb(4, 30, 58), Color.FromArgb(30, 22, 74),
             LinearGradientMode.Horizontal))
+        {
+            ColorBlend blend = new ColorBlend();
+            blend.Positions = new float[] { 0F, 0.35F, 0.7F, 1F };
+            blend.Colors = new Color[]
+            {
+                Color.FromArgb(3, 24, 46),
+                Color.FromArgb(0, 92, 138),
+                Color.FromArgb(22, 58, 140),
+                Color.FromArgb(46, 26, 96)
+            };
+            bg.InterpolationColors = blend;
             e.Graphics.FillRectangle(bg, r);
-        using (Pen p = new Pen(Color.FromArgb(198, 244, 50), 1.5F))
-            e.Graphics.DrawLine(p, 0, r.Height - 1, r.Width, r.Height - 1);
+        }
+
+        using (Pen lime = new Pen(Color.FromArgb(198, 244, 50), 1.4F))
+            e.Graphics.DrawLine(lime, 0, c.Height - 1, c.Width, c.Height - 1);
     }
 
     private void ByteNovaManageGroupPaint(object sender, PaintEventArgs e)
     {
         GroupBox g = sender as GroupBox;
-        if (g == null || g.Width < 2 || g.Height < 2) return;
+        if (g == null || g.Width < 4 || g.Height < 4) return;
+
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         Rectangle r = new Rectangle(0, 0, g.Width - 1, g.Height - 1);
+
+        using (LinearGradientBrush bg = new LinearGradientBrush(
+            r, Color.FromArgb(5, 30, 50), Color.FromArgb(2, 15, 28),
+            LinearGradientMode.Vertical))
+            e.Graphics.FillRectangle(bg, r);
+
         using (Pen p = new Pen(Color.FromArgb(0, 150, 205), 1F))
             e.Graphics.DrawRectangle(p, r);
     }
 
     private void ByteNovaManageFormPaint(object sender, PaintEventArgs e)
     {
-        if (ClientSize.Width < 2 || ClientSize.Height < 2) return;
-        using (Pen p = new Pen(Color.FromArgb(198, 244, 50), 1F))
-            e.Graphics.DrawRectangle(p, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
+        if (ClientSize.Width < 4 || ClientSize.Height < 4) return;
+
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        Rectangle all = new Rectangle(0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
+
+        using (LinearGradientBrush bg = new LinearGradientBrush(
+            all, Color.FromArgb(3, 18, 33), Color.FromArgb(1, 7, 14),
+            LinearGradientMode.Vertical))
+            e.Graphics.FillRectangle(bg, all);
+
+        using (Pen lime = new Pen(Color.FromArgb(198, 244, 50), 1.4F))
+            e.Graphics.DrawRectangle(lime, all);
+    }
+
+    private void ByteNovaManageCellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+    {
+        if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+        if (e.ColumnIndex < 10 || e.ColumnIndex > 13) return;
+
+        e.PaintBackground(e.CellBounds, true);
+
+        Color back, border;
+        switch (e.ColumnIndex)
+        {
+            case 10: back = Color.FromArgb(0, 96, 150); border = Color.FromArgb(0, 205, 240); break;
+            case 11: back = Color.FromArgb(76, 52, 152); border = Color.FromArgb(155, 125, 255); break;
+            case 12: back = Color.FromArgb(140, 92, 14); border = Color.FromArgb(255, 195, 75); break;
+            default: back = Color.FromArgb(142, 34, 52); border = Color.FromArgb(255, 110, 130); break;
+        }
+
+        if ((e.State & DataGridViewElementStates.Selected) != 0)
+            back = ControlPaint.Light(back, 0.20F);
+
+        Rectangle r = new Rectangle(
+            e.CellBounds.X + 3, e.CellBounds.Y + 4,
+            e.CellBounds.Width - 7, e.CellBounds.Height - 9);
+
+        if (r.Width > 8 && r.Height > 8)
+        {
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+            using (GraphicsPath path = ByteNovaManageRound(r, 6))
+            using (LinearGradientBrush bg = new LinearGradientBrush(
+                r, ControlPaint.Light(back, 0.25F), ControlPaint.Dark(back, 0.12F),
+                LinearGradientMode.Vertical))
+            using (Pen pen = new Pen(border, 1.2F))
+            {
+                e.Graphics.FillPath(bg, path);
+                e.Graphics.DrawPath(pen, path);
+            }
+
+            using (Font f = new Font("Segoe UI Semibold", 8F, FontStyle.Bold))
+                TextRenderer.DrawText(e.Graphics, Convert.ToString(e.Value), f, r, Color.White,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
+                    TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
+        }
+
+        e.Handled = true;
+    }
+
+    private GraphicsPath ByteNovaManageRound(Rectangle r, int radius)
+    {
+        GraphicsPath path = new GraphicsPath();
+        int d = radius * 2;
+        path.AddArc(r.X, r.Y, d, d, 180, 90);
+        path.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+        path.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+        path.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+        path.CloseFigure();
+        return path;
+    }
+
+    private void ByteNovaManageClosePaint(object sender, PaintEventArgs e)
+    {
+        Control c = sender as Control;
+        if (c == null) return;
+
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        Rectangle r = new Rectangle(1, 1, c.Width - 3, c.Height - 3);
+
+        using (LinearGradientBrush bg = new LinearGradientBrush(
+            r, Color.FromArgb(30, 150, 205), Color.FromArgb(0, 95, 150),
+            LinearGradientMode.Vertical))
+            e.Graphics.FillRectangle(bg, r);
+
+        using (Pen border = new Pen(Color.FromArgb(140, 235, 255), 1.2F))
+            e.Graphics.DrawRectangle(border, r);
+
+        using (Pen p = new Pen(Color.White, 2F))
+        {
+            p.StartCap = LineCap.Round;
+            p.EndCap = LineCap.Round;
+            e.Graphics.DrawLine(p, 7, 6, c.Width - 7, c.Height - 6);
+            e.Graphics.DrawLine(p, c.Width - 7, 6, 7, c.Height - 6);
+        }
     }
 
     private void InitializeComponent()
