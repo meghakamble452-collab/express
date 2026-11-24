@@ -4825,15 +4825,23 @@ internal class frmAddTkt : Form
         {
             if (cue != null) novaComboCue[cb] = cue;
             cb.FlatStyle = FlatStyle.Flat;
-            cb.DrawMode = DrawMode.OwnerDrawFixed;
+            // Variable = list rows get their own (taller) height, the closed box keeps ItemHeight
+            cb.DrawMode = DrawMode.OwnerDrawVariable;
             cb.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular);
             cb.ForeColor = NV_Text;
             cb.BackColor = NV_Card;
             cb.IntegralHeight = false;
-            cb.MaxDropDownItems = 12;
+            cb.MaxDropDownItems = 10;
+            cb.MeasureItem -= NovaComboMeasure;
+            cb.MeasureItem += NovaComboMeasure;
             cb.DrawItem -= NovaComboDraw;
             cb.DrawItem += NovaComboDraw;
-            cb.DropDown += delegate { novaFocusField = cb; NovaInvalidateBox(cb); };
+            cb.DropDown += delegate
+            {
+                cb.DropDownHeight = Math.Max(NV_LIST_ROW + 4, Math.Min(Math.Max(1, cb.Items.Count), 10) * NV_LIST_ROW + 4);
+                novaFocusField = cb;
+                NovaInvalidateBox(cb);
+            };
             cb.DropDownClosed += delegate { if (!cb.Focused && novaFocusField == cb) novaFocusField = null; NovaInvalidateBox(cb); };
         }
 
@@ -5043,8 +5051,8 @@ internal class frmAddTkt : Form
         NovaLbl(label5, c2, r1, L, FH);
         NovaPlace(txtTo, c2 + L, r1, 204, FH);
         NovaLbl(label4, c3, r1, 42, FH);
-        if (novaDate != null) novaDate.SetBounds(c3 + 42, r1, 168, FH);
-        btnFindTrain.SetBounds(c3 + 42 + 168 + 10, r1, R - (c3 + 42 + 168 + 10), FH);
+        if (novaDate != null) novaDate.SetBounds(c3 + 40, r1, 180, FH);
+        btnFindTrain.SetBounds(c3 + 40 + 180 + 8, r1, R - (c3 + 40 + 180 + 8), FH);
 
         // row 2 : Bdg Pt | Train No | Train Type
         NovaLbl(label9, c1, r2, L, FH);
@@ -5433,18 +5441,48 @@ internal class frmAddTkt : Form
             return;
         }
 
+        // ---- one row of the open list ----
         Rectangle r = e.Bounds;
-        bool sel = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-        bool current = e.Index == cb.SelectedIndex;
-        using (SolidBrush b = new SolidBrush(sel ? Color.FromArgb(255, 240, 222) : NV_Card)) g.FillRectangle(b, r);
-        if (sel)
-            using (SolidBrush bar = new SolidBrush(NV_Orange)) g.FillRectangle(bar, r.X, r.Y, 3, r.Height);
+        bool sel = (e.State & DrawItemState.Selected) == DrawItemState.Selected;   // row under the mouse / keyboard
+        bool current = e.Index == cb.SelectedIndex;                                // value already chosen
+        using (SolidBrush b = new SolidBrush(NV_Card)) g.FillRectangle(b, r);
+
+        if (sel || current)
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            Rectangle pill = new Rectangle(r.X + 3, r.Y + 2, Math.Max(4, r.Width - 6), Math.Max(4, r.Height - 4));
+            using (GraphicsPath pp = NovaPath(pill, 6))
+            using (SolidBrush pb = new SolidBrush(sel ? Color.FromArgb(255, 238, 216) : Color.FromArgb(244, 248, 255)))
+                g.FillPath(pb, pp);
+            if (sel)
+                using (SolidBrush bar = new SolidBrush(NV_Orange))
+                    g.FillRectangle(bar, pill.X, pill.Y + 4, 3, Math.Max(2, pill.Height - 8));
+        }
 
         if (e.Index >= cb.Items.Count) return;
-        using (Font f = new Font(cb.Font, current ? FontStyle.Bold : FontStyle.Regular))
-            TextRenderer.DrawText(g, cb.GetItemText(cb.Items[e.Index]), f,
-                new Rectangle(r.X + 10, r.Y, Math.Max(8, r.Width - 14), r.Height), NV_Text,
-                TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+        Color rowFg = current ? NovaMix(NV_Orange, Color.Black, 0.25f) : NV_Text;
+        TextRenderer.DrawText(g, cb.GetItemText(cb.Items[e.Index]), cb.Font,
+            new Rectangle(r.X + 12, r.Y, Math.Max(8, r.Width - 34), r.Height), rowFg,
+            TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+
+        if (current)
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            int tx = r.Right - 20, ty = r.Y + r.Height / 2;
+            using (Pen tp = new Pen(NV_Orange, 1.8f))
+            {
+                tp.StartCap = LineCap.Round; tp.EndCap = LineCap.Round;
+                g.DrawLine(tp, tx, ty, tx + 3, ty + 3);
+                g.DrawLine(tp, tx + 3, ty + 3, tx + 9, ty - 4);
+            }
+        }
+    }
+
+    private const int NV_LIST_ROW = 28;   // height of one row in an open dropdown list
+
+    private void NovaComboMeasure(object sender, MeasureItemEventArgs e)
+    {
+        if (e.Index >= 0) e.ItemHeight = NV_LIST_ROW;
     }
 
     private void NovaBtnPaint(object sender, PaintEventArgs e)
@@ -5698,7 +5736,7 @@ internal class frmAddTkt : Form
     }
 
     private Panel novaDate;
-    private Form novaCal;
+    private ToolStripDropDown novaCal;
     private Panel novaCalPanel;
     private DateTime novaCalMonth = DateTime.Today;
     private DateTime novaCalClosedAt = DateTime.MinValue;
@@ -5761,11 +5799,14 @@ internal class frmAddTkt : Form
         using (Font fd = new Font("Segoe UI Semibold", 9.5F, FontStyle.Bold))
         using (Font fw = new Font("Segoe UI", 8.5F, FontStyle.Regular))
         {
+            int limit = c.Width - 26;   // keep clear of the chevron
             int w1 = TextRenderer.MeasureText(g, date, fd, new Size(400, 40), TextFormatFlags.NoPadding).Width;
-            TextRenderer.DrawText(g, date, fd, new Rectangle(x, 0, w1 + 2, c.Height), en ? NV_Text : NV_Cue,
-                TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.NoPadding);
-            TextRenderer.DrawText(g, day, fw, new Rectangle(x + w1 + 6, 0, 40, c.Height), NV_Head,
-                TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.NoPadding);
+            TextRenderer.DrawText(g, date, fd, new Rectangle(x, 0, Math.Min(w1 + 2, limit - x), c.Height), en ? NV_Text : NV_Cue,
+                TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
+            int w2 = TextRenderer.MeasureText(g, day, fw, new Size(400, 40), TextFormatFlags.NoPadding).Width;
+            if (x + w1 + 6 + w2 <= limit)   // weekday only when it fits
+                TextRenderer.DrawText(g, day, fw, new Rectangle(x + w1 + 6, 0, w2 + 2, c.Height), NV_Head,
+                    TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.NoPadding);
         }
 
         int cx = c.Width - 14, cy = c.Height / 2;
@@ -5808,7 +5849,7 @@ internal class frmAddTkt : Form
         int w = CAL_PAD * 2 + 7 * CAL_CW;
         int h = CAL_GRID_Y + 6 * CAL_CH + CAL_FOOT;
 
-        novaCalPanel = new NovaBufferedPanel { BackColor = NV_Card, Dock = DockStyle.Fill };
+        novaCalPanel = new NovaBufferedPanel { BackColor = NV_Card, Size = new Size(w, h), Margin = Padding.Empty };
         novaCalPanel.Paint += NovaCalPaint;
         novaCalPanel.MouseMove += delegate (object s, MouseEventArgs me)
         {
@@ -5824,43 +5865,52 @@ internal class frmAddTkt : Form
             novaCalPanel.Invalidate();
         };
 
-        novaCal = new Form
+        // A ToolStripDropDown is a real popup: it never takes activation away from
+        // this form (the old separate Form did, and Windows then sent the New Ticket
+        // window behind the main app). Clicks inside keep it open; a click outside
+        // or Esc closes it.
+        ToolStripControlHost host = new ToolStripControlHost(novaCalPanel)
         {
-            FormBorderStyle = FormBorderStyle.None,
-            ShowInTaskbar = false,
-            StartPosition = FormStartPosition.Manual,
-            BackColor = NV_Card,
-            ClientSize = new Size(w, h),
-            KeyPreview = true
+            AutoSize = false,
+            Size = new Size(w, h),
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
         };
-        novaCal.Controls.Add(novaCalPanel);
+        ToolStripDropDown dd = new ToolStripDropDown
+        {
+            AutoClose = true,
+            AutoSize = false,
+            Size = new Size(w, h),
+            Padding = Padding.Empty,
+            Margin = Padding.Empty,
+            DropShadowEnabled = false,
+            BackColor = NV_Card
+        };
+        dd.Items.Add(host);
         using (GraphicsPath rp = NovaPath(new Rectangle(0, 0, w, h), 12))
-            novaCal.Region = new Region(rp);
-        novaCal.Deactivate += delegate { NovaCalClose(); };
-        novaCal.KeyDown += delegate (object s, KeyEventArgs ke) { if (ke.KeyCode == Keys.Escape) NovaCalClose(); };
+            dd.Region = new Region(rp);
 
-        Point pt = novaDate.PointToScreen(new Point(novaDate.Width - w, novaDate.Height + 6));
-        Rectangle wa = Screen.FromControl(novaDate).WorkingArea;
-        if (pt.X < wa.Left + 4) pt.X = wa.Left + 4;
-        if (pt.X + w > wa.Right - 4) pt.X = wa.Right - 4 - w;
-        if (pt.Y + h > wa.Bottom - 4) pt.Y = novaDate.PointToScreen(Point.Empty).Y - h - 6;
-        novaCal.Location = pt;
+        dd.Closed += delegate
+        {
+            novaCalClosedAt = DateTime.Now;
+            if (novaCal == dd) { novaCal = null; novaCalPanel = null; novaCalHot = null; }
+            if (novaDate != null && !novaDate.IsDisposed) novaDate.Invalidate();
+            // dispose after the click that closed it has finished
+            if (IsHandleCreated) BeginInvoke(new MethodInvoker(delegate { try { dd.Dispose(); } catch { } }));
+        };
 
-        novaCal.Show(this);
-        novaCal.Activate();
+        novaCal = dd;
+        dd.Show(novaDate, new Point(novaDate.Width - w, novaDate.Height + 6));
+        novaCalPanel.Focus();
         novaDate.Invalidate();
     }
 
     private void NovaCalClose()
     {
         novaCalClosedAt = DateTime.Now;
-        if (novaCal == null) return;
-        Form f = novaCal;
-        novaCal = null;
-        novaCalPanel = null;
-        novaCalHot = null;
-        try { f.Close(); f.Dispose(); } catch { }
-        if (novaDate != null && !novaDate.IsDisposed) novaDate.Invalidate();
+        ToolStripDropDown dd = novaCal;
+        if (dd == null) return;
+        try { dd.Close(ToolStripDropDownCloseReason.CloseCalled); } catch { }
     }
 
     private Rectangle NovaCalPrev() { return new Rectangle(CAL_PAD, 10, 28, 28); }
