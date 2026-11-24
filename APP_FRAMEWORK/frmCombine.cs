@@ -190,7 +190,9 @@ public class frmCombine : Form
 
             bunifuImageButton1.Visible = false;
 
-            btnClose.SetBounds(ClientSize.Width - 48, 10, 32, 28);
+            btnClose.SetBounds(ClientSize.Width - 46, 10, 30, 26);
+            btnClose.BackColor = Color.Transparent;
+            btnClose.Region = null;
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnClose.BackgroundImage = null;
             btnClose.Image = null;
@@ -207,7 +209,7 @@ public class frmCombine : Form
             btnClose.MouseDown += CloseDown;
             btnClose.MouseUp -= CloseUp;
             btnClose.MouseUp += CloseUp;
-            RoundControl(btnClose, 8);
+            
 
             if (_strip == null)
             {
@@ -389,22 +391,33 @@ public class frmCombine : Form
         Control c = sender as Control;
         if (c == null) return;
 
-        Color bg = Color.FromArgb(220, 38, 38);
-        if (_closeDown) bg = Color.FromArgb(170, 26, 26);
-        else if (_closeHot) bg = Color.FromArgb(240, 78, 78);
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        using (SolidBrush b = new SolidBrush(bg))
-        using (GraphicsPath p = RoundPath(new Rectangle(0, 0, c.Width - 1, c.Height - 1), 8))
-            e.Graphics.FillPath(b, p);
+        Color top = Color.FromArgb(239, 68, 68), bot = Color.FromArgb(205, 32, 38);
+        if (_closeDown) { top = Color.FromArgb(185, 28, 28); bot = Color.FromArgb(160, 20, 24); }
+        else if (_closeHot) { top = Color.FromArgb(248, 100, 100); bot = Color.FromArgb(226, 48, 52); }
 
-        using (Pen pen = new Pen(Color.White, 2.2f))
+        Rectangle r = new Rectangle(1, 1, c.Width - 3, c.Height - 3);
+        if (_closeDown) r.Offset(0, 1);
+        if (r.Width < 4 || r.Height < 4) return;
+
+        using (GraphicsPath p = RoundPath(r, 7))
         {
-            pen.StartCap = LineCap.Round;
-            pen.EndCap = LineCap.Round;
-            int m = 10;
-            e.Graphics.DrawLine(pen, m, m, c.Width - m, c.Height - m);
-            e.Graphics.DrawLine(pen, c.Width - m, m, m, c.Height - m);
+            using (LinearGradientBrush b = new LinearGradientBrush(r, top, bot, LinearGradientMode.Vertical))
+                g.FillPath(b, p);
+            using (Pen edge = new Pen(Color.FromArgb(90, 255, 255, 255), 1f))
+                g.DrawPath(edge, p);
+        }
+
+        float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f, a = 4.5f;
+        using (Pen x = new Pen(Color.White, 2f))
+        {
+            x.StartCap = LineCap.Round;
+            x.EndCap = LineCap.Round;
+            g.DrawLine(x, cx - a, cy - a, cx + a, cy + a);
+            g.DrawLine(x, cx + a, cy - a, cx - a, cy + a);
         }
     }
 

@@ -9,6 +9,8 @@ public partial class frmAddID
 {
     private bool exShell;
     private Label exHistTitle;
+    private bool exCloseHot;
+    private bool exCloseDown;
 
     private static GraphicsPath ExPath(Rectangle r, int rad)
     {
@@ -59,8 +61,18 @@ public partial class frmAddID
         btnClose.Image = null;
         btnClose.BackgroundImage = null;
         btnClose.BackColor = Color.Transparent;
+        btnClose.Region = null;
+        btnClose.Cursor = Cursors.Hand;
         btnClose.Paint -= ByteNovaClosePaint;
+        btnClose.Paint -= ExClosePaint;
         btnClose.Paint += ExClosePaint;
+        btnClose.MouseEnter += delegate { exCloseHot = true; btnClose.Invalidate(); };
+        btnClose.MouseLeave += delegate { exCloseHot = false; exCloseDown = false; btnClose.Invalidate(); };
+        btnClose.MouseDown += delegate { exCloseDown = true; btnClose.Invalidate(); };
+        btnClose.MouseUp += delegate { exCloseDown = false; btnClose.Invalidate(); };
+
+        // keep the button INSIDE the header bar so it sits on the header colour
+        if (btnClose.Parent != pnlHeader) pnlHeader.Controls.Add(btnClose);
 
         PnlBase.AutoSize = false;
         PnlBase.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
@@ -118,15 +130,15 @@ public partial class frmAddID
             formName.Location = new Point(16, 7);
             formName.Size = new Size(w - 140, 20);
 
-            btnClose.Location = new Point(w - 44, 10);
-            btnClose.Size = new Size(28, 22);
+            // 30x24, vertically centred in the 34px header, 6px from its right edge
+            btnClose.Size = new Size(30, 24);
+            btnClose.Location = new Point(pnlHeader.Width - 30 - 6, (pnlHeader.Height - 24) / 2);
+            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
             PnlBase.Location = new Point(8, 48);
             PnlBase.Size = new Size(w - 16, h - 58);
 
-            
             ExRound(PnlBase, 11);
-            ExRound(btnClose, 7);
 
             pnlHeader.BringToFront();
             btnClose.BringToFront();
@@ -300,25 +312,34 @@ public partial class frmAddID
         Control c = sender as Control;
         if (c == null) return;
 
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+        Color top = Color.FromArgb(239, 68, 68), bot = Color.FromArgb(205, 32, 38);
+        if (exCloseDown) { top = Color.FromArgb(185, 28, 28); bot = Color.FromArgb(160, 20, 24); }
+        else if (exCloseHot) { top = Color.FromArgb(248, 100, 100); bot = Color.FromArgb(226, 48, 52); }
+
         Rectangle r = new Rectangle(1, 1, c.Width - 3, c.Height - 3);
+        if (exCloseDown) r.Offset(0, 1);
+        if (r.Width < 4 || r.Height < 4) return;
 
         using (GraphicsPath p = ExPath(r, 7))
         {
-            using (LinearGradientBrush bg = new LinearGradientBrush(
-                r, Color.FromArgb(236, 62, 76), Color.FromArgb(190, 32, 46),
-                LinearGradientMode.Vertical))
-                e.Graphics.FillPath(bg, p);
-            using (Pen pen = new Pen(Color.White, 1.2f))
-                e.Graphics.DrawPath(pen, p);
+            using (LinearGradientBrush bg = new LinearGradientBrush(r, top, bot, LinearGradientMode.Vertical))
+                g.FillPath(bg, p);
+            using (Pen edge = new Pen(Color.FromArgb(90, 255, 255, 255), 1f))
+                g.DrawPath(edge, p);
         }
 
-        using (Pen x = new Pen(Color.White, 2.2f))
+        // square, centred X (same arm length both ways)
+        float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f, a = 4.5f;
+        using (Pen x = new Pen(Color.White, 2f))
         {
             x.StartCap = LineCap.Round;
             x.EndCap = LineCap.Round;
-            e.Graphics.DrawLine(x, 10, 7, c.Width - 10, c.Height - 7);
-            e.Graphics.DrawLine(x, c.Width - 10, 7, 10, c.Height - 7);
+            g.DrawLine(x, cx - a, cy - a, cx + a, cy + a);
+            g.DrawLine(x, cx + a, cy - a, cx - a, cy + a);
         }
     }
 }

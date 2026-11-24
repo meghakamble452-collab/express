@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace APP_FRAMEWORK;
@@ -58,6 +59,16 @@ internal partial class tabIrctcId
     private DateTimePicker exCalTarget;
     private DateTime exCalMonth = DateTime.Today;
     private int exCalHover = -1;
+
+    // ---- "Add IRCTC ID" lite layout (only add-form + list are shown) ----
+    private bool exLite;
+    private Rectangle exGridCard = Rectangle.Empty;
+    private readonly Dictionary<TextBox, Label> exCues = new Dictionary<TextBox, Label>();
+    private int exHotRow = -1, exHotCol = -1;
+    private Color exHotPrev = Color.Empty;
+    private static readonly Color ExRed = Color.FromArgb(220, 38, 38);
+    private static readonly Color ExBlue = Color.FromArgb(37, 117, 235);
+    private static readonly Color ExPurple = Color.FromArgb(124, 82, 232);
 
     [DllImport("user32.dll")]
     private static extern bool SetWindowPos(IntPtr hWnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
@@ -418,6 +429,9 @@ internal partial class tabIrctcId
             foreach (Label[] st in exStats) { st[0].Visible = false; st[1].Visible = false; }
             ExModeSync();
 
+            exLite = true;
+            ExLiteSetup();
+
             if (Parent != null)
                 Parent.Resize += delegate { ExFitToParent(); ExLayout(); };
         }
@@ -514,8 +528,10 @@ internal partial class tabIrctcId
         {
             tb.BorderStyle = BorderStyle.None;
             tb.Font = ExFS(13f, FontStyle.Regular);
+            tb.BackColor = tb.Enabled ? ExFieldBg : ExFieldOff;
             tb.Enter += delegate { exFocus.Add(p); ExSync(p); };
             tb.Leave += delegate { exFocus.Remove(p); ExSync(p); };
+            tb.EnabledChanged += delegate { tb.BackColor = tb.Enabled ? ExFieldBg : ExFieldOff; p.Invalidate(); };
         }
 
         RichTextBox rtb = box as RichTextBox;
@@ -762,6 +778,8 @@ internal partial class tabIrctcId
         using (LinearGradientBrush bg = new LinearGradientBrush(
             r, Color.FromArgb(242, 247, 255), Color.FromArgb(216, 231, 250), LinearGradientMode.Vertical))
             e.Graphics.FillRectangle(bg, r);
+
+        if (exLite && !exMin && !exGridCard.IsEmpty) ExGridCardPaint(e.Graphics);
     }
 
     private void ExFieldPaint(object sender, PaintEventArgs e)
@@ -782,43 +800,29 @@ internal partial class tabIrctcId
             {
                 Rectangle ri = Rectangle.Inflate(r, -P(2), -P(2));
                 using (GraphicsPath gp = ExPath(ri, P(9)))
-                using (Pen glow = new Pen(Color.FromArgb((int)(48 * Math.Min(1f, g)), ExCyan), P(3.2f)))
+                using (Pen glow = new Pen(Color.FromArgb((int)(56 * Math.Min(1f, g)), ExLime), P(3.2f)))
                     e.Graphics.DrawPath(glow, gp);
             }
-            using (Pen pen = new Pen(off ? ExLine : ExBlend(ExLine, ExCyan, Math.Min(1f, g)),
+            using (Pen pen = new Pen(off ? ExLine : ExBlend(ExLine, ExLime, Math.Min(1f, g)),
                 P(1f) + Math.Min(1f, g) * P(0.9f)))
                 e.Graphics.DrawPath(pen, path);
         }
 
-        Color gc = off ? Color.FromArgb(170, 186, 208) : ExBlend(ExMuted, ExCyan, Math.Min(1f, g));
+        Color gc = off ? Color.FromArgb(170, 186, 208) : ExBlend(Color.FromArgb(92, 116, 150), ExLime, Math.Min(1f, g));
         int gy = (p.Height - P(14)) / 2;
-        if (t != null && t.Glyph == "search") ExGlyphSearch(e.Graphics, P(13), gy, gc);
-        else if (t != null && t.Glyph == "cal") ExGlyphCal(e.Graphics, P(12), gy, gc);
-        else if (t != null && t.Glyph == "user")
-            using (Pen pen = new Pen(gc, P(1.4f)))
-            {
-                e.Graphics.DrawEllipse(pen, P(13), gy, P(9), P(9));
-                e.Graphics.DrawArc(pen, P(9), gy + P(11), P(17), P(12), 200, 140);
-            }
-        else if (t != null && t.Glyph == "lock")
-            using (Pen pen = new Pen(gc, P(1.4f)))
-            {
-                e.Graphics.DrawArc(pen, P(12), gy - P(1), P(11), P(11), 180, 180);
-                using (GraphicsPath path = ExPath(new Rectangle(P(10), gy + P(5), P(15), P(11)), P(3)))
-                    e.Graphics.DrawPath(pen, path);
-            }
-        else if (t != null && t.Glyph == "phone")
-            using (Pen pen = new Pen(gc, P(1.4f)))
-            using (GraphicsPath path = ExPath(new Rectangle(P(13), gy - P(1), P(10), P(17)), P(3)))
-                e.Graphics.DrawPath(pen, path);
-        else if (t != null && t.Glyph == "mail")
-            using (Pen pen = new Pen(gc, P(1.4f)))
-            {
-                using (GraphicsPath path = ExPath(new Rectangle(P(11), gy, P(16), P(12)), P(2)))
-                    e.Graphics.DrawPath(pen, path);
-                e.Graphics.DrawLine(pen, P(11), gy + 1, P(19), gy + P(6));
-                e.Graphics.DrawLine(pen, P(27), gy + 1, P(19), gy + P(6));
-            }
+        string glyph = t != null ? t.Glyph : null;
+        if (glyph == "search") ExGlyphSearch(e.Graphics, P(13), gy, gc);
+        else if (glyph == "cal") ExGlyphCal(e.Graphics, P(12), gy, gc);
+        else if (glyph == "user" || glyph == "lock" || glyph == "phone" || glyph == "mail")
+        {
+            // icon inside a soft tinted chip on the left of the field
+            int cs = Math.Min(P(28), p.Height - P(10));
+            Rectangle chip = new Rectangle(P(6), (p.Height - cs) / 2, cs, cs);
+            using (GraphicsPath cp = ExPath(chip, P(8)))
+            using (SolidBrush cb = new SolidBrush(off ? Color.FromArgb(236, 241, 248) : ExBlend(gc, Color.White, 0.87f)))
+                e.Graphics.FillPath(cb, cp);
+            ExFieldIcon(e.Graphics, glyph, chip, gc);
+        }
 
         DateTimePicker dt = t != null ? t.Box as DateTimePicker : null;
         if (dt != null)
@@ -1246,13 +1250,13 @@ internal partial class tabIrctcId
         {
             Color fill = c.Checked ? ExLime : ExBlend(Color.White, Color.FromArgb(228, 240, 254), Math.Min(1f, g));
             using (SolidBrush b = new SolidBrush(fill)) e.Graphics.FillPath(b, path);
-            using (Pen pen = new Pen(c.Checked ? Color.FromArgb(140, 190, 30)
-                : ExBlend(ExLine, ExCyan, Math.Min(1f, g)), P(1.2f)))
+            using (Pen pen = new Pen(c.Checked ? ExDark(ExLime, 34)
+                : ExBlend(ExLine, ExLime, Math.Min(1f, g)), P(1.2f)))
                 e.Graphics.DrawPath(pen, path);
         }
 
         if (c.Checked)
-            using (Pen tick = new Pen(Color.FromArgb(20, 45, 25), P(1.9f)))
+            using (Pen tick = new Pen(Color.White, P(1.9f)))
             {
                 tick.StartCap = LineCap.Round; tick.EndCap = LineCap.Round;
                 e.Graphics.DrawLine(tick, box.X + P(4), box.Y + P(8), box.X + P(6), box.Y + P(11));
@@ -1323,10 +1327,19 @@ internal partial class tabIrctcId
         grdUsers.ScrollBars = ScrollBars.Vertical;
         grdUsers.AllowUserToAddRows = false;
         grdUsers.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-        grdUsers.ColumnHeadersHeight = P(34);
-        grdUsers.RowTemplate.Height = P(30);
+        grdUsers.ColumnHeadersHeight = P(42);
+        grdUsers.RowTemplate.Height = P(40);
         grdUsers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         grdUsers.SelectionMode = DataGridViewSelectionMode.CellSelect;
+        grdUsers.AllowUserToResizeRows = false;
+        grdUsers.MultiSelect = false;
+        // smooth scrolling with many rows
+        try
+        {
+            PropertyInfo db = typeof(DataGridView).GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (db != null) db.SetValue(grdUsers, true, null);
+        }
+        catch { }
 
         grdUsers.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(226, 238, 252);
         grdUsers.ColumnHeadersDefaultCellStyle.ForeColor = ExText;
@@ -1337,9 +1350,9 @@ internal partial class tabIrctcId
 
         grdUsers.DefaultCellStyle.BackColor = Color.White;
         grdUsers.DefaultCellStyle.ForeColor = Color.FromArgb(24, 46, 74);
-        grdUsers.DefaultCellStyle.SelectionBackColor = Color.FromArgb(214, 234, 255);
+        grdUsers.DefaultCellStyle.SelectionBackColor = Color.FromArgb(255, 241, 224);
         grdUsers.DefaultCellStyle.SelectionForeColor = Color.FromArgb(12, 34, 60);
-        grdUsers.DefaultCellStyle.Font = ExF(12f, FontStyle.Regular);
+        grdUsers.DefaultCellStyle.Font = ExF(12.5f, FontStyle.Regular);
         grdUsers.DefaultCellStyle.Padding = new Padding(P(8), 0, P(4), 0);
 
         grdUsers.RowsDefaultCellStyle.BackColor = Color.White;
@@ -1351,16 +1364,20 @@ internal partial class tabIrctcId
         {
             col.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             col.MinimumWidth = P(58);
+            col.SortMode = DataGridViewColumnSortMode.NotSortable;
             string n = col.Name.ToLower();
-            if (n.Contains("id")) col.FillWeight = 120;
+            bool pill = ExPillKind(col) != null;
+            if (pill) { col.FillWeight = 72; col.MinimumWidth = P(96); }
+            else if (n.Contains("id")) col.FillWeight = 120;
             else if (n.Contains("pwd")) col.FillWeight = 130;
             else if (n.Contains("check")) col.FillWeight = 100;
             else col.FillWeight = 78;
 
             col.DefaultCellStyle.BackColor = Color.Empty;
             col.DefaultCellStyle.ForeColor = Color.FromArgb(24, 46, 74);
-            col.DefaultCellStyle.SelectionBackColor = Color.FromArgb(214, 234, 255);
+            col.DefaultCellStyle.SelectionBackColor = Color.FromArgb(255, 241, 224);
             col.DefaultCellStyle.SelectionForeColor = Color.FromArgb(12, 34, 60);
+            if (pill) col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
             DataGridViewLinkColumn link = col as DataGridViewLinkColumn;
             if (link != null)
@@ -1388,7 +1405,7 @@ internal partial class tabIrctcId
         b.FlatAppearance.MouseOverBackColor = Color.Transparent;
         b.FlatAppearance.MouseDownBackColor = Color.Transparent;
         b.BackColor = filled ? accent : ExCard;
-        b.ForeColor = filled ? Color.FromArgb(52, 28, 4) : ExText;
+        b.ForeColor = filled ? Color.White : ExText;
         b.Font = ExFS(12f, FontStyle.Bold);
         b.Cursor = Cursors.Hand;
         b.Tag = accent;
@@ -1419,11 +1436,11 @@ internal partial class tabIrctcId
         if (down) r = Rectangle.Inflate(r, -P(2), -P(2));
 
         Color fill;
-        if (filled) fill = down ? ExDark(accent, 42) : ExBlend(accent, Color.White, h * 0.35f);
+        if (filled) fill = down ? ExDark(accent, 38) : ExBlend(accent, Color.White, h * 0.16f);
         else fill = down ? ExBlend(Color.White, accent, 0.30f) : ExBlend(Color.White, accent, h * 0.14f);
 
-        Color border = down ? ExDark(accent, 22) : ExBlend(accent, Color.White, 0.25f * (1f - h));
-        Color text = filled ? (down ? Color.White : Color.FromArgb(52, 28, 4)) : (down ? Color.White : accent);
+        Color border = down ? ExDark(accent, 30) : (filled ? ExDark(accent, 14) : ExBlend(accent, Color.White, 0.25f * (1f - h)));
+        Color text = filled ? Color.White : (down ? Color.White : accent);
 
         if (h > 0.05f && !down)
         {
@@ -1444,6 +1461,27 @@ internal partial class tabIrctcId
 
         Rectangle tr = r;
         if (down) tr.Offset(0, P(1));
+
+        if (b == btnIDSave)
+        {
+            // "+" icon in front of the text
+            int tw = TextRenderer.MeasureText(e.Graphics, b.Text, b.Font, new Size(2000, 60), TF_MEASURE).Width;
+            int isz = P(16), igap = P(8);
+            int sx = tr.X + (tr.Width - (isz + igap + tw)) / 2;
+            int iy = tr.Y + (tr.Height - isz) / 2;
+            using (Pen ip = new Pen(text, P(1.6f)))
+            {
+                ip.StartCap = LineCap.Round; ip.EndCap = LineCap.Round;
+                e.Graphics.DrawEllipse(ip, sx, iy, isz, isz);
+                int c = isz / 2;
+                e.Graphics.DrawLine(ip, sx + P(5), iy + c, sx + isz - P(5), iy + c);
+                e.Graphics.DrawLine(ip, sx + c, iy + P(5), sx + c, iy + isz - P(5));
+            }
+            TextRenderer.DrawText(e.Graphics, b.Text, b.Font,
+                new Rectangle(sx + isz + igap, tr.Y, tw + P(4), tr.Height), text,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
+            return;
+        }
 
         TextRenderer.DrawText(e.Graphics, b.Text, b.Font, tr, text,
             TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
@@ -1491,6 +1529,13 @@ internal partial class tabIrctcId
         H = ClientSize.Height;
         if (W < P(400) || H < P(300)) return;
         if (Parent != null && Dock != DockStyle.Fill) Dock = DockStyle.Fill;
+
+        if (exLite && !exMin)
+        {
+            ExLayoutLite(W, H);
+            ExCenterOnce();
+            return;
+        }
 
         int M = P(16);
         int GX = P(18);
@@ -1762,5 +1807,464 @@ internal partial class tabIrctcId
                 }));
             }
         }
+    }
+
+    // =====================================================================
+    //  ADD IRCTC ID — lite layout: add form (one clean row) + saved-ID list card
+    // =====================================================================
+
+    private void ExCenterOnce()
+    {
+        if (exCentered) return;
+        exCentered = true;
+        Form hf = FindForm();
+        if (hf == null) return;
+        BeginInvoke(new MethodInvoker(delegate
+        {
+            Rectangle a2 = Screen.FromControl(hf).WorkingArea;
+            hf.Location = new Point(a2.Left + (a2.Width - hf.Width) / 2,
+                                    a2.Top + (a2.Height - hf.Height) / 2);
+        }));
+    }
+
+    private void ExLiteSetup()
+    {
+        ExCue(exFId, txtLogin, "Enter IRCTC user ID");
+        ExCue(exFPwd, txtPassword, "Enter password");
+        ExCue(exFMob, textmob, "Enter mobile number");
+        string l5 = (label5.Text ?? "").Replace(":", "").Replace("*", "").Trim();
+        ExCue(exFPass, textmpass, l5.Length > 0 ? "Enter " + l5 : "Enter value");
+
+        grdUsers.CellPainting -= ExGridCellPaint;
+        grdUsers.CellPainting += ExGridCellPaint;
+        grdUsers.CellMouseEnter -= ExGridEnter;
+        grdUsers.CellMouseEnter += ExGridEnter;
+        grdUsers.CellMouseLeave -= ExGridLeave;
+        grdUsers.CellMouseLeave += ExGridLeave;
+        grdUsers.MouseLeave += delegate { ExGridUnhot(); };
+        grdUsers.Paint -= ExGridEmptyPaint;
+        grdUsers.Paint += ExGridEmptyPaint;
+        grdUsers.RowsAdded += delegate { ExGridCountChanged(false); };
+        grdUsers.RowsRemoved += delegate { ExGridCountChanged(true); };
+        grdUsers.DataBindingComplete += delegate { ExGridCountChanged(true); };
+    }
+
+    private void ExLayoutLite(int W, int H)
+    {
+        int M = P(16), GX = P(20), ROW = P(40), GAP = P(12);
+        int innerW = W - M * 2;
+
+        int topY = P(10);
+        int row1 = P(44);
+        int row2 = row1 + ROW + GAP;
+        int rowCk = row2 + ROW + P(14);
+        int topH = rowCk + P(26) + P(16);
+
+        SuspendLayout();
+        try
+        {
+            ExPut(grpAddID, M, topY, innerW, topH);
+            ExRound(grpAddID, P(11));
+
+            // one shared label column so both rows line up
+            int lw = Math.Max(ExTextW(label37), ExTextW(label4)) + P(4);
+            int l2 = ExTextW(lblPassword) + P(4);
+            int btnW = P(184);
+            int fg = P(22);
+            int avail = innerW - GX * 2 - lw - P(8) - fg - l2 - P(8) - fg - btnW;
+            int fw = Math.Max(P(150), avail / 2);
+
+            // row 1: User ID | Password | ADD IRCTC ID
+            int x = GX;
+            ExPut(label37, x, row1, lw, ROW); x += lw + P(8);
+            ExPut(exFId, x, row1, fw, ROW); ExFieldInner(txtLogin, fw, ROW); x += fw + fg;
+            ExPut(lblPassword, x, row1, l2, ROW); x += l2 + P(8);
+            ExPut(exFPwd, x, row1, fw, ROW); ExFieldInner(txtPassword, fw, ROW); x += fw + fg;
+
+            int btnX = Math.Max(x, innerW - GX - btnW);
+            ExPut(btnIDSave, btnX, row1, btnW, ROW);
+            ExRound(btnIDSave, P(10));
+
+            // row 2: Mobile No (same column as User ID)
+            x = GX;
+            ExPut(label4, x, row2, lw, ROW); x += lw + P(8);
+            ExPut(exFMob, x, row2, fw, ROW); ExFieldInner(textmob, fw, ROW);
+            label5.Visible = false;
+            exFPass.Visible = false;
+            ExPut(button5, btnX, row2 + P(4), btnW, ROW - P(8));
+            ExRound(button5, P(9));
+
+            // row 3: check boxes
+            int ckX = GX;
+            int ck1 = ExTextW(chkValidate) + P(24);
+            ExPut(chkValidate, ckX, rowCk, ck1, P(26)); ckX += ck1 + P(28);
+            int ck2 = ExTextW(chkShowPwd) + P(24);
+            ExPut(chkShowPwd, ckX, rowCk, ck2, P(26)); ckX += ck2 + P(28);
+            ExPut(checkBox1, ckX, rowCk, ExTextW(checkBox1) + P(24), P(26));
+
+            // saved list: card fills ALL remaining height, grid scrolls inside it
+            int cardY = topY + topH + P(14);
+            int cardH = Math.Max(P(180), H - cardY - P(12));
+            exGridCard = new Rectangle(M, cardY, innerW, cardH);
+            int titleH = P(48);
+
+            grdUsers.Region = null;
+            ExPut(grdUsers, M + P(10), cardY + titleH, innerW - P(20), cardH - titleH - P(10));
+
+            ExPut(label6, M + P(220), cardY + P(13), Math.Max(P(60), innerW - P(380)), P(22));
+            label6.BringToFront();
+
+            ExPut(pnlloader, M + (innerW / 2) - P(216), cardY + (cardH / 2) - P(32), P(433), P(65));
+            ExRound(pnlloader, P(11));
+            pnlloader.BringToFront();
+
+            foreach (KeyValuePair<TextBox, Label> kv in exCues) ExCueSync(kv.Key, kv.Key.Focused);
+        }
+        finally
+        {
+            ResumeLayout(false);
+            PerformLayout();
+            Invalidate();
+        }
+    }
+
+    private void ExFieldInner(Control box, int w, int h)
+    {
+        if (box == null) return;
+        int th = box.Height;
+        if (th > h - P(6)) th = h - P(6);
+        box.SetBounds(P(44), Math.Max(1, (h - th) / 2), Math.Max(P(40), w - P(54)), th);
+        TextBox tb = box as TextBox;
+        if (tb != null) ExCueSync(tb, tb.Focused);
+    }
+
+    // ---------------- placeholders ----------------
+
+    private void ExCue(Panel field, Control box, string text)
+    {
+        TextBox tb = box as TextBox;
+        if (field == null || tb == null || exCues.ContainsKey(tb)) return;
+
+        Label l = new Label
+        {
+            AutoSize = false,
+            UseMnemonic = false,
+            BackColor = tb.Enabled ? ExFieldBg : ExFieldOff,
+            ForeColor = Color.FromArgb(150, 166, 190),
+            TextAlign = ContentAlignment.MiddleLeft,
+            Text = text,
+            Cursor = Cursors.IBeam,
+            Font = tb.Font
+        };
+        l.Click += delegate { if (tb.Enabled && tb.CanFocus) tb.Focus(); };
+        l.MouseEnter += delegate { exHover.Add(field); ExSync(field); };
+        l.MouseLeave += delegate { exHover.Remove(field); ExSync(field); };
+        field.Controls.Add(l);
+        exCues[tb] = l;
+
+        tb.TextChanged += delegate { ExCueSync(tb, tb.Focused); };
+        tb.Enter += delegate { ExCueSync(tb, true); };
+        tb.Leave += delegate { ExCueSync(tb, false); };
+        tb.EnabledChanged += delegate { ExCueSync(tb, tb.Focused); };
+        tb.FontChanged += delegate { ExCueSync(tb, tb.Focused); };
+        ExCueSync(tb, false);
+    }
+
+    private void ExCueSync(TextBox tb, bool focused)
+    {
+        Label l;
+        if (tb == null || !exCues.TryGetValue(tb, out l) || l.IsDisposed) return;
+        if (l.Font != tb.Font) l.Font = tb.Font;
+        l.SetBounds(tb.Left + P(1), tb.Top, Math.Max(10, tb.Width - P(1)), tb.Height);
+        l.BackColor = tb.Enabled ? ExFieldBg : ExFieldOff;
+        bool show = tb.TextLength == 0 && !focused;
+        if (l.Visible != show) l.Visible = show;
+        if (show) l.BringToFront();
+    }
+
+    // ---------------- field icons ----------------
+
+    private static GraphicsPath ExPathF(RectangleF r, float rad)
+    {
+        GraphicsPath p = new GraphicsPath();
+        float d = Math.Min(rad * 2f, Math.Min(r.Width, r.Height));
+        if (d <= 1f) { p.AddRectangle(r); return p; }
+        p.AddArc(r.X, r.Y, d, d, 180, 90);
+        p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+        p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+        p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+        p.CloseFigure();
+        return p;
+    }
+
+    private void ExFieldIcon(Graphics g, string kind, Rectangle chip, Color c)
+    {
+        float u = chip.Width / 28f;
+        float cx = chip.X + chip.Width / 2f, cy = chip.Y + chip.Height / 2f;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+
+        using (SolidBrush b = new SolidBrush(c))
+        using (Pen p = new Pen(c, 1.7f * u))
+        {
+            p.StartCap = LineCap.Round;
+            p.EndCap = LineCap.Round;
+
+            switch (kind)
+            {
+                case "user":
+                    g.FillEllipse(b, cx - 4.2f * u, cy - 8.5f * u, 8.4f * u, 8.4f * u);
+                    using (GraphicsPath sp = new GraphicsPath())
+                    {
+                        sp.AddArc(cx - 8f * u, cy + 1f * u, 16f * u, 15f * u, 180, 180);
+                        sp.CloseFigure();
+                        g.FillPath(b, sp);
+                    }
+                    break;
+
+                case "lock":
+                    g.DrawArc(p, cx - 4.5f * u, cy - 9f * u, 9f * u, 10f * u, 180, 180);
+                    g.DrawLine(p, cx - 4.5f * u, cy - 4f * u, cx - 4.5f * u, cy - 1.5f * u);
+                    g.DrawLine(p, cx + 4.5f * u, cy - 4f * u, cx + 4.5f * u, cy - 1.5f * u);
+                    using (GraphicsPath bp = ExPathF(new RectangleF(cx - 7f * u, cy - 2f * u, 14f * u, 11f * u), 2.5f * u))
+                        g.FillPath(b, bp);
+                    using (SolidBrush w = new SolidBrush(Color.White))
+                    {
+                        g.FillEllipse(w, cx - 1.6f * u, cy + 1f * u, 3.2f * u, 3.2f * u);
+                        g.FillRectangle(w, cx - 0.7f * u, cy + 3f * u, 1.4f * u, 3f * u);
+                    }
+                    break;
+
+                case "phone":
+                    using (GraphicsPath pp = ExPathF(new RectangleF(cx - 5.5f * u, cy - 9f * u, 11f * u, 18f * u), 2.5f * u))
+                        g.DrawPath(p, pp);
+                    g.DrawLine(p, cx - 1.8f * u, cy - 6f * u, cx + 1.8f * u, cy - 6f * u);
+                    g.FillEllipse(b, cx - 1.3f * u, cy + 4.4f * u, 2.6f * u, 2.6f * u);
+                    break;
+
+                case "mail":
+                    using (GraphicsPath mp = ExPathF(new RectangleF(cx - 8f * u, cy - 6f * u, 16f * u, 12f * u), 2f * u))
+                        g.DrawPath(p, mp);
+                    g.DrawLine(p, cx - 6.5f * u, cy - 4f * u, cx, cy + 0.8f * u);
+                    g.DrawLine(p, cx, cy + 0.8f * u, cx + 6.5f * u, cy - 4f * u);
+                    break;
+            }
+        }
+    }
+
+    // ---------------- saved-ID list ----------------
+
+    private void ExGridCardPaint(Graphics g)
+    {
+        Rectangle r = exGridCard;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+
+        Rectangle sh = r;
+        sh.Offset(0, P(2));
+        using (GraphicsPath sp = ExPath(sh, P(12)))
+        using (SolidBrush sb = new SolidBrush(Color.FromArgb(24, 30, 70, 130)))
+            g.FillPath(sb, sp);
+
+        using (GraphicsPath path = ExPath(new Rectangle(r.X, r.Y, r.Width - 1, r.Height - 1), P(12)))
+        {
+            using (SolidBrush b = new SolidBrush(ExCard)) g.FillPath(b, path);
+            using (Pen pen = new Pen(ExLine, P(1.2f))) g.DrawPath(pen, path);
+        }
+
+        using (SolidBrush ob = new SolidBrush(ExLime))
+            g.FillRectangle(ob, r.X + P(18), r.Y + P(17), P(3), P(14));
+        using (Font tf = ExFS(13f, FontStyle.Bold))
+            TextRenderer.DrawText(g, "SAVED IRCTC IDS", tf, new Point(r.X + P(28), r.Y + P(15)), ExInk,
+                TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
+
+        int n = grdUsers != null ? grdUsers.Rows.Count : 0;
+        string cnt = n + (n == 1 ? " ID" : " IDs");
+        using (Font cf = ExFS(11.5f, FontStyle.Bold))
+        {
+            int cw = TextRenderer.MeasureText(g, cnt, cf, new Size(500, 50), TF_MEASURE).Width + P(22);
+            Rectangle chip = new Rectangle(r.Right - P(18) - cw, r.Y + P(13), cw, P(22));
+            using (GraphicsPath cp = ExPath(chip, P(11)))
+            using (SolidBrush cb = new SolidBrush(ExBlend(ExLime, Color.White, 0.84f)))
+                g.FillPath(cb, cp);
+            TextRenderer.DrawText(g, cnt, cf, chip, ExDark(ExLime, 70),
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+        }
+    }
+
+    private void ExGridCountChanged(bool resetHot)
+    {
+        if (resetHot) { exHotRow = -1; exHotCol = -1; exHotPrev = Color.Empty; }
+        if (!exGridCard.IsEmpty) Invalidate(new Rectangle(exGridCard.X, exGridCard.Y, exGridCard.Width, P(48)));
+        grdUsers.Invalidate();
+    }
+
+    private void ExGridEmptyPaint(object sender, PaintEventArgs e)
+    {
+        if (grdUsers.Rows.Count > 0) return;
+        int top = grdUsers.ColumnHeadersVisible ? grdUsers.ColumnHeadersHeight : 0;
+        Rectangle r = new Rectangle(0, top, grdUsers.Width, grdUsers.Height - top);
+        if (r.Height < P(70)) return;
+
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        int cx = r.X + r.Width / 2;
+        int iy = r.Y + r.Height / 2 - P(36);
+
+        Color ic = Color.FromArgb(176, 194, 218);
+        using (Pen p = new Pen(ic, P(1.6f)))
+        {
+            p.StartCap = LineCap.Round; p.EndCap = LineCap.Round;
+            using (GraphicsPath bp = ExPath(new Rectangle(cx - P(16), iy, P(32), P(26)), P(5))) g.DrawPath(p, bp);
+            g.DrawLine(p, cx - P(9), iy + P(9), cx + P(9), iy + P(9));
+            g.DrawLine(p, cx - P(9), iy + P(16), cx + P(4), iy + P(16));
+        }
+
+        using (Font f1 = ExFS(13f, FontStyle.Bold))
+            TextRenderer.DrawText(g, "No IRCTC IDs added yet", f1,
+                new Rectangle(r.X, iy + P(34), r.Width, P(22)), ExMuted,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+        using (Font f2 = ExF(11.5f, FontStyle.Regular))
+            TextRenderer.DrawText(g, "Add one using the form above", f2,
+                new Rectangle(r.X, iy + P(56), r.Width, P(20)), Color.FromArgb(150, 166, 190),
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+    }
+
+    private static string ExPillKind(DataGridViewColumn col)
+    {
+        if (col == null) return null;
+        string n = ((col.Name ?? "") + " " + (col.HeaderText ?? "")).ToLowerInvariant();
+        if (n.Contains("delete") || n.Contains("remove")) return "del";
+        if (n.Contains("history")) return "hist";
+        if (n.Contains("action") || n.Contains("edit")) return "act";
+        if (col is DataGridViewButtonColumn || col is DataGridViewLinkColumn) return "act";
+        return null;
+    }
+
+    private void ExGridCellPaint(object sender, DataGridViewCellPaintingEventArgs e)
+    {
+        if (e.ColumnIndex < 0 || e.ColumnIndex >= grdUsers.Columns.Count) return;
+        DataGridViewColumn col = grdUsers.Columns[e.ColumnIndex];
+        string kind = ExPillKind(col);
+        Graphics g = e.Graphics;
+        Rectangle cb = e.CellBounds;
+
+        // header
+        if (e.RowIndex == -1)
+        {
+            using (SolidBrush hb = new SolidBrush(Color.FromArgb(241, 246, 253))) g.FillRectangle(hb, cb);
+            using (Pen lp = new Pen(ExLine)) g.DrawLine(lp, cb.Left, cb.Bottom - 1, cb.Right, cb.Bottom - 1);
+
+            Rectangle tr = kind != null ? cb : new Rectangle(cb.X + P(12), cb.Y, Math.Max(1, cb.Width - P(16)), cb.Height);
+            TextFormatFlags tf = TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis |
+                                 TextFormatFlags.NoPadding | (kind != null ? TextFormatFlags.HorizontalCenter : TextFormatFlags.Left);
+            Font hf = grdUsers.ColumnHeadersDefaultCellStyle.Font ?? grdUsers.Font;
+            TextRenderer.DrawText(g, (col.HeaderText ?? "").ToUpperInvariant(), hf, tr, Color.FromArgb(72, 96, 130), tf);
+            e.Handled = true;
+            return;
+        }
+
+        if (e.RowIndex < 0 || kind == null) return;
+        if (e.FormattedValue is Image) return;   // image columns keep their own icon
+
+        string txt = e.FormattedValue as string;
+        if (txt == null) txt = Convert.ToString(e.Value);
+
+        e.Paint(cb, DataGridViewPaintParts.Background | DataGridViewPaintParts.Border);
+        e.Handled = true;
+        if (string.IsNullOrEmpty(txt)) return;
+
+        Color acc = kind == "del" ? ExRed : (kind == "hist" ? ExPurple : ExBlue);
+        bool hot = e.RowIndex == exHotRow && e.ColumnIndex == exHotCol;
+
+        using (Font pf = ExFS(11.5f, FontStyle.Bold))
+        {
+            int tw = TextRenderer.MeasureText(g, txt, pf, new Size(2000, 60), TF_MEASURE).Width;
+            bool icon = kind == "del" || kind == "hist";
+            int iw = icon ? P(12) + P(6) : 0;
+            int pw = Math.Max(P(40), Math.Min(cb.Width - P(12), tw + iw + P(26)));
+            int ph = Math.Max(P(16), Math.Min(cb.Height - P(10), P(26)));
+            Rectangle pr = new Rectangle(cb.X + (cb.Width - pw) / 2, cb.Y + (cb.Height - ph) / 2, pw, ph);
+
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            Color fill = hot ? acc : ExBlend(acc, Color.White, 0.88f);
+            Color fg = hot ? Color.White : acc;
+            using (GraphicsPath pp = ExPath(pr, ph / 2))
+            {
+                using (SolidBrush b = new SolidBrush(fill)) g.FillPath(b, pp);
+                using (Pen bp = new Pen(hot ? ExDark(acc, 20) : ExBlend(acc, Color.White, 0.55f), P(1f))) g.DrawPath(bp, pp);
+            }
+
+            int x0 = pr.X + (pr.Width - (tw + iw)) / 2;
+            if (icon) ExPillIcon(g, kind, new Rectangle(x0, pr.Y + (pr.Height - P(12)) / 2, P(12), P(12)), fg);
+            TextRenderer.DrawText(g, txt, pf, new Rectangle(x0 + iw, pr.Y, tw + P(2), pr.Height), fg,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
+        }
+    }
+
+    private void ExPillIcon(Graphics g, string kind, Rectangle r, Color c)
+    {
+        using (Pen p = new Pen(c, P(1.4f)))
+        {
+            p.StartCap = LineCap.Round; p.EndCap = LineCap.Round;
+            if (kind == "del")
+            {
+                g.DrawLine(p, r.X, r.Y + P(2), r.Right, r.Y + P(2));
+                g.DrawLine(p, r.X + P(4), r.Y, r.X + P(8), r.Y);
+                using (GraphicsPath tp = ExPath(new Rectangle(r.X + P(2), r.Y + P(3), P(8), P(9)), P(2))) g.DrawPath(p, tp);
+                g.DrawLine(p, r.X + P(5), r.Y + P(6), r.X + P(5), r.Y + P(9));
+                g.DrawLine(p, r.X + P(7), r.Y + P(6), r.X + P(7), r.Y + P(9));
+            }
+            else if (kind == "hist")
+            {
+                int cx = r.X + r.Width / 2, cy = r.Y + r.Height / 2;
+                g.DrawEllipse(p, r.X, r.Y, r.Width, r.Height);
+                g.DrawLine(p, cx, cy - P(3), cx, cy);
+                g.DrawLine(p, cx, cy, cx + P(3), cy + P(2));
+            }
+        }
+    }
+
+    private void ExGridEnter(object sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex < 0 || e.RowIndex >= grdUsers.Rows.Count)
+        {
+            grdUsers.Cursor = Cursors.Default;
+            return;
+        }
+
+        if (exHotRow != e.RowIndex)
+        {
+            ExGridUnhot();
+            DataGridViewRow row = grdUsers.Rows[e.RowIndex];
+            exHotPrev = row.DefaultCellStyle.BackColor;
+            row.DefaultCellStyle.BackColor = Color.FromArgb(243, 248, 255);
+            exHotRow = e.RowIndex;
+        }
+
+        exHotCol = e.ColumnIndex;
+        bool pill = e.ColumnIndex >= 0 && ExPillKind(grdUsers.Columns[e.ColumnIndex]) != null;
+        grdUsers.Cursor = pill ? Cursors.Hand : Cursors.Default;
+        grdUsers.InvalidateRow(e.RowIndex);
+    }
+
+    private void ExGridLeave(object sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex == exHotRow && e.ColumnIndex == exHotCol)
+        {
+            exHotCol = -1;
+            if (exHotRow >= 0 && exHotRow < grdUsers.Rows.Count) grdUsers.InvalidateRow(exHotRow);
+        }
+    }
+
+    private void ExGridUnhot()
+    {
+        if (exHotRow >= 0 && exHotRow < grdUsers.Rows.Count)
+        {
+            grdUsers.Rows[exHotRow].DefaultCellStyle.BackColor = exHotPrev;
+            grdUsers.InvalidateRow(exHotRow);
+        }
+        exHotRow = -1;
+        exHotCol = -1;
+        exHotPrev = Color.Empty;
+        grdUsers.Cursor = Cursors.Default;
     }
 }
