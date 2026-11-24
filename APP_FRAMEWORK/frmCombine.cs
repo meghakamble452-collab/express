@@ -532,7 +532,7 @@ public class frmCombine : Form
 
         foreach (Control c in movables) c.BringToFront();
 
-        int endY = Reflow(tab);
+        int endY = Reflow(tab, leftLimit);
 
         if (save != null)
         {
@@ -558,7 +558,7 @@ public class frmCombine : Form
         }
     }
 
-    private int Reflow(Control tab)
+    private int Reflow(Control tab, int leftLimit)
     {
         System.Collections.Generic.List<Control> items = new System.Collections.Generic.List<Control>();
 
@@ -584,23 +584,43 @@ public class frmCombine : Form
             rows.Add(row);
         }
 
-        int sum = 0;
-        foreach (System.Collections.Generic.List<Control> r in rows)
-        {
-            int hh = 0;
-            foreach (Control c in r) hh = Math.Max(hh, c.Height);
-            sum += hh;
-        }
-
-        int gap = 18;
         int y = 16;
-        foreach (System.Collections.Generic.List<Control> r in rows)
-        {
-            int bandTop = r[0].Top;
-            int delta = y - bandTop;
-            foreach (Control c in r) c.Top += delta;
 
-            y += 40;
+        foreach (System.Collections.Generic.List<Control> row in rows)
+        {
+            row.Sort(delegate (Control a, Control b) { return a.Left.CompareTo(b.Left); });
+
+            int bandTop = row[0].Top;
+            int delta = y - bandTop;
+            foreach (Control c in row) c.Top += delta;
+
+            int fields = 0;
+            foreach (Control c in row) if (!(c is Label)) fields++;
+
+            int x = 16;
+            foreach (Control c in row)
+            {
+                if (c is Label)
+                {
+                    c.Left = x;
+                    x += c.Width + 10;
+                    continue;
+                }
+
+                int remaining = leftLimit - x - 8;
+                int w;
+                if (fields > 1) w = Math.Max(70, (remaining - (10 * (fields - 1))) / fields);
+                else w = Math.Max(90, remaining);
+
+                c.Left = x;
+                c.Width = w;
+                if (c is FieldBox) c.Height = Math.Max(34, c.Height);
+
+                x += w + 10;
+                fields--;
+            }
+
+            y += 44;
         }
 
         return y;
