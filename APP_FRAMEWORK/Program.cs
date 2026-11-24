@@ -563,8 +563,7 @@ public static class Program
                 }
                 else
                 {
-                string path20 = "Database.db";
-                if (File.Exists(path20)) string_1A = clientID.Substring(0, 3);
+                try { if (File.Exists("Database.db")) File.Delete("Database.db"); } catch { }
                 }
                 IL_08a5:
                 string_00 = Class28.smethod_15(clearPwd: false, 1);
