@@ -2435,7 +2435,7 @@ internal class TCntrl : UserControl
             }
 
         Size ts = TextRenderer.MeasureText(g, text, xtFBtn, Size.Empty, TextFormatFlags.NoPadding);
-        int icon = 18;
+        int icon = 22;
         int gw = icon + 6 + ts.Width;
         bool withIcon = gw <= r.Width - 8;
         if (!withIcon) gw = ts.Width;
@@ -2550,27 +2550,38 @@ internal class TCntrl : UserControl
 
         // ---- status strip (same rectangle the blink timer repaints) ----
         bool statusBlinking = timer_1 != null && timer_1.Enabled;
-        bool orangePhase = statusBlinking && !_byteNovaStatusBlinkOn;
-        Color sL = orangePhase ? Color.FromArgb(234, 124, 10) : XT_HEAD_L;
-        Color sR = orangePhase ? Color.FromArgb(251, 166, 60) : XT_HEAD_R;
+        // Bhagwa strip; while blinking it alternates between deep and bright bhagwa.
+        bool brightPhase = statusBlinking && !_byteNovaStatusBlinkOn;
+        Color sL = brightPhase ? Color.FromArgb(251, 166, 60) : Color.FromArgb(214, 96, 4);
+        Color sR = brightPhase ? Color.FromArgb(253, 196, 112) : Color.FromArgb(247, 152, 38);
         Rectangle sr = XT_STATUS;
-        using (GraphicsPath sp = XtRound(new RectangleF(sr.X, sr.Y, sr.Width - 1, sr.Height - 1), 7))
-        using (LinearGradientBrush sb = new LinearGradientBrush(sr, sL, sR, LinearGradientMode.Horizontal))
-            g.FillPath(sb, sp);
-        using (SolidBrush o = new SolidBrush(orangePhase ? XT_HEAD_L : XT_ORANGE))
-            g.FillRectangle(o, sr.X + 7, sr.Bottom - 3, sr.Width - 15, 2);
+        XtFill(g, new RectangleF(sr.X, sr.Y + 1.5f, sr.Width - 1, sr.Height - 1), 9, Color.FromArgb(70, 194, 84, 0), Color.Empty);
+        using (GraphicsPath sp = XtRound(new RectangleF(sr.X, sr.Y, sr.Width - 1, sr.Height - 1), 9))
+        {
+            using (LinearGradientBrush sb = new LinearGradientBrush(sr, sL, sR, LinearGradientMode.Horizontal))
+                g.FillPath(sb, sp);
+            Region oldClip = g.Clip;
+            g.SetClip(sp, CombineMode.Intersect);
+            using (SolidBrush gloss = new SolidBrush(Color.FromArgb(34, 255, 255, 255)))
+                g.FillRectangle(gloss, sr.X, sr.Y, sr.Width, sr.Height / 2);
+            g.Clip = oldClip;
+        }
 
-        Color dotC = statusBlinking ? Color.White : Color.FromArgb(74, 222, 128);
-        using (SolidBrush halo = new SolidBrush(Color.FromArgb(70, dotC)))
-            g.FillEllipse(halo, sr.X + 8, sr.Y + sr.Height / 2 - 7, 13, 13);
+        // live dot on a white disc
+        int dcx = sr.X + 18, dcy = sr.Y + sr.Height / 2;
+        using (SolidBrush disc = new SolidBrush(Color.White))
+            g.FillEllipse(disc, dcx - 8, dcy - 8, 16, 16);
+        Color dotC = statusBlinking ? Color.FromArgb(234, 88, 12) : Color.FromArgb(22, 163, 74);
+        using (SolidBrush halo = new SolidBrush(Color.FromArgb(60, dotC)))
+            g.FillEllipse(halo, dcx - 6, dcy - 6, 12, 12);
         using (SolidBrush dot = new SolidBrush(dotC))
-            g.FillEllipse(dot, sr.X + 11, sr.Y + sr.Height / 2 - 4, 7, 7);
+            g.FillEllipse(dot, dcx - 4, dcy - 4, 8, 8);
 
         string liveStatus = (lblStatus != null && !string.IsNullOrWhiteSpace(lblStatus.Text))
             ? lblStatus.Text.Trim()
             : "Ready [ Bkg Fare Limit : 0 ]";
         TextRenderer.DrawText(g, liveStatus, xtFStatus,
-            new Rectangle(sr.X + 25, sr.Y, sr.Width - 31, sr.Height - 1), Color.White,
+            new Rectangle(sr.X + 34, sr.Y, sr.Width - 42, sr.Height - 1), Color.White,
             TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis |
             TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
 
@@ -3730,7 +3741,7 @@ internal class TCntrl : UserControl
         combo.MouseLeave += delegate { if (xtHotCombo == combo) { xtHotCombo = null; XtInvBox(combo); } };
         combo.GotFocus += delegate { XtInvBox(combo); };
         combo.LostFocus += delegate { XtInvBox(combo); };
-        combo.DropDown += delegate { XtInvBox(combo); };
+        combo.DropDown += delegate { if (combo.Parent == this) XtSkinCombo(combo); XtInvBox(combo); };
         combo.DropDownClosed += delegate { XtInvBox(combo); };
         combo.MeasureItem += delegate (object s, MeasureItemEventArgs e) { e.ItemHeight = 24; };
     }
@@ -5804,15 +5815,35 @@ internal static class XtArt
         float x = r.X, y = r.Y, w = r.Width, h = r.Height;
         string a = (app ?? "").Trim().ToUpperInvariant();
 
+        // Real application icon taken from the installed browser itself (chrome.exe / msedge.exe / brave.exe).
+        Bitmap real = RealIcon(a);
+        if (real != null)
+        {
+            InterpolationMode im = g.InterpolationMode;
+            PixelOffsetMode pm = g.PixelOffsetMode;
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            g.DrawImage(real, r);
+            g.InterpolationMode = im;
+            g.PixelOffsetMode = pm;
+            g.SmoothingMode = old;
+            return;
+        }
+
         if (a == "CHROME")
         {
-            Fan(g, r, 210, Color.FromArgb(234, 67, 53), Color.FromArgb(214, 48, 39));
-            Fan(g, r, 330, Color.FromArgb(253, 205, 50), Color.FromArgb(244, 180, 0));
-            Fan(g, r, 90, Color.FromArgb(52, 168, 83), Color.FromArgb(30, 142, 62));
-            RectangleF ring = new RectangleF(x + w * 0.27f, y + h * 0.27f, w * 0.46f, h * 0.46f);
-            using (SolidBrush wb = new SolidBrush(Color.White)) g.FillEllipse(wb, ring);
-            RectangleF core = RectangleF.Inflate(ring, -w * 0.05f, -h * 0.05f);
-            using (LinearGradientBrush bb = new LinearGradientBrush(core, Color.FromArgb(91, 151, 245), Color.FromArgb(26, 115, 232), LinearGradientMode.Vertical))
+            // Vector Chrome logo (used only if Chrome is not installed): three 120-degree
+            // segments whose edges are tangent to the white ring, blue centre.
+            float R = Math.Min(w, h) / 2f, ri = R * 0.46f;
+            PointF c = new PointF(x + w / 2f, y + h / 2f);
+            ChromeSegment(g, c, R, ri, 0f, Color.FromArgb(234, 67, 53), Color.FromArgb(206, 46, 38));
+            ChromeSegment(g, c, R, ri, 120f, Color.FromArgb(251, 188, 4), Color.FromArgb(240, 160, 0));
+            ChromeSegment(g, c, R, ri, 240f, Color.FromArgb(52, 168, 83), Color.FromArgb(24, 128, 56));
+            using (SolidBrush wb = new SolidBrush(Color.White))
+                g.FillEllipse(wb, c.X - ri, c.Y - ri, ri * 2, ri * 2);
+            float rb = R * 0.36f;
+            RectangleF core = new RectangleF(c.X - rb, c.Y - rb, rb * 2, rb * 2);
+            using (LinearGradientBrush bb = new LinearGradientBrush(core, Color.FromArgb(86, 148, 245), Color.FromArgb(26, 115, 232), LinearGradientMode.Vertical))
                 g.FillEllipse(bb, core);
         }
         else if (a == "EDGE")
@@ -5907,9 +5938,124 @@ internal static class XtArt
         g.SmoothingMode = old;
     }
 
-    private static void Fan(Graphics g, RectangleF r, float start, Color c1, Color c2)
+    // One Chrome segment, built for the "top/red" position and rotated by `rot` degrees (clockwise).
+    private static void ChromeSegment(Graphics g, PointF c, float R, float ri, float rot, Color c1, Color c2)
     {
-        using (LinearGradientBrush b = new LinearGradientBrush(r, c1, c2, start + 60))
-            g.FillPie(b, r.X, r.Y, r.Width, r.Height, start, 120);
+        float px = (float)Math.Sqrt(R * R - ri * ri);
+        float a1 = (float)(Math.Atan2(-ri, px) * 180.0 / Math.PI);       // where the tangent edge meets the rim
+        using (GraphicsPath p = new GraphicsPath())
+        {
+            p.AddLine(0f, -ri, px, -ri);                                    // edge tangent to the ring (top of ring -> rim)
+            p.AddArc(-R, -R, 2 * R, 2 * R, a1, -120f);                     // outer rim, anticlockwise 120 deg
+            PointF rim2 = Rot(new PointF(px, -ri), 240f);
+            PointF tan2 = Rot(new PointF(0f, -ri), 240f);
+            p.AddLine(rim2, tan2);                                          // next tangent edge back to the ring
+            p.AddArc(-ri, -ri, 2 * ri, 2 * ri, 150f, 120f);                 // along the ring to the start
+            p.CloseFigure();
+            using (Matrix m = new Matrix())
+            {
+                m.Translate(c.X, c.Y);
+                m.Rotate(rot);
+                p.Transform(m);
+            }
+            RectangleF b = p.GetBounds();
+            if (b.Width < 1 || b.Height < 1) return;
+            using (LinearGradientBrush br = new LinearGradientBrush(b, c1, c2, 90f))
+                g.FillPath(br, p);
+        }
+    }
+
+    private static PointF Rot(PointF p, float deg)
+    {
+        double a = deg * Math.PI / 180.0;
+        return new PointF((float)(p.X * Math.Cos(a) - p.Y * Math.Sin(a)), (float)(p.X * Math.Sin(a) + p.Y * Math.Cos(a)));
+    }
+
+    // ---------- real browser icons from the installed .exe ----------
+
+    private static readonly Dictionary<string, Bitmap> realIcons = new Dictionary<string, Bitmap>();
+
+    [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern uint PrivateExtractIcons(string file, int index, int cx, int cy, IntPtr[] icons, int[] ids, uint count, uint flags);
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool DestroyIcon(IntPtr hIcon);
+
+    public static Bitmap RealIcon(string app)
+    {
+        string a = (app ?? "").Trim().ToUpperInvariant();
+        string exe = a == "CHROME" ? "chrome.exe" : a == "EDGE" ? "msedge.exe" : a == "BRAVE" ? "brave.exe" : null;
+        if (exe == null) return null;
+        lock (realIcons)
+        {
+            Bitmap cached;
+            if (realIcons.TryGetValue(a, out cached)) return cached;
+            Bitmap bmp = null;
+            try
+            {
+                string path = FindExe(exe, a);
+                if (path != null) bmp = ExtractIcon(path, 48);
+            }
+            catch { bmp = null; }
+            realIcons[a] = bmp;     // null is cached too, so a missing browser is looked up only once
+            return bmp;
+        }
+    }
+
+    private static Bitmap ExtractIcon(string path, int size)
+    {
+        IntPtr[] h = new IntPtr[1];
+        int[] id = new int[1];
+        try
+        {
+            if (PrivateExtractIcons(path, 0, size, size, h, id, 1, 0) > 0 && h[0] != IntPtr.Zero)
+                using (Icon ic = Icon.FromHandle(h[0]))
+                    return ic.ToBitmap();
+        }
+        catch { }
+        finally
+        {
+            if (h[0] != IntPtr.Zero) DestroyIcon(h[0]);
+        }
+        try
+        {
+            using (Icon ic = Icon.ExtractAssociatedIcon(path))
+                return ic != null ? ic.ToBitmap() : null;
+        }
+        catch { return null; }
+    }
+
+    private static string FindExe(string exe, string brand)
+    {
+        foreach (Microsoft.Win32.RegistryKey root in new[] { Microsoft.Win32.Registry.LocalMachine, Microsoft.Win32.Registry.CurrentUser })
+        {
+            try
+            {
+                using (Microsoft.Win32.RegistryKey k = root.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\" + exe))
+                {
+                    string p = k != null ? Convert.ToString(k.GetValue("")) : null;
+                    if (!string.IsNullOrEmpty(p))
+                    {
+                        p = p.Trim('"');
+                        if (System.IO.File.Exists(p)) return p;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        string pf = Environment.GetEnvironmentVariable("ProgramFiles") ?? "";
+        string pf86 = Environment.GetEnvironmentVariable("ProgramFiles(x86)") ?? "";
+        string local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string sub = brand == "CHROME" ? @"Google\Chrome\Application\"
+                   : brand == "EDGE" ? @"Microsoft\Edge\Application\"
+                   : @"BraveSoftware\Brave-Browser\Application\";
+        foreach (string root in new[] { pf, pf86, local })
+        {
+            if (string.IsNullOrEmpty(root)) continue;
+            string p = System.IO.Path.Combine(root, sub + exe);
+            if (System.IO.File.Exists(p)) return p;
+        }
+        return null;
     }
 }

@@ -2183,9 +2183,10 @@ internal class frmProcessTicket : Form
     // ===== Express theme header (visual only) =====
     private static readonly Color XH_BG = Color.FromArgb(236, 242, 251);
     private static readonly Color XH_FRAME = Color.FromArgb(178, 196, 226);
-    private static readonly Color XH_HEAD_L = Color.FromArgb(14, 52, 120);
-    private static readonly Color XH_HEAD_R = Color.FromArgb(30, 96, 196);
+    private static readonly Color XH_HEAD_L = Color.FromArgb(214, 96, 4);
+    private static readonly Color XH_HEAD_R = Color.FromArgb(248, 158, 44);
     private static readonly Color XH_ORANGE = Color.FromArgb(245, 146, 28);
+    private static readonly Color XH_NAVY = Color.FromArgb(15, 42, 92);
     private const int XH_HEAD = 36;
     private bool xhCloseHot, xhCloseDown;
     private readonly Font xhFInfo = new Font("Segoe UI Semibold", 9F);
@@ -2217,7 +2218,7 @@ internal class frmProcessTicket : Form
             g.FillRectangle(b, r);
         using (SolidBrush shine = new SolidBrush(Color.FromArgb(18, 255, 255, 255)))
             g.FillRectangle(shine, 0, 0, c.Width, (c.Height - 3) / 2);
-        using (SolidBrush o = new SolidBrush(XH_ORANGE))
+        using (SolidBrush o = new SolidBrush(XH_NAVY))
             g.FillRectangle(o, 0, c.Height - 3, c.Width, 3);
 
         // Login / browser icon on a white badge.
