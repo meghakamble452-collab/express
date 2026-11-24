@@ -377,17 +377,13 @@ public class frmCombine : Form
     {
         foreach (Control c in p.Controls)
         {
-            if (c == skip) continue;
+            if (skip != null && (c == skip || InsideOf(c, skip))) continue;
 
             if (c is FieldBox) { list.Add(c); continue; }
             if (c is TextBox || c is ComboBox || c is Label || c is CheckBox) { list.Add(c); continue; }
             if (c is Button || c is ListBox || c is DataGridView) continue;
 
-            if (c is Panel)
-            {
-                CollectMovables(c, skip, list);
-                continue;
-            }
+            if (c is Panel) CollectMovables(c, skip, list);
         }
     }
 
@@ -428,14 +424,29 @@ public class frmCombine : Form
     {
         if (tab == null) return;
 
-        Panel listPanel = null;
-        foreach (Control c in tab.Controls)
+        System.Collections.Generic.List<Control> all = new System.Collections.Generic.List<Control>();
+        CollectAll(tab, all);
+
+        ListBox lb = null;
+        foreach (Control c in all)
         {
-            Panel p = c as Panel;
-            if (p != null && !(p is FieldBox) && HasListBox(p)) { listPanel = p; break; }
+            ListBox x = c as ListBox;
+            if (x != null) { lb = x; break; }
         }
 
-        int leftLimit = listPanel != null ? listPanel.Left - 14 : tab.ClientSize.Width - 240;
+        Control listHost = null;
+        int leftLimit = tab.ClientSize.Width - 240;
+
+        if (lb != null && lb.Parent != null && lb.Parent != tab)
+        {
+            listHost = lb.Parent;
+            Point pt = tab.PointToClient(listHost.PointToScreen(lb.Location));
+            leftLimit = pt.X - 14;
+        }
+        else if (lb != null && lb.Parent == tab)
+        {
+            leftLimit = lb.Left - 14;
+        }
 
         ShortenLabels(tab);
 
@@ -443,12 +454,9 @@ public class frmCombine : Form
         CheckBox pwd = null;
         bool pwdDone = false;
 
-        System.Collections.Generic.List<Control> all = new System.Collections.Generic.List<Control>();
-        CollectAll(tab, all);
-
         foreach (Control c in all)
         {
-            if (listPanel != null && InsideOf(c, listPanel)) continue;
+            if (listHost != null && InsideOf(c, listHost)) continue;
 
             CheckBox chk = c as CheckBox;
             if (chk != null && (chk.Text ?? "").ToUpperInvariant().Contains("SHOW"))
@@ -462,7 +470,7 @@ public class frmCombine : Form
         }
 
         System.Collections.Generic.List<Control> movables = new System.Collections.Generic.List<Control>();
-        CollectMovables(tab, listPanel, movables);
+        CollectMovables(tab, listHost, movables);
 
         foreach (Control c in movables) MoveTo(c, tab);
 
@@ -485,8 +493,9 @@ public class frmCombine : Form
         foreach (Control c in tab.Controls)
         {
             Panel p = c as Panel;
-            if (p == null || p == listPanel || p is FieldBox) continue;
-            p.Visible = false;
+            if (p == null || p is FieldBox) continue;
+            if (listHost != null && (p == listHost || InsideOf(listHost, p))) continue;
+            if (p.Controls.Count == 0) p.Visible = false;
         }
 
         foreach (Control c in movables) c.BringToFront();
