@@ -53,23 +53,44 @@ namespace APP_FRAMEWORK
         private bool exDrag;
         private int exDragX, exDragY;
 
-        private static readonly Color ExBlue = Color.FromArgb(59, 132, 247);
-        private static readonly Color ExBlue2 = Color.FromArgb(148, 198, 253);
-        private static readonly Color ExGreen = UiTheme.Green;
-        private static readonly Color ExBoxBg = Color.FromArgb(88, 145, 230);
+        // Express header palette: light white -> soft blue body, dark ink text, bhagwa (saffron) highlights.
+        private static readonly Color ExBlue = Color.FromArgb(37, 99, 235);
+        private static readonly Color ExNavyA = Color.FromArgb(10, 22, 52);
+        private static readonly Color ExNavyB = Color.FromArgb(24, 50, 112);
+        private static readonly Color ExBgA = Color.FromArgb(255, 255, 255);
+        private static readonly Color ExBgB = Color.FromArgb(221, 233, 251);
+        private static readonly Color ExEdge = Color.FromArgb(168, 188, 222);
+        private static readonly Color ExInk = Color.FromArgb(15, 34, 78);
+        private static readonly Color ExSaffron = Color.FromArgb(249, 140, 22);
+        private static readonly Color ExSaffronL = Color.FromArgb(253, 186, 92);
+        private static readonly Color ExSaffronD = Color.FromArgb(214, 96, 4);
+        private static readonly Color ExMuted = Color.FromArgb(100, 116, 139);
+        private static readonly Color ExGreen = Color.FromArgb(22, 163, 74);
+        private static readonly Color ExBoxBg = Color.White;
 
         private static readonly Color ExCUser = Color.FromArgb(99, 102, 241);
         private static readonly Color ExCIrctc = Color.FromArgb(124, 58, 237);
         private static readonly Color ExCBank = Color.FromArgb(13, 148, 136);
-        private static readonly Color ExCNew = Color.FromArgb(22, 163, 74);
+        private static readonly Color ExCNew = Color.FromArgb(234, 108, 10);
         private static readonly Color ExCProc = Color.FromArgb(37, 99, 235);
-        private static readonly Color ExCProxy = Color.FromArgb(217, 119, 6);
-        private static readonly Color ExCBypass = Color.FromArgb(192, 38, 211);
+        private static readonly Color ExCProxy = Color.FromArgb(8, 145, 178);
+        private static readonly Color ExCBypass = Color.FromArgb(219, 39, 119);
         private static readonly Color ExCBackup = Color.FromArgb(71, 85, 105);
         private static readonly Color ExCToken = Color.FromArgb(8, 145, 178);
-        private static readonly Color ExCPower = Color.FromArgb(234, 108, 26);
+        private static readonly Color ExCPower = Color.FromArgb(234, 108, 10);
         private static readonly Color ExCRed = Color.FromArgb(220, 38, 38);
         private static readonly Color ExKeyCol = Color.FromArgb(255, 226, 148);
+        private int exLastHalf = -1;
+
+        private static void ExBuffer(Control c)
+        {
+            try
+            {
+                typeof(Control).GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .SetValue(c, true, null);
+            }
+            catch { }
+        }
 
         private static bool ExIsButton(Control c)
         {
@@ -148,6 +169,7 @@ namespace APP_FRAMEWORK
             exCanvas = new Panel();
             exCanvas.Dock = DockStyle.Fill;
             exCanvas.BackColor = UiTheme.Bg;
+            ExBuffer(exCanvas);
             exCanvas.Paint += ExCanvasPaint;
             exCanvas.MouseDown += ExCanvasDown;
             exCanvas.MouseMove += ExCanvasMove;
@@ -156,7 +178,7 @@ namespace APP_FRAMEWORK
             exCanvas.BringToFront();
 
             exLogo = new Panel();
-            exLogo.BackColor = Color.White;
+            exLogo.BackColor = Color.Transparent;   // rounded tile is painted with AA; no square corners
             exLogo.Paint += ExLogoPaint;
             Image logoImg = null;
             if (logo is PictureBox pb) logoImg = pb.Image;
@@ -172,7 +194,7 @@ namespace APP_FRAMEWORK
             if (boxes.Count > 1)
             {
                 exModeBox = new Panel();
-                exModeBox.BackColor = ExBoxBg;
+                exModeBox.BackColor = Color.Transparent;
                 exModeBox.Paint += ExModeBoxPaint;
                 exCanvas.Controls.Add(exModeBox);
 
@@ -194,6 +216,7 @@ namespace APP_FRAMEWORK
 
             exInfo = new Panel();
             exInfo.BackColor = Color.Transparent;
+            ExBuffer(exInfo);
             exInfo.Paint += ExInfoPaint;
             exCanvas.Controls.Add(exInfo);
 
@@ -210,7 +233,8 @@ namespace APP_FRAMEWORK
             exDateFont = ExCached("Segoe UI Semibold", 15f, FontStyle.Bold, exK);
 
             exClockPill = new Panel();
-            exClockPill.BackColor = Color.White;
+            exClockPill.BackColor = Color.Transparent;
+            ExBuffer(exClockPill);
             exClockPill.Paint += ExClockPaint;
             exCanvas.Controls.Add(exClockPill);
 
@@ -235,6 +259,11 @@ namespace APP_FRAMEWORK
             exClockCap.TextAlign = ContentAlignment.MiddleLeft;
             exClockCap.Text = "Current Time";
             exClockPill.Controls.Add(exClockCap);
+
+            // The LED clock is painted directly (7-segment digits); the text labels stay as value holders only.
+            exDateTxt.Visible = false;
+            exTimeTxt.Visible = false;
+            exClockCap.Visible = false;
 
             Control resetHit = ExFindClickable(resetBox) ?? ExFind(this, "bnResetGlyph") ?? resetBox;
             if (resetHit != null)
@@ -356,11 +385,12 @@ namespace APP_FRAMEWORK
                 if (exCanvas == null) return;
                 ExTameLeftovers();
                 int rad = ExS(16, exK);
-                ExRoundRegion(this, rad);
-                ExRoundRegion(exCanvas, rad);
-                if (exModeBox != null) ExRoundRegion(exModeBox, ExS(12, exK));
-                if (exClockPill != null) ExRoundRegion(exClockPill, ExS(12, exK));
-                foreach (Control c in exPills) ExRoundRegion(c, ExS(11, exK));
+                ExRoundRegion(this, rad);   // the window itself still needs a shape; its edge is masked by an AA border in ExCanvasPaint
+                // Everything inside is painted with anti-aliased rounded shapes on transparent panels -> no Region staircase.
+                ExClearRegion(exCanvas);
+                ExClearRegion(exModeBox);
+                ExClearRegion(exClockPill);
+                foreach (Control c in exPills) ExClearRegion(c);
             }
             catch { }
         }
@@ -398,7 +428,7 @@ namespace APP_FRAMEWORK
                 if (wa.Width < 200 || wa.Height < 120) return;
 
                 exK = Math.Max(0.70f, Math.Min(1.25f, wa.Width / 1920f));
-                exBarH = ExS(150, exK);
+                exBarH = ExS(134, exK);   // nav buttons end a hair above the bottom edge
 
                 int needW = Math.Min(wa.Width - 20, ExS(1720, exK));
                 int needH = exBarH;
@@ -609,86 +639,10 @@ namespace APP_FRAMEWORK
             Panel p = new Panel();
             p.BackColor = Color.Transparent;
             p.Tag = new object[] { cap, val, valCol };
+            ExBuffer(p);
             p.Paint += ExInfoChipPaint;
             exInfo.Controls.Add(p);
             return p;
-        }
-
-        private int ExChipW(Panel p)
-        {
-            object[] m = p.Tag as object[];
-            if (m == null) return ExS(90, exK);
-            Font fc = ExCached("Segoe UI Semibold", 9.5f, FontStyle.Bold, exK);
-            Font fv = ExCached("Segoe UI", 20f, FontStyle.Regular, exK);
-            return TextRenderer.MeasureText((string)m[0], fc).Width
-                 + TextRenderer.MeasureText(Convert.ToString(m[1]), fv).Width
-                 + ExS(36, exK);
-        }
-
-        private void ExInfoPaint(object sender, PaintEventArgs e)
-        {
-            try
-            {
-                Panel p = sender as Panel;
-                if (p == null || p.Width < 20 || p.Height < 10) return;
-
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                Rectangle r = new Rectangle(0, 0, p.Width - 1, p.Height - 1);
-
-                using (GraphicsPath path = ExRounded(r, ExS(10, exK)))
-                {
-                    using (SolidBrush b = new SolidBrush(Color.FromArgb(30, 255, 255, 255)))
-                        e.Graphics.FillPath(b, path);
-                    using (Pen pen = new Pen(Color.FromArgb(60, 255, 255, 255), 1f))
-                        e.Graphics.DrawPath(pen, path);
-                }
-
-                Font f = ExCached("Segoe UI Semibold", 9f, FontStyle.Bold, exK);
-                TextRenderer.DrawText(e.Graphics, "USER INFO", f,
-                    new Rectangle(ExS(11, exK), 0, ExS(74, exK), p.Height), Color.FromArgb(216, 255, 255, 255),
-                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
-            }
-            catch { }
-        }
-
-        private void ExInfoChipPaint(object sender, PaintEventArgs e)
-        {
-            try
-            {
-                Panel p = sender as Panel;
-                if (p == null || p.Width < 10 || p.Height < 8) return;
-                object[] m = p.Tag as object[];
-                if (m == null) return;
-
-                string cap = (string)m[0];
-                string val = Convert.ToString(m[1]);
-                Color vc = (Color)m[2];
-
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                Rectangle r = new Rectangle(0, 0, p.Width - 1, p.Height - 1);
-
-                using (GraphicsPath path = ExRounded(r, ExS(9, exK)))
-                {
-                    using (SolidBrush b = new SolidBrush(Color.FromArgb(26, 255, 255, 255)))
-                        e.Graphics.FillPath(b, path);
-                    using (Pen pen = new Pen(Color.FromArgb(70, 255, 255, 255), 1f))
-                        e.Graphics.DrawPath(pen, path);
-                }
-
-                Font fc = ExCached("Segoe UI Semibold", 9.5f, FontStyle.Bold, exK);
-                Font fv = ExCached("Segoe UI", 20f, FontStyle.Regular, exK);
-                int cw = TextRenderer.MeasureText(cap, fc).Width;
-                int pad = ExS(10, exK);
-
-                TextRenderer.DrawText(e.Graphics, cap, fc,
-                    new Rectangle(pad, ExS(4, exK), cw + 2, p.Height - ExS(8, exK)), Color.White,
-                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
-
-                TextRenderer.DrawText(e.Graphics, val, fv,
-                    new Rectangle(pad + cw + ExS(9, exK), ExS(4, exK), Math.Max(8, p.Width - cw - pad - ExS(20, exK)), p.Height - ExS(8, exK)), ExKeyCol,
-                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
-            }
-            catch { }
         }
 
         private void ExValidityTickTick(object sender, EventArgs e)
@@ -739,13 +693,14 @@ namespace APP_FRAMEWORK
         {
             Panel p = new Panel();
             p.Size = new Size(ExS(w, exK), ExS(h, exK));
-            p.BackColor = accent;
+            p.BackColor = Color.Transparent;   // colour comes from Tag; parent shows through the AA corners
             p.Cursor = Cursors.Hand;
             p.Tag = new object[] { text, kind, accent, icon };
             p.Paint += ExPillPaint;
+            ExBuffer(p);
             exHov[p] = 0f;
             exPills.Add(p);
-            ExRoundRegion(p, ExS(11, exK));
+            // no Region: the transparent panel lets the anti-aliased rounded face show smooth corners
             return p;
         }
 
@@ -764,39 +719,48 @@ namespace APP_FRAMEWORK
                 int W = exCanvas.Width;
                 if (W < 20 || exCanvas.Height < 20) return;
 
-                if (exLogo != null) exLogo.Bounds = new Rectangle(ExS(14, k), ExS(16, k), ExS(56, k), ExS(56, k));
+                if (exLogo != null) exLogo.Bounds = new Rectangle(ExS(14, k), ExS(13, k), ExS(56, k), ExS(56, k));
 
-                int rowY = ExS(88, k);
+                int rowY = ExS(86, k);
+                int rowH = ExS(44, k);
 
-                if (exSwitchRow.Count > 0 && exModeBox != null)
+                if (exSwitchRow.Count > 0)
                 {
-                    exSwitchRow[0].Bounds = new Rectangle(ExS(16, k), rowY, ExS(150, k), ExS(46, k));
+                    exSwitchRow[0].Bounds = new Rectangle(ExS(16, k), rowY, ExS(150, k), rowH);
                     if (exSwitchRow[0].Controls.Count > 0)
-                        exSwitchRow[0].Controls[0].Location = new Point(ExS(104, k), ExS(12, k));
+                    {
+                        exSwitchRow[0].Controls[0].Size = new Size(ExS(44, k), ExS(24, k));
+                        exSwitchRow[0].Controls[0].Location = new Point(ExS(100, k), (rowH - ExS(24, k)) / 2);
+                    }
                 }
 
                 if (exModeBox != null)
                 {
-                    int boxW = ExS(24, k) + (exSwitchRow.Count - 1) * ExS(74, k);
-                    exModeBox.Bounds = new Rectangle(ExS(16, k) + ExS(150, k) + ExS(14, k), rowY - ExS(2, k), boxW, ExS(46, k));
+                    int boxW = ExS(24, k) + Math.Max(1, exSwitchRow.Count - 1) * ExS(74, k);
+                    int capW = TextRenderer.MeasureText("BOOKING MODE", ExCached("Segoe UI", 10f, FontStyle.Bold, k)).Width + ExS(22, k);
+                    boxW = Math.Max(boxW, capW);
+                    exModeBox.Bounds = new Rectangle(ExS(16, k) + ExS(150, k) + ExS(14, k), rowY, boxW, rowH);
 
                     for (int i = 1; i < exSwitchRow.Count; i++)
                     {
                         Panel r = exSwitchRow[i];
-                        r.Bounds = new Rectangle(ExS(12, k) + (i - 1) * ExS(74, k), ExS(22, k), ExS(70, k), ExS(20, k));
+                        int rowsW = (exSwitchRow.Count - 1) * ExS(74, k) - ExS(4, k);
+                        int ox = Math.Max(ExS(6, k), (boxW - rowsW) / 2);
+                        r.Bounds = new Rectangle(ox + (i - 1) * ExS(74, k), ExS(19, k), ExS(70, k), ExS(22, k));
+                        if (r.BackColor != Color.Transparent) r.BackColor = Color.Transparent;
                         if (r.Controls.Count > 0)
                         {
-                            r.Controls[0].Size = new Size(ExS(38, k), ExS(20, k));
-                            r.Controls[0].Location = new Point(ExS(18, k), 0);
+                            if (r.Controls[0].BackColor != Color.Transparent) r.Controls[0].BackColor = Color.Transparent;
+                            r.Controls[0].Size = new Size(ExS(42, k), ExS(22, k));
+                            r.Controls[0].Location = new Point(ExS(14, k), 0);
                         }
                     }
                 }
 
-                int pillH = ExS(44, k);
-                int topY = ExS(24, k);
-
-                int closeW = ExS(44, k);
-                int gap = ExS(7, k);
+                int topY = ExS(21, k);
+                int btnH = ExS(40, k);
+                int closeW = ExS(46, k);
+                int gap = ExS(8, k);
                 int right = W - ExS(18, k);
 
                 int closeX = right - closeW;
@@ -812,78 +776,56 @@ namespace APP_FRAMEWORK
                 int userX = hasUser ? (powerX - gap - ExS(24, k) - gap - userW) : powerX;
                 int infoRight = hasUser ? userX : powerX;
 
-
-                int clockX = ExS(330, k);
+                int clockX = ExS(318, k);
 
                 if (exClockPill != null)
-                {
-                    Font fd = ExCached("Segoe UI Semibold", 10.5f, FontStyle.Bold, k);
-                    Font ft = ExCached("Segoe UI Semibold", 18f, FontStyle.Bold, k);
-                    Font fc0 = ExCached("Segoe UI Semibold", 9f, FontStyle.Bold, k);
-                    exDateTxt.Font = fd;
-                    exTimeTxt.Font = ft;
-                    if (exClockCap != null) exClockCap.Font = fc0;
+                    exClockPill.Bounds = new Rectangle(clockX, ExS(8, k), ExClockWidth(k), ExS(66, k));
 
-                    int cw0 = TextRenderer.MeasureText("Current Time", fc0).Width + ExS(8, k);
-                    int dw = TextRenderer.MeasureText("00-00-0000", fd).Width + ExS(4, k);
-                    int tw = TextRenderer.MeasureText("00:00:00", ft).Width + ExS(6, k);
-                    int ph = ExS(52, k);
-                    int pw = cw0 + dw + tw + ExS(26, k);
-
-                    exClockPill.Bounds = new Rectangle(clockX, ExS(5, k), pw, ph);
-
-                    int dx = ExS(12, k);
-                    if (exClockCap != null) exClockCap.Bounds = new Rectangle(dx, 0, cw0, ph);
-                    dx += cw0;
-                    exDateTxt.Bounds = new Rectangle(dx, 0, dw, ph);
-                    exTimeTxt.Bounds = new Rectangle(dx + dw + ExS(4, k), 0, Math.Max(20, pw - dx - dw - ExS(14, k)), ph);
-                }
-
-                int infoX = clockX + (exClockPill != null ? exClockPill.Width : 0) + ExS(12, k);
+                int infoX = clockX + (exClockPill != null ? exClockPill.Width : 0) + ExS(14, k);
 
                 if (exInfo != null)
                 {
-                    int maxRel = Math.Max(ExS(160, k), infoRight - ExS(10, k) - infoX);
-                    int cxp = ExS(74, k);
-                    int chipTop = ExS(4, k);
-                    int chipH = ExS(48, k);
+                    int maxRel = Math.Max(ExS(160, k), infoRight - ExS(14, k) - infoX);
+                    int cxp = ExS(46, k);
+                    int chipTop = ExS(7, k);
+                    int chipH = ExS(52, k);
                     Panel[] chips = { exChId, exChVal, exChVer, exChPay };
                     foreach (Panel cp in chips)
                     {
                         if (cp == null) continue;
                         int cwp = ExChipW(cp);
-                        if (cxp + cwp > maxRel)
-                            cwp = Math.Max(ExS(52, k), maxRel - cxp);
+                        if (cxp + cwp > maxRel - ExS(8, k))
+                            cwp = Math.Max(ExS(52, k), maxRel - ExS(8, k) - cxp);
                         cp.Bounds = new Rectangle(cxp, chipTop, cwp, chipH);
-                        ExRoundRegion(cp, ExS(9, k));
-                        cxp += cwp + ExS(6, k);
+                        cp.Region = null;   // smooth AA corners are painted; no jagged Region
+                        cxp += cwp + ExS(7, k);
                     }
 
-                    int infoW = Math.Max(ExS(160, k), Math.Min(cxp, maxRel));
-                    exInfo.Bounds = new Rectangle(infoX, ExS(8, k), infoW, ExS(56, k));
+                    int infoW = Math.Max(ExS(160, k), Math.Min(cxp + ExS(1, k), maxRel));
+                    exInfo.Bounds = new Rectangle(infoX, ExS(8, k), infoW, ExS(66, k));
                 }
 
                 foreach (Control c in exCanvas.Controls)
                 {
                     if (!(c.Tag is object[] t)) continue;
                     int kind = (int)t[1];
-                    if (kind == 1) c.Bounds = new Rectangle(userX, topY, userW, ExS(38, k));
-                    if (kind == 2) c.Bounds = new Rectangle(powerX, topY, closeW, ExS(38, k));
-                    if (kind == 3) c.Bounds = new Rectangle(closeX, topY, closeW, ExS(38, k));
+                    if (kind == 1) c.Bounds = new Rectangle(userX, topY, userW, btnH);
+                    if (kind == 2) c.Bounds = new Rectangle(powerX, topY, closeW, btnH);
+                    if (kind == 3) c.Bounds = new Rectangle(closeX, topY, closeW, btnH);
                 }
 
                 int n = exNav.Count;
                 if (n > 0)
                 {
-                    int startX = ExS(16, k) + ExS(150, k) + ExS(14, k) + (exModeBox != null ? exModeBox.Width : 0) + ExS(18, k);
+                    int startX = ExS(16, k) + ExS(150, k) + ExS(14, k) + (exModeBox != null ? exModeBox.Width : 0) + ExS(16, k);
                     int g2 = ExS(8, k);
                     int minW = ExS(140, k);
-                    int avail = Math.Max(n * minW, W - startX - ExS(14, k));
+                    int avail = Math.Max(n * minW, W - startX - ExS(16, k));
                     int bw = Math.Max(minW, (avail - (n - 1) * g2) / n);
                     int x = startX;
                     foreach (Control b in exNav)
                     {
-                        b.Bounds = new Rectangle(x, rowY - ExS(2, k), bw, pillH);
+                        b.Bounds = new Rectangle(x, rowY, bw, rowH);
                         x += bw + g2;
                     }
                 }
@@ -914,6 +856,14 @@ namespace APP_FRAMEWORK
                         string tPart = now.ToString("HH:mm:ss");
                         if (exDateTxt.Text != dPart) exDateTxt.Text = dPart;
                         if (exTimeTxt.Text != tPart) exTimeTxt.Text = tPart;
+                    }
+
+                    // LED clock repaints every half second (digits + blinking colon)
+                    int half = (int)(now.Ticks / (TimeSpan.TicksPerSecond / 2));
+                    if (half != exLastHalf && exClockPill != null)
+                    {
+                        exLastHalf = half;
+                        exClockPill.Invalidate();
                     }
                 }
 
@@ -987,8 +937,12 @@ namespace APP_FRAMEWORK
                 Rectangle r = new Rectangle(0, 0, exTip.Width - 1, exTip.Height - 1);
                 if (r.Width < 4 || r.Height < 4) return;
                 using (GraphicsPath path = ExRounded(r, ExS(7, exK)))
-                using (SolidBrush b = new SolidBrush(Color.FromArgb(15, 40, 78)))
-                    e.Graphics.FillPath(b, path);
+                {
+                    using (SolidBrush b = new SolidBrush(Color.FromArgb(15, 23, 42)))
+                        e.Graphics.FillPath(b, path);
+                    using (Pen pen = new Pen(ExSaffron, 1f))
+                        e.Graphics.DrawPath(pen, path);
+                }
                 TextRenderer.DrawText(e.Graphics, exTip.Text, exTip.Font, r, Color.White,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
             }
@@ -1017,42 +971,86 @@ namespace APP_FRAMEWORK
             try
             {
                 float k = exK;
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Graphics g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
 
                 int w = exCanvas.Width;
                 int h = exCanvas.Height;
                 if (w < 12 || h < 12) return;
 
-                using (SolidBrush bg = new SolidBrush(UiTheme.Bg))
-                    e.Graphics.FillRectangle(bg, new Rectangle(0, 0, w, h));
+                // Corner area: same colour as the border, so the window's own (Region) staircase
+                // blends into the anti-aliased outline drawn below instead of showing steps.
+                using (SolidBrush bg = new SolidBrush(ExEdge))
+                    g.FillRectangle(bg, new Rectangle(0, 0, w, h));
 
                 Rectangle r = new Rectangle(0, 0, w - 1, h - 1);
                 int rad = ExS(16, k);
 
+                // light body: white -> soft blue
                 using (GraphicsPath path = ExRounded(r, rad))
-                using (LinearGradientBrush lb = new LinearGradientBrush(r, ExBlue, ExBlue2, 0f))
-                    e.Graphics.FillPath(lb, path);
+                {
+                    using (LinearGradientBrush lb = new LinearGradientBrush(r, ExBgA, ExBgB, 0f))
+                    {
+                        ColorBlend cbg = new ColorBlend();
+                        cbg.Positions = new[] { 0f, 0.45f, 1f };
+                        cbg.Colors = new[] { ExBgA, Color.FromArgb(240, 245, 253), ExBgB };
+                        lb.InterpolationColors = cbg;
+                        g.FillPath(lb, path);
+                    }
 
-                using (GraphicsPath bp = ExRounded(new Rectangle(1, 1, w - 3, h - 3), rad))
-                using (Pen outer = new Pen(Color.FromArgb(175, 255, 255, 255), 2f))
-                    e.Graphics.DrawPath(outer, bp);
+                    Region old = g.Clip;
+                    g.SetClip(path, CombineMode.Intersect);
+                    // warm bhagwa glow behind the brand
+                    using (GraphicsPath gp = new GraphicsPath())
+                    {
+                        gp.AddEllipse(-ExS(120, k), -ExS(110, k), ExS(520, k), ExS(260, k));
+                        using (PathGradientBrush pg = new PathGradientBrush(gp))
+                        {
+                            pg.CenterColor = Color.FromArgb(46, ExSaffron);
+                            pg.SurroundColors = new[] { Color.FromArgb(0, ExSaffron) };
+                            g.FillPath(pg, gp);
+                        }
+                    }
+                    // soft top sheen
+                    using (LinearGradientBrush sh = new LinearGradientBrush(new Rectangle(0, 0, w, ExS(80, k)),
+                        Color.FromArgb(120, 255, 255, 255), Color.FromArgb(0, 255, 255, 255), 90f))
+                        g.FillRectangle(sh, 0, 0, w, ExS(80, k));
+                    // bhagwa top edge
+                    using (LinearGradientBrush tb = new LinearGradientBrush(new Rectangle(0, 0, w, 3), ExSaffronD, ExSaffronL, 0f))
+                        g.FillRectangle(tb, 0, 0, w, ExS(3, k));
+                    g.Clip = old;
+                }
 
-                using (GraphicsPath ip = ExRounded(new Rectangle(4, 4, w - 9, h - 9), Math.Max(4, rad - 3)))
-                using (Pen inner = new Pen(Color.FromArgb(55, 12, 60, 130), 1.2f))
-                    e.Graphics.DrawPath(inner, ip);
+                // anti-aliased outline exactly on the window edge (masks the Region stair-steps)
+                using (GraphicsPath bp = ExRoundF(new RectangleF(0.5f, 0.5f, w - 1.5f, h - 1.5f), rad))
+                using (Pen outer = new Pen(ExEdge, 1.6f))
+                    g.DrawPath(outer, bp);
+                using (GraphicsPath ip = ExRoundF(new RectangleF(2f, 2f, w - 4.5f, h - 4.5f), Math.Max(4, rad - 2)))
+                using (Pen inner = new Pen(Color.FromArgb(200, 255, 255, 255), 1f))
+                    g.DrawPath(inner, ip);
 
-                Font fe = ExCached("Segoe UI", 26f, FontStyle.Bold | FontStyle.Italic, k);
-                TextRenderer.DrawText(e.Graphics, "EXPRESS", fe,
-                    new Rectangle(ExS(84, k), ExS(17, k), ExS(380, k), ExS(32, k)), Color.White,
+                Font fe = ExCached("Segoe UI", 27f, FontStyle.Bold | FontStyle.Italic, k);
+                TextRenderer.DrawText(g, "EXPRESS", fe,
+                    new Rectangle(ExS(82, k), ExS(13, k), ExS(220, k), ExS(36, k)), ExInk,
                     TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoClipping);
 
-                Font fs = ExCached("Segoe UI Semibold", 10f, FontStyle.Bold, k);
-                TextRenderer.DrawText(e.Graphics, "PREMIUM TATKAL SOFTWARE", fs,
-                    new Rectangle(ExS(86, k), ExS(51, k), ExS(380, k), ExS(14, k)), Color.FromArgb(240, 248, 255),
+                Font fs = ExCached("Segoe UI Semibold", 10.5f, FontStyle.Bold, k);
+                TextRenderer.DrawText(g, "PREMIUM  TATKAL  SOFTWARE", fs,
+                    new Rectangle(ExS(84, k), ExS(51, k), ExS(230, k), ExS(16, k)), ExSaffronD,
                     TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoClipping);
 
-                using (Pen p = new Pen(Color.FromArgb(110, 255, 255, 255), 1f))
-                    e.Graphics.DrawLine(p, ExS(16, k), ExS(80, k), w - ExS(16, k), ExS(80, k));
+                // divider: bhagwa fading out to both sides
+                Rectangle dv = new Rectangle(ExS(16, k), ExS(79, k), w - ExS(32, k), 1);
+                using (LinearGradientBrush db = new LinearGradientBrush(new Rectangle(dv.X, dv.Y, dv.Width, 2),
+                    Color.FromArgb(0, ExSaffron), Color.FromArgb(0, ExSaffron), 0f))
+                {
+                    ColorBlend cb = new ColorBlend();
+                    cb.Positions = new[] { 0f, 0.25f, 0.75f, 1f };
+                    cb.Colors = new[] { Color.FromArgb(190, ExSaffron), Color.FromArgb(110, ExEdge),
+                                        Color.FromArgb(80, ExEdge), Color.FromArgb(0, ExEdge) };
+                    db.InterpolationColors = cb;
+                    g.FillRectangle(db, dv);
+                }
             }
             catch { }
         }
@@ -1061,14 +1059,21 @@ namespace APP_FRAMEWORK
         {
             try
             {
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                Graphics g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 Rectangle r = new Rectangle(0, 0, exLogo.Width, exLogo.Height);
                 if (r.Width < 4 || r.Height < 4) return;
 
-                using (GraphicsPath p = ExRounded(r, ExS(14, exK)))
-                using (SolidBrush b = new SolidBrush(Color.White))
-                    e.Graphics.FillPath(b, p);
+                using (GraphicsPath p = ExRoundF(new RectangleF(1, 2, r.Width - 2, r.Height - 3), ExS(14, exK)))
+                using (SolidBrush sb = new SolidBrush(Color.FromArgb(40, 30, 64, 120)))
+                    g.FillPath(sb, p);
+                using (GraphicsPath p = ExRoundF(new RectangleF(1, 1, r.Width - 2.5f, r.Height - 3.5f), ExS(14, exK)))
+                {
+                    using (SolidBrush b = new SolidBrush(Color.White)) g.FillPath(b, p);
+                    using (Pen pen = new Pen(Color.FromArgb(200, ExSaffron), 1.6f)) g.DrawPath(pen, p);
+                }
 
                 Image img = exLogo.Tag as Image;
                 if (img != null)
@@ -1077,12 +1082,12 @@ namespace APP_FRAMEWORK
                     float sc = Math.Min((float)box / img.Width, (float)box / img.Height);
                     int w = Math.Max(1, (int)(img.Width * sc));
                     int h = Math.Max(1, (int)(img.Height * sc));
-                    e.Graphics.DrawImage(img, new Rectangle((exLogo.Width - w) / 2, (exLogo.Height - h) / 2, w, h));
+                    g.DrawImage(img, new Rectangle((exLogo.Width - w) / 2, (exLogo.Height - h) / 2, w, h));
                 }
                 else
                 {
-                    Font f = ExCached("Segoe UI Black", 24f, FontStyle.Bold, exK);
-                    TextRenderer.DrawText(e.Graphics, "E", f, r, ExBlue,
+                    Font f = ExCached("Segoe UI Black", 26f, FontStyle.Bold, exK);
+                    TextRenderer.DrawText(g, "E", f, r, ExSaffronD,
                         TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                 }
             }
@@ -1093,44 +1098,344 @@ namespace APP_FRAMEWORK
         {
             try
             {
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Graphics g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
                 Rectangle r = new Rectangle(0, 0, exModeBox.Width - 1, exModeBox.Height - 1);
                 if (r.Width < 4 || r.Height < 4) return;
 
-                using (GraphicsPath p = ExRounded(r, ExS(12, exK)))
+                using (GraphicsPath sp = ExRoundF(new RectangleF(0.5f, 2f, r.Width - 1f, r.Height - 2f), ExS(12, exK)))
+                using (SolidBrush sb = new SolidBrush(Color.FromArgb(34, 30, 64, 120))) g.FillPath(sb, sp);
+                using (GraphicsPath p = ExRoundF(new RectangleF(0.5f, 0.5f, r.Width - 1f, r.Height - 2f), ExS(12, exK)))
                 {
-                    using (SolidBrush b = new SolidBrush(ExBoxBg)) e.Graphics.FillPath(b, p);
-                    using (Pen pen = new Pen(Color.FromArgb(120, 255, 255, 255), 1f)) e.Graphics.DrawPath(pen, p);
+                    using (SolidBrush b = new SolidBrush(ExBoxBg)) g.FillPath(b, p);
+                    using (Pen pen = new Pen(Color.FromArgb(170, ExSaffron), 1.2f)) g.DrawPath(pen, p);
                 }
 
-                Font f = ExCached("Segoe UI Semibold", 10f, FontStyle.Bold, exK);
-                TextRenderer.DrawText(e.Graphics, "BOOKING MODE", f,
-                    new Rectangle(ExS(12, exK), ExS(5, exK), ExS(150, exK), ExS(14, exK)), Color.White,
-                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+                Font f = ExCached("Segoe UI", 10f, FontStyle.Bold, exK);
+                TextRenderer.DrawText(g, "BOOKING MODE", f,
+                    new Rectangle(ExS(12, exK), ExS(4, exK), r.Width - ExS(16, exK), ExS(14, exK)), ExSaffronD,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
             }
             catch { }
+        }
+
+        // ================== 3D LED wall clock (bhagwa 7-segment) ==================
+
+        private int ExClockWidth(float k)
+        {
+            return ExS(12, k) + ExS(58, k) + ExS(12, k)
+                 + 2 * ExS(22, k) + ExS(6, k) + ExS(14, k) + 2 * ExS(22, k) + ExS(6, k)
+                 + ExS(10, k) + 2 * ExS(13, k) + ExS(4, k) + ExS(14, k);
         }
 
         private void ExClockPaint(object sender, PaintEventArgs e)
         {
             try
             {
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                Rectangle r = new Rectangle(0, 0, exClockPill.Width - 1, exClockPill.Height - 1);
-                if (r.Width < 6 || r.Height < 6) return;
+                float k = exK;
+                Graphics g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                int W = exClockPill.Width, H = exClockPill.Height;
+                if (W < 20 || H < 20) return;
 
-                using (GraphicsPath sh = ExRounded(new Rectangle(r.X, r.Y + ExS(2, exK), r.Width, r.Height), ExS(12, exK)))
-                using (SolidBrush sb = new SolidBrush(Color.FromArgb(75, 8, 26, 58)))
-                    e.Graphics.FillPath(sb, sh);
+                DateTime now = DateTime.Now;
+                int rad = ExS(12, k);
+                Rectangle body = new Rectangle(0, 0, W - 1, H - 1);
 
-                using (GraphicsPath p = ExRounded(r, ExS(12, exK)))
+                // bezel: glossy black case with a bhagwa rim
+                using (GraphicsPath p = ExRounded(body, rad))
                 {
-                    using (SolidBrush b = new SolidBrush(Color.White)) e.Graphics.FillPath(b, p);
-                    using (Pen pen = new Pen(Color.White, 1.5f)) e.Graphics.DrawPath(pen, p);
+                    using (LinearGradientBrush b = new LinearGradientBrush(body, Color.FromArgb(62, 62, 70), Color.FromArgb(8, 8, 11), 90f))
+                        g.FillPath(b, p);
+                    using (LinearGradientBrush rim = new LinearGradientBrush(body, ExSaffronL, ExSaffronD, 90f))
+                    using (Pen pen = new Pen(rim, 1.6f))
+                        g.DrawPath(pen, p);
+                }
+
+                // recessed LED screen
+                int ins = ExS(4, k);
+                Rectangle scr = new Rectangle(ins, ins, W - 1 - ins * 2, H - 1 - ins * 2);
+                using (GraphicsPath sp = ExRounded(scr, Math.Max(3, rad - ins)))
+                {
+                    using (LinearGradientBrush sb = new LinearGradientBrush(scr, Color.FromArgb(4, 4, 6), Color.FromArgb(22, 14, 8), 90f))
+                        g.FillPath(sb, sp);
+                    using (Pen inner = new Pen(Color.FromArgb(150, 0, 0, 0), 1f))
+                        g.DrawPath(inner, sp);
+                }
+
+                // left column: weekday / date / year
+                int x = ExS(12, k);
+                int colW = ExS(58, k);
+                Font fDay = ExCached("Segoe UI", 13f, FontStyle.Bold, k);
+                Font fDate = ExCached("Segoe UI Semibold", 11f, FontStyle.Bold, k);
+                Font fYear = ExCached("Segoe UI", 9.5f, FontStyle.Bold, k);
+                string day = now.ToString("ddd", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant();
+                string dm = now.ToString("dd MMM", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant();
+                TextRenderer.DrawText(g, day, fDay, new Rectangle(x, ExS(9, k), colW, ExS(18, k)), Color.FromArgb(255, 190, 80),
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+                TextRenderer.DrawText(g, dm, fDate, new Rectangle(x, ExS(27, k), colW, ExS(16, k)), Color.FromArgb(255, 150, 40),
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+                TextRenderer.DrawText(g, now.Year.ToString(), fYear, new Rectangle(x, ExS(43, k), colW, ExS(14, k)), Color.FromArgb(170, 110, 40),
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+                x += colW;
+
+                using (Pen sep = new Pen(Color.FromArgb(70, ExSaffron), 1f))
+                    g.DrawLine(sep, x + ExS(5, k), ExS(12, k), x + ExS(5, k), H - ExS(12, k));
+                x += ExS(12, k);
+
+                // HH:MM big, SS small (24h, same as the old clock)
+                float bw = ExS(22, k), bh = ExS(40, k), bt = Math.Max(3f, 5f * k);
+                float sw = ExS(13, k), sh = ExS(23, k), st = Math.Max(2f, 3.2f * k);
+                float top = (H - bh) / 2f;
+                bool colonOn = now.Millisecond < 500;
+
+                string hh = now.ToString("HH"), mm = now.ToString("mm"), ss = now.ToString("ss");
+                ExSegDigit(g, new RectangleF(x, top, bw, bh), hh[0] - '0', bt);
+                x += (int)bw + ExS(6, k);
+                ExSegDigit(g, new RectangleF(x, top, bw, bh), hh[1] - '0', bt);
+                x += (int)bw;
+
+                // colon
+                float cx = x + ExS(7, k);
+                float dot = Math.Max(3f, 5f * k);
+                ExSegDot(g, new RectangleF(cx - dot / 2 + 1, top + bh * 0.30f - dot / 2, dot, dot), colonOn);
+                ExSegDot(g, new RectangleF(cx - dot / 2 - 1, top + bh * 0.70f - dot / 2, dot, dot), colonOn);
+                x += ExS(14, k);
+
+                ExSegDigit(g, new RectangleF(x, top, bw, bh), mm[0] - '0', bt);
+                x += (int)bw + ExS(6, k);
+                ExSegDigit(g, new RectangleF(x, top, bw, bh), mm[1] - '0', bt);
+                x += (int)bw + ExS(10, k);
+
+                // seconds: smaller, bottom aligned, with a tiny caption above
+                float stop = top + bh - sh;
+                Font fCap = ExCached("Segoe UI", 8.5f, FontStyle.Bold, k);
+                TextRenderer.DrawText(g, "SEC", fCap, new Rectangle(x, (int)top - 1, (int)(sw * 2 + ExS(4, k)), ExS(12, k)),
+                    Color.FromArgb(190, 120, 40), TextFormatFlags.HorizontalCenter | TextFormatFlags.Top | TextFormatFlags.NoPadding);
+                ExSegDigit(g, new RectangleF(x, stop, sw, sh), ss[0] - '0', st);
+                x += (int)sw + ExS(4, k);
+                ExSegDigit(g, new RectangleF(x, stop, sw, sh), ss[1] - '0', st);
+
+                // glass reflection over the whole face
+                using (GraphicsPath gl = new GraphicsPath())
+                {
+                    gl.AddBezier(scr.X, scr.Y + scr.Height * 0.55f, scr.X + scr.Width * 0.35f, scr.Y + scr.Height * 0.25f,
+                                 scr.X + scr.Width * 0.7f, scr.Y + scr.Height * 0.2f, scr.Right, scr.Y + scr.Height * 0.12f);
+                    gl.AddLine(scr.Right, scr.Y + scr.Height * 0.12f, scr.Right, scr.Y);
+                    gl.AddLine(scr.Right, scr.Y, scr.X, scr.Y);
+                    gl.CloseFigure();
+                    Region old = g.Clip;
+                    using (GraphicsPath sp = ExRounded(scr, Math.Max(3, rad - ins)))
+                        g.SetClip(sp, CombineMode.Intersect);
+                    using (LinearGradientBrush gb = new LinearGradientBrush(scr, Color.FromArgb(34, 255, 255, 255), Color.FromArgb(0, 255, 255, 255), 90f))
+                        g.FillPath(gb, gl);
+                    g.Clip = old;
                 }
             }
             catch { }
         }
+
+        private static readonly int[] ExSegMask = { 0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F };
+
+        // One 7-segment digit (slightly italic like a real LED clock), lit segments glow bhagwa.
+        private static void ExSegDigit(Graphics g, RectangleF r, int d, float t)
+        {
+            int mask = (d >= 0 && d <= 9) ? ExSegMask[d] : 0;
+            float gp = Math.Max(0.6f, t * 0.16f);
+            float x0 = r.X, y0 = r.Y, w = r.Width, h = r.Height, half = h / 2f;
+            const float slant = 0.10f;
+
+            Func<float, float, PointF> P = (px, py) => new PointF(px + (r.Bottom - py) * slant, py);
+
+            PointF[][] seg = new PointF[7][];
+            seg[0] = ExHSeg(P, x0 + t / 2 + gp, x0 + w - t / 2 - gp, y0 + t / 2, t);            // a
+            seg[1] = ExVSeg(P, x0 + w - t / 2, y0 + t / 2 + gp, y0 + half - gp, t);             // b
+            seg[2] = ExVSeg(P, x0 + w - t / 2, y0 + half + gp, y0 + h - t / 2 - gp, t);        // c
+            seg[3] = ExHSeg(P, x0 + t / 2 + gp, x0 + w - t / 2 - gp, y0 + h - t / 2, t);        // d
+            seg[4] = ExVSeg(P, x0 + t / 2, y0 + half + gp, y0 + h - t / 2 - gp, t);             // e
+            seg[5] = ExVSeg(P, x0 + t / 2, y0 + t / 2 + gp, y0 + half - gp, t);                 // f
+            seg[6] = ExHSeg(P, x0 + t / 2 + gp, x0 + w - t / 2 - gp, y0 + half, t);             // g
+
+            using (SolidBrush off = new SolidBrush(Color.FromArgb(46, 255, 120, 20)))
+            using (Pen glow1 = new Pen(Color.FromArgb(38, 255, 140, 20), t * 1.7f))
+            using (Pen glow2 = new Pen(Color.FromArgb(70, 255, 150, 30), t * 0.9f))
+            using (LinearGradientBrush lit = new LinearGradientBrush(new RectangleF(r.X, r.Y - 1, r.Width + h * slant, r.Height + 2),
+                       Color.FromArgb(255, 214, 120), Color.FromArgb(255, 122, 0), 90f))
+            {
+                glow1.LineJoin = LineJoin.Round; glow2.LineJoin = LineJoin.Round;
+                for (int i = 0; i < 7; i++)
+                {
+                    if ((mask & (1 << i)) == 0) { g.FillPolygon(off, seg[i]); continue; }
+                    g.DrawPolygon(glow1, seg[i]);
+                    g.DrawPolygon(glow2, seg[i]);
+                }
+                for (int i = 0; i < 7; i++)
+                    if ((mask & (1 << i)) != 0) g.FillPolygon(lit, seg[i]);
+            }
+        }
+
+        private static PointF[] ExHSeg(Func<float, float, PointF> P, float xa, float xb, float yc, float t)
+        {
+            float q = t / 2f;
+            return new[] { P(xa, yc), P(xa + q, yc - q), P(xb - q, yc - q), P(xb, yc), P(xb - q, yc + q), P(xa + q, yc + q) };
+        }
+
+        private static PointF[] ExVSeg(Func<float, float, PointF> P, float xc, float ya, float yb, float t)
+        {
+            float q = t / 2f;
+            return new[] { P(xc, ya), P(xc + q, ya + q), P(xc + q, yb - q), P(xc, yb), P(xc - q, yb - q), P(xc - q, ya + q) };
+        }
+
+        private static void ExSegDot(Graphics g, RectangleF r, bool on)
+        {
+            if (on)
+            {
+                using (SolidBrush glow = new SolidBrush(Color.FromArgb(60, 255, 140, 20)))
+                    g.FillEllipse(glow, RectangleF.Inflate(r, r.Width * 0.6f, r.Height * 0.6f));
+                using (LinearGradientBrush b = new LinearGradientBrush(RectangleF.Inflate(r, 0, 1), Color.FromArgb(255, 214, 120), Color.FromArgb(255, 122, 0), 90f))
+                    g.FillEllipse(b, r);
+            }
+            else
+            {
+                using (SolidBrush b = new SolidBrush(Color.FromArgb(46, 255, 120, 20)))
+                    g.FillEllipse(b, r);
+            }
+        }
+
+        // ================== user info ==================
+
+        private void ExInfoPaint(object sender, PaintEventArgs e)
+        {
+            try
+            {
+                Panel p = sender as Panel;
+                if (p == null || p.Width < 20 || p.Height < 10) return;
+                Graphics g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                Rectangle r = new Rectangle(0, 0, p.Width - 1, p.Height - 1);
+
+                using (GraphicsPath sp = ExRoundF(new RectangleF(0.5f, 2f, r.Width - 0.5f, r.Height - 1.5f), ExS(12, exK)))
+                using (SolidBrush sb = new SolidBrush(Color.FromArgb(30, 30, 64, 120))) g.FillPath(sb, sp);
+                using (GraphicsPath path = ExRoundF(new RectangleF(0.5f, 0.5f, r.Width - 0.5f, r.Height - 1.5f), ExS(12, exK)))
+                {
+                    using (SolidBrush b = new SolidBrush(Color.FromArgb(235, 255, 255, 255)))
+                        g.FillPath(b, path);
+                    using (Pen pen = new Pen(Color.FromArgb(150, ExSaffron), 1.2f))
+                        g.DrawPath(pen, path);
+                }
+
+                // account badge
+                int d = ExS(30, exK);
+                Rectangle bd = new Rectangle(ExS(9, exK), (p.Height - d) / 2, d, d);
+                using (LinearGradientBrush bb = new LinearGradientBrush(bd, ExSaffronL, ExSaffronD, 90f))
+                    g.FillEllipse(bb, bd);
+                ExIcon(g, Rectangle.Inflate(bd, -ExS(6, exK), -ExS(6, exK)), 11, Color.White, exK);
+            }
+            catch { }
+        }
+
+        private static bool ExIsPaid(string v)
+        {
+            return string.Equals((v ?? "").Trim(), "Paid", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private int ExChipW(Panel p)
+        {
+            object[] m = p.Tag as object[];
+            if (m == null) return ExS(90, exK);
+            string cap = (string)m[0];
+            string val = Convert.ToString(m[1]);
+            Font fc = ExCached("Segoe UI", 10f, FontStyle.Bold, exK);
+            Font fv = ExCached("Segoe UI Semibold", 17f, FontStyle.Bold, exK);
+            Font fb = ExCached("Segoe UI", 12f, FontStyle.Bold, exK);
+            int capW = ExS(17, exK) + TextRenderer.MeasureText(cap, fc, Size.Empty, TextFormatFlags.NoPadding).Width;
+            int valW = cap == "PAYMENT"
+                ? ExS(34, exK) + TextRenderer.MeasureText(val.ToUpperInvariant(), fb, Size.Empty, TextFormatFlags.NoPadding).Width
+                : TextRenderer.MeasureText(val, fv, Size.Empty, TextFormatFlags.NoPadding).Width;
+            return Math.Max(capW, valW) + ExS(24, exK);
+        }
+
+        private void ExInfoChipPaint(object sender, PaintEventArgs e)
+        {
+            try
+            {
+                Panel p = sender as Panel;
+                if (p == null || p.Width < 10 || p.Height < 8) return;
+                object[] m = p.Tag as object[];
+                if (m == null) return;
+
+                float k = exK;
+                string cap = (string)m[0];
+                string val = Convert.ToString(m[1]);
+                Graphics g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                Rectangle r = new Rectangle(0, 0, p.Width - 1, p.Height - 1);
+                bool validity = cap == "VALIDITY";
+                bool payment = cap == "PAYMENT";
+
+                using (GraphicsPath path = ExRoundF(new RectangleF(0.5f, 0.5f, p.Width - 1.5f, p.Height - 1.5f), ExS(10, k)))
+                {
+                    if (validity)
+                    {
+                        // highlighted: bhagwa gradient tile
+                        using (LinearGradientBrush b = new LinearGradientBrush(r, ExSaffron, ExSaffronD, 90f))
+                            g.FillPath(b, path);
+                        using (Pen pen = new Pen(ExSaffronD, 1f)) g.DrawPath(pen, path);
+                    }
+                    else
+                    {
+                        using (SolidBrush b = new SolidBrush(Color.FromArgb(244, 248, 254))) g.FillPath(b, path);
+                        using (Pen pen = new Pen(Color.FromArgb(208, 220, 238), 1f)) g.DrawPath(pen, path);
+                    }
+                }
+
+                int pad = ExS(12, k);
+                int icon = cap == "USER ID" ? 1 : validity ? 12 : cap == "VERSION" ? 13 : 14;
+                Color capCol = validity ? Color.FromArgb(255, 241, 222) : ExMuted;
+                Rectangle ir = new Rectangle(pad, ExS(8, k), ExS(13, k), ExS(13, k));
+                ExIcon(g, ir, icon, validity ? Color.White : ExSaffronD, k);
+
+                Font fc = ExCached("Segoe UI", 10f, FontStyle.Bold, k);
+                TextRenderer.DrawText(g, cap, fc, new Rectangle(pad + ExS(17, k), ExS(6, k), p.Width - pad * 2, ExS(17, k)), capCol,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+
+                Rectangle vr = new Rectangle(pad, ExS(24, k), p.Width - pad * 2 + 2, ExS(24, k));
+                if (payment)
+                {
+                    bool paid = ExIsPaid(val);
+                    string up = string.IsNullOrWhiteSpace(val) || val == "—" ? "—" : val.Trim().ToUpperInvariant();
+                    bool demo = up.Contains("DEMO") || up.Contains("TRIAL");
+                    Color bc = paid ? ExGreen : demo ? Color.FromArgb(217, 119, 6) : ExCRed;
+                    Font fb = ExCached("Segoe UI", 12f, FontStyle.Bold, k);
+                    int tw = TextRenderer.MeasureText(up, fb, Size.Empty, TextFormatFlags.NoPadding).Width;
+                    Rectangle pill = new Rectangle(pad, vr.Y + 1, Math.Min(vr.Width, tw + ExS(32, k)), ExS(22, k));
+                    using (GraphicsPath pp = ExRounded(pill, pill.Height / 2))
+                    {
+                        using (LinearGradientBrush pb = new LinearGradientBrush(pill, ExMix(bc, Color.White, 0.18f), bc, 90f))
+                            g.FillPath(pb, pp);
+                        using (Pen pen = new Pen(Color.FromArgb(150, 255, 255, 255), 1f)) g.DrawPath(pen, pp);
+                    }
+                    int cd = ExS(14, k);
+                    Rectangle ci = new Rectangle(pill.X + ExS(5, k), pill.Y + (pill.Height - cd) / 2, cd, cd);
+                    using (SolidBrush wb = new SolidBrush(Color.White)) g.FillEllipse(wb, ci);
+                    ExIcon(g, Rectangle.Inflate(ci, -ExS(2, k), -ExS(2, k)), paid ? 15 : 16, bc, k);
+                    TextRenderer.DrawText(g, up, fb, new Rectangle(ci.Right + ExS(5, k), pill.Y, pill.Right - ci.Right - ExS(7, k), pill.Height),
+                        Color.White, TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+                }
+                else
+                {
+                    Font fv = ExCached("Segoe UI Semibold", 17f, FontStyle.Bold, k);
+                    Color vc = validity ? Color.White : cap == "USER ID" ? ExInk : Color.FromArgb(194, 65, 12);
+                    TextRenderer.DrawText(g, val, fv, vr, vc,
+                        TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding |
+                        TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
+                }
+            }
+            catch { }
+        }
+
+        // ================== switches ==================
 
         private void ExSwitchRowPaint(object sender, PaintEventArgs e)
         {
@@ -1139,15 +1444,12 @@ namespace APP_FRAMEWORK
                 Panel row = (Panel)sender;
                 CheckBox cb;
                 if (!exSwitchMap.TryGetValue(row, out cb)) return;
-
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
                 if (exBookIndex.ContainsKey(row)) return;
 
-                Font f = ExCached("Segoe UI", 12f, FontStyle.Regular, exK);
+                Font f = ExCached("Segoe UI Semibold", 13f, FontStyle.Bold, exK);
                 TextRenderer.DrawText(e.Graphics, cb.Text, f,
-                    new Rectangle(0, 0, ExS(100, exK), row.Height), Color.White,
-                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+                    new Rectangle(0, 0, ExS(96, exK), row.Height), ExInk,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
             }
             catch { }
         }
@@ -1163,24 +1465,40 @@ namespace APP_FRAMEWORK
                 CheckBox cb;
                 if (!exSwitchMap.TryGetValue(row, out cb)) return;
 
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                Rectangle r = new Rectangle(0, 0, track.Width - 1, track.Height - 1);
+                Graphics g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                RectangleF r = new RectangleF(0.5f, 0.5f, track.Width - 2f, track.Height - 2f);
                 if (r.Width < 4 || r.Height < 4) return;
+                bool on = cb.Checked;
 
-                using (GraphicsPath p = ExRounded(r, r.Height / 2))
+                using (GraphicsPath p = ExRoundF(r, r.Height / 2f))
                 {
-                    Color off = Color.FromArgb(195, 255, 255, 255);
-                    using (SolidBrush b = new SolidBrush(cb.Checked ? ExGreen : off))
-                        e.Graphics.FillPath(b, p);
-
-                    int kk = r.Height - ExS(4, exK);
-                    int x = cb.Checked ? (r.Width - kk - ExS(2, exK)) : ExS(2, exK);
-                    using (SolidBrush kb = new SolidBrush(Color.White))
-                        e.Graphics.FillEllipse(kb, x, ExS(2, exK), kk, kk);
+                    if (on)
+                    {
+                        using (LinearGradientBrush b = new LinearGradientBrush(r, ExSaffronL, ExSaffronD, 90f))
+                            g.FillPath(b, p);
+                        using (Pen pen = new Pen(ExSaffronD, 1f)) g.DrawPath(pen, p);
+                    }
+                    else
+                    {
+                        // OFF: grey track + slate knob, clearly visible on the light bar
+                        using (SolidBrush b = new SolidBrush(Color.FromArgb(214, 222, 234))) g.FillPath(b, p);
+                        using (Pen pen = new Pen(Color.FromArgb(148, 163, 184), 1f)) g.DrawPath(pen, p);
+                    }
                 }
+
+                float kd = r.Height - ExS(6, exK);
+                float kx = on ? r.Right - kd - ExS(3, exK) : r.X + ExS(3, exK);
+                float ky = r.Y + (r.Height - kd) / 2f;
+                using (SolidBrush shd = new SolidBrush(Color.FromArgb(60, 0, 0, 0)))
+                    g.FillEllipse(shd, kx, ky + 1, kd, kd);
+                using (SolidBrush kb = new SolidBrush(on ? Color.White : Color.FromArgb(100, 116, 139)))
+                    g.FillEllipse(kb, kx, ky, kd, kd);
             }
             catch { }
         }
+
+        // ================== buttons ==================
 
         private void ExPillPaint(object sender, PaintEventArgs e)
         {
@@ -1195,94 +1513,106 @@ namespace APP_FRAMEWORK
                 int kind = (int)meta[1];
                 Color accent = (Color)meta[2];
                 int icon = (int)meta[3];
-
                 if (p.Width < 8 || p.Height < 8) return;
 
                 float h = exHov.ContainsKey(p) ? exHov[p] : 0f;
                 bool dn = (exDown == p);
                 bool hot = h > 0.02f;
 
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Graphics g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
 
-                // hover par button 1px uthta hai, press par 2px dabta hai
-                int dy = dn ? ExS(2, k) : (hot ? -1 : 0);
-                Rectangle r = new Rectangle(1, 1 + dy, p.Width - 3, p.Height - 3 - dy);
+
+                int dy = dn ? 1 : 0;
+                Rectangle r = new Rectangle(0, dy, p.Width - 1, p.Height - 3);
                 if (r.Width < 6 || r.Height < 6) return;
                 int rad = ExS(10, k);
+                RectangleF rf = new RectangleF(0.5f, dy + 0.5f, p.Width - 1.5f, p.Height - 3.5f);
 
-                // hover par shadow badi aur gehri
-                int shA = dn ? 30 : (int)(50 + 60 * h);
-                int shOff = dn ? ExS(1, k) : (int)(ExS(2, k) + ExS(4, k) * h);
-                Rectangle sh2 = new Rectangle(r.X - 1, r.Y + shOff + ExS(1, k), r.Width + 2, r.Height);
-                using (GraphicsPath sp2 = ExRounded(sh2, rad + 1))
-                using (SolidBrush sb2 = new SolidBrush(Color.FromArgb(shA, 6, 22, 52)))
-                    e.Graphics.FillPath(sb2, sp2);
+                // soft drop shadow (inside the panel bounds, so the transparent corners stay clean)
+                if (!dn)
+                    using (GraphicsPath sp = ExRoundF(new RectangleF(rf.X, rf.Y + 2f, rf.Width, rf.Height), rad))
+                    using (SolidBrush sb = new SolidBrush(Color.FromArgb(hot ? 80 : 50, ExMix(accent, Color.Black, 0.45f))))
+                        g.FillPath(sb, sp);
 
-                Rectangle sh1 = new Rectangle(r.X, r.Y + shOff, r.Width, r.Height);
-                using (GraphicsPath sp1 = ExRounded(sh1, rad))
-                using (SolidBrush sb1 = new SolidBrush(Color.FromArgb(Math.Min(255, shA + 30), 8, 26, 58)))
-                    e.Graphics.FillPath(sb1, sp1);
-
-                // hover par rang saaf halka, press par saaf gehra
-                Color bg;
-                if (dn) bg = ExMix(accent, Color.Black, 0.26f);
-                else if (hot) bg = ExMix(accent, Color.White, 0.12f + 0.30f * h);
-                else bg = accent;
-
-                using (GraphicsPath path = ExRounded(r, rad))
+                Color top, bot;
+                if (dn) { top = ExMix(accent, Color.Black, 0.18f); bot = ExMix(accent, Color.Black, 0.32f); }
+                else
                 {
-                    using (SolidBrush b = new SolidBrush(bg)) e.Graphics.FillPath(b, path);
+                    top = ExMix(accent, Color.White, 0.20f + 0.14f * h);
+                    bot = ExMix(accent, Color.Black, 0.12f - 0.08f * h);
+                }
 
-                    // hover par safed rim, warna halki rim
-                    Color rim = hot ? Color.FromArgb((int)(120 + 120 * h), 255, 255, 255)
-                                    : Color.FromArgb(70, 255, 255, 255);
-                    using (Pen pen = new Pen(rim, hot ? 1.8f : 1.1f))
-                        e.Graphics.DrawPath(pen, path);
+                using (GraphicsPath path = ExRoundF(rf, rad))
+                {
+                    using (LinearGradientBrush b = new LinearGradientBrush(r, top, bot, 90f))
+                        g.FillPath(b, path);
 
-                    // andar ki gehari line (depth)
-                    if (!dn)
+                    Region old = g.Clip;
+                    g.SetClip(path, CombineMode.Intersect);
+                    // glossy top half
+                    using (SolidBrush gl = new SolidBrush(Color.FromArgb(dn ? 10 : 28, 255, 255, 255)))
+                        g.FillRectangle(gl, r.X, r.Y, r.Width, r.Height / 2);
+                    // hover: bhagwa underline (close keeps a white one)
+                    if (hot && !dn)
                     {
-                        using (GraphicsPath ip = ExRounded(new Rectangle(r.X + 1, r.Y + 1, r.Width - 2, r.Height - 2), Math.Max(3, rad - 2)))
-                        using (Pen ipen = new Pen(Color.FromArgb(40, 8, 26, 58), 1f))
-                            e.Graphics.DrawPath(ipen, ip);
+                        Color ul = kind == 3 ? Color.White : (kind == 2 ? Color.FromArgb(255, 237, 213) : ExSaffronL);
+                        using (SolidBrush u = new SolidBrush(Color.FromArgb((int)(255 * h), ul)))
+                            g.FillRectangle(u, r.X, r.Bottom - ExS(3, k), r.Width, ExS(3, k));
                     }
+                    g.Clip = old;
+
+                    Color rim = hot ? Color.FromArgb((int)(110 + 120 * h), 255, 255, 255) : Color.FromArgb(60, 255, 255, 255);
+                    using (Pen pen = new Pen(rim, hot ? 1.5f : 1f))
+                        g.DrawPath(pen, path);
                 }
 
                 Color fg = Color.White;
 
                 if (kind == 2 || kind == 3 || text.Length == 0)
                 {
-                    Rectangle ir = new Rectangle(r.X + r.Width / 2 - ExS(10, k), r.Y + r.Height / 2 - ExS(10, k), ExS(20, k), ExS(20, k));
-                    ExIcon(e.Graphics, ir, icon, fg, k);
+                    int isz = ExS(24, k);
+                    Rectangle ir = new Rectangle(r.X + (r.Width - isz) / 2, r.Y + (r.Height - isz) / 2, isz, isz);
+                    ExIcon(g, ir, icon, fg, k);
                     return;
                 }
 
-                Rectangle ic = new Rectangle(r.X + ExS(12, k), r.Y + r.Height / 2 - ExS(9, k), ExS(18, k), ExS(18, k));
-                ExIcon(e.Graphics, ic, icon, fg, k);
-
-                Rectangle tr = new Rectangle(r.X + ExS(38, k), r.Y, r.Width - ExS(46, k), r.Height);
-                if (tr.Width < 10) return;
-
-                int size = Math.Max(9, (int)Math.Round(12 * k));
-                Font f = ExCached("Segoe UI Semibold", size, FontStyle.Bold, 1f);
-                while (size > 9 && TextRenderer.MeasureText(text, f).Width > tr.Width)
+                int icoSz = ExS(19, k);
+                Font f = null;
+                int size = Math.Max(9, (int)Math.Round(13.5f * k));
+                f = ExCached("Segoe UI Semibold", size, FontStyle.Bold, 1f);
+                int maxText = r.Width - icoSz - ExS(30, k);
+                while (size > 9 && TextRenderer.MeasureText(text, f, Size.Empty, TextFormatFlags.NoPadding).Width > maxText)
                 {
                     size--;
                     f = ExCached("Segoe UI Semibold", size, FontStyle.Bold, 1f);
                 }
+                int tw = Math.Min(maxText, TextRenderer.MeasureText(text, f, Size.Empty, TextFormatFlags.NoPadding).Width);
+                int gw = icoSz + ExS(9, k) + tw;
+                int x = r.X + Math.Max(ExS(10, k), (r.Width - gw) / 2);
+                Rectangle ic = new Rectangle(x, r.Y + (r.Height - icoSz) / 2, icoSz, icoSz);
+                ExIcon(g, ic, icon, fg, k);
 
-                TextRenderer.DrawText(e.Graphics, text, f, tr, fg,
+                Rectangle tr = new Rectangle(ic.Right + ExS(9, k), r.Y, Math.Max(10, tw + 4), r.Height);
+                TextRenderer.DrawText(g, text, f, tr, fg,
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
-                    TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
+                    TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
             }
             catch { }
         }
 
+        // Lucide-style line icons, drawn on a 24-unit grid scaled to the target rectangle (2-unit stroke, round caps).
         private static void ExIcon(Graphics g, Rectangle r, int id, Color col, float k)
         {
-            int cx = r.X + r.Width / 2;
-            int cy = r.Y + r.Height / 2;
-            using (Pen p = new Pen(col, Math.Max(1.4f, 1.9f * k)))
+            SmoothingMode oldSm = g.SmoothingMode;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            float s = Math.Min(r.Width, r.Height) / 24f;
+            float ox = r.X + (r.Width - 24 * s) / 2f, oy = r.Y + (r.Height - 24 * s) / 2f;
+            Func<float, float, PointF> P = (x, y) => new PointF(ox + x * s, oy + y * s);
+            Func<float, float, float, float, RectangleF> R = (x, y, w, h) => new RectangleF(ox + x * s, oy + y * s, w * s, h * s);
+
+            using (Pen p = new Pen(col, Math.Max(1.3f, 2f * s)))
+            using (SolidBrush b = new SolidBrush(col))
             {
                 p.StartCap = LineCap.Round;
                 p.EndCap = LineCap.Round;
@@ -1290,65 +1620,138 @@ namespace APP_FRAMEWORK
 
                 switch (id)
                 {
-                    case 1:
-                        g.DrawRectangle(p, r.X + 1, r.Y + 4, r.Width - 2, r.Height - 8);
-                        g.DrawEllipse(p, r.X + 4, r.Y + 7, 5, 5);
-                        g.DrawLine(p, r.X + 11, r.Y + 9, r.Right - 3, r.Y + 9);
-                        g.DrawLine(p, r.X + 11, r.Y + 13, r.Right - 5, r.Y + 13);
+                    case 1: // id-card
+                        using (GraphicsPath gp = ExRoundF(R(2, 5, 20, 14), 2 * s)) g.DrawPath(p, gp);
+                        g.DrawEllipse(p, R(6, 8.5f, 5, 5));
+                        g.DrawLine(p, P(14, 10), P(18, 10));
+                        g.DrawLine(p, P(14, 14), P(17, 14));
+                        g.DrawArc(p, R(5, 14.5f, 7, 5), 200, 140);
                         break;
-                    case 2:
-                        g.DrawLine(p, r.X + 1, r.Y + 6, cx, r.Y + 2);
-                        g.DrawLine(p, cx, r.Y + 2, r.Right - 1, r.Y + 6);
-                        g.DrawLine(p, r.X + 1, r.Y + 6, r.Right - 1, r.Y + 6);
-                        g.DrawLine(p, r.X + 4, r.Y + 6, r.X + 4, r.Bottom - 3);
-                        g.DrawLine(p, cx, r.Y + 6, cx, r.Bottom - 3);
-                        g.DrawLine(p, r.Right - 4, r.Y + 6, r.Right - 4, r.Bottom - 3);
-                        g.DrawLine(p, r.X + 1, r.Bottom - 2, r.Right - 1, r.Bottom - 2);
+                    case 2: // landmark (bank)
+                        g.DrawLine(p, P(3, 22), P(21, 22));
+                        g.DrawLine(p, P(6, 18), P(6, 11));
+                        g.DrawLine(p, P(10, 18), P(10, 11));
+                        g.DrawLine(p, P(14, 18), P(14, 11));
+                        g.DrawLine(p, P(18, 18), P(18, 11));
+                        g.DrawPolygon(p, new[] { P(12, 2), P(20, 7), P(4, 7) });
                         break;
-                    case 3:
-                        g.DrawLine(p, cx, r.Y + 3, cx, r.Bottom - 3);
-                        g.DrawLine(p, r.X + 3, cy, r.Right - 3, cy);
+                    case 3: // ticket-plus
+                        using (GraphicsPath gp = new GraphicsPath())
+                        {
+                            gp.AddLine(P(2, 9), P(2, 7));
+                            gp.AddArc(R(2, 5, 4, 4), 180, 90);
+                            gp.AddLine(P(4, 5), P(20, 5));
+                            gp.AddArc(R(18, 5, 4, 4), 270, 90);
+                            gp.AddLine(P(22, 7), P(22, 9));
+                            gp.AddArc(R(19, 9, 6, 6), 270, -180);
+                            gp.AddLine(P(22, 15), P(22, 17));
+                            gp.AddArc(R(18, 15, 4, 4), 0, 90);
+                            gp.AddLine(P(20, 19), P(4, 19));
+                            gp.AddArc(R(2, 15, 4, 4), 90, 90);
+                            gp.AddLine(P(2, 17), P(2, 15));
+                            gp.AddArc(R(-1, 9, 6, 6), 90, -180);
+                            gp.CloseFigure();
+                            g.DrawPath(p, gp);
+                        }
+                        g.DrawLine(p, P(9, 12), P(15, 12));
+                        g.DrawLine(p, P(12, 9), P(12, 15));
                         break;
-                    case 4:
-                        g.DrawPolygon(p, new Point[] {
-                            new Point(r.X + 4, r.Y + 2),
-                            new Point(r.Right - 3, cy),
-                            new Point(r.X + 4, r.Bottom - 2) });
+                    case 4: // circle-play
+                        g.DrawEllipse(p, R(2, 2, 20, 20));
+                        g.DrawPolygon(p, new[] { P(10, 8), P(16, 12), P(10, 16) });
                         break;
-                    case 5:
-                        g.DrawEllipse(p, r.X + 1, r.Y + 1, r.Width - 2, r.Height - 2);
-                        g.DrawEllipse(p, cx - 4, r.Y + 1, 8, r.Height - 2);
-                        g.DrawLine(p, r.X + 1, cy, r.Right - 1, cy);
+                    case 5: // globe
+                        g.DrawEllipse(p, R(2, 2, 20, 20));
+                        g.DrawEllipse(p, R(7.5f, 2, 9, 20));
+                        g.DrawLine(p, P(2, 12), P(22, 12));
                         break;
-                    case 6:
-                        g.DrawPolygon(p, new Point[] {
-                            new Point(cx, r.Y + 1),
-                            new Point(r.Right - 2, r.Y + 5),
-                            new Point(r.Right - 3, r.Bottom - 6),
-                            new Point(cx, r.Bottom - 1),
-                            new Point(r.X + 3, r.Bottom - 6),
-                            new Point(r.X + 2, r.Y + 5) });
+                    case 6: // shield-check
+                        using (GraphicsPath gp = new GraphicsPath())
+                        {
+                            gp.AddBezier(P(12, 22), P(17, 20), P(20, 16.5f), P(20, 13));
+                            gp.AddLine(P(20, 13), P(20, 5.5f));
+                            gp.AddLine(P(20, 5.5f), P(12, 2));
+                            gp.AddLine(P(12, 2), P(4, 5.5f));
+                            gp.AddLine(P(4, 5.5f), P(4, 13));
+                            gp.AddBezier(P(4, 13), P(4, 16.5f), P(7, 20), P(12, 22));
+                            gp.CloseFigure();
+                            g.DrawPath(p, gp);
+                        }
+                        g.DrawLines(p, new[] { P(9, 12), P(11, 14), P(15, 10) });
                         break;
-                    case 7:
-                        g.DrawRectangle(p, r.X + 2, r.Y + 2, r.Width - 4, r.Height - 4);
-                        g.DrawRectangle(p, r.X + 6, r.Y + 2, r.Width - 12, 5);
-                        g.DrawRectangle(p, r.X + 5, r.Bottom - 7, r.Width - 10, 5);
+                    case 7: // database (backup)
+                        g.DrawEllipse(p, R(3, 2, 18, 6));
+                        g.DrawLine(p, P(3, 5), P(3, 19));
+                        g.DrawLine(p, P(21, 5), P(21, 19));
+                        g.DrawArc(p, R(3, 9, 18, 6), 0, 180);
+                        g.DrawArc(p, R(3, 16, 18, 6), 0, 180);
                         break;
-                    case 8:
-                        g.DrawEllipse(p, r.X + 1, r.Y + 5, 7, 7);
-                        g.DrawLine(p, r.X + 8, cy - 1, r.Right - 2, cy - 1);
-                        g.DrawLine(p, r.Right - 5, cy - 1, r.Right - 5, cy + 4);
+                    case 8: // key
+                        g.DrawEllipse(p, R(2, 13, 8, 8));
+                        g.DrawLine(p, P(8.6f, 14.4f), P(21, 2));
+                        g.DrawLine(p, P(15.5f, 7.5f), P(19, 11));
+                        g.DrawLine(p, P(18.5f, 4.5f), P(21, 7));
                         break;
-                    case 9:
-                        g.DrawArc(p, cx - 8, cy - 7, 16, 16, -62, 304);
-                        g.DrawLine(p, cx, r.Y, cx, cy);
+                    case 9: // power
+                        g.DrawLine(p, P(12, 2), P(12, 12));
+                        g.DrawArc(p, R(3, 4, 18, 18), -50, 280);
                         break;
-                    case 10:
-                        g.DrawLine(p, cx - 7, cy - 7, cx + 7, cy + 7);
-                        g.DrawLine(p, cx + 7, cy - 7, cx - 7, cy + 7);
+                    case 10: // x (a touch bolder so the close button reads instantly)
+                        using (Pen t = new Pen(col, Math.Max(1.8f, 2.6f * s)))
+                        {
+                            t.StartCap = LineCap.Round; t.EndCap = LineCap.Round;
+                            g.DrawLine(t, P(6, 6), P(18, 18));
+                            g.DrawLine(t, P(18, 6), P(6, 18));
+                        }
+                        break;
+                    case 11: // user
+                        g.DrawEllipse(p, R(8, 3, 8, 8));
+                        g.DrawArc(p, R(4, 14, 16, 14), 180, 180);
+                        break;
+                    case 12: // timer
+                        g.DrawLine(p, P(10, 2), P(14, 2));
+                        g.DrawLine(p, P(12, 14), P(15, 11));
+                        g.DrawEllipse(p, R(4, 6, 16, 16));
+                        break;
+                    case 13: // tag
+                        g.DrawPolygon(p, new[] { P(2.5f, 2.5f), P(12, 2.5f), P(21.5f, 12), P(12, 21.5f), P(2.5f, 12) });
+                        g.FillEllipse(b, R(6, 6, 3, 3));
+                        break;
+                    case 14: // credit-card
+                        using (GraphicsPath gp = ExRoundF(R(2, 5, 20, 14), 2 * s)) g.DrawPath(p, gp);
+                        g.DrawLine(p, P(2, 10), P(22, 10));
+                        break;
+                    case 15: // check
+                        using (Pen t = new Pen(col, Math.Max(1.6f, 3f * s)))
+                        {
+                            t.StartCap = LineCap.Round; t.EndCap = LineCap.Round; t.LineJoin = LineJoin.Round;
+                            g.DrawLines(t, new[] { P(20, 6), P(9, 17), P(4, 12) });
+                        }
+                        break;
+                    case 16: // alert
+                        using (Pen t = new Pen(col, Math.Max(1.6f, 3f * s)))
+                        {
+                            t.StartCap = LineCap.Round; t.EndCap = LineCap.Round;
+                            g.DrawLine(t, P(12, 5), P(12, 13));
+                        }
+                        g.FillEllipse(b, R(10.2f, 16.5f, 3.6f, 3.6f));
                         break;
                 }
             }
+            g.SmoothingMode = oldSm;
+        }
+
+        private static GraphicsPath ExRoundF(RectangleF r, float radius)
+        {
+            GraphicsPath p = new GraphicsPath();
+            float d = Math.Min(radius * 2, Math.Min(r.Width, r.Height));
+            if (d <= 1) { p.AddRectangle(r); return p; }
+            p.AddArc(r.X, r.Y, d, d, 180, 90);
+            p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+            p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+            p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+            p.CloseFigure();
+            return p;
         }
 
         private static GraphicsPath ExRounded(Rectangle r, int radius)
@@ -1364,6 +1767,14 @@ namespace APP_FRAMEWORK
             return p;
         }
 
+        private static void ExClearRegion(Control c)
+        {
+            if (c == null || c.Region == null) return;
+            Region old = c.Region;
+            c.Region = null;
+            old.Dispose();
+        }
+
         private static void ExRoundRegion(Control c, int radius)
         {
             if (c.Width < 2 || c.Height < 2) return;
@@ -1375,4 +1786,4 @@ namespace APP_FRAMEWORK
             }
         }
     }
-}
+}

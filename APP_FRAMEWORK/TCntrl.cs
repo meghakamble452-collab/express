@@ -2536,14 +2536,8 @@ internal class TCntrl : UserControl
 
         if (_byteNovaFinalSuccessDesign)
         {
-            // The success screen is drawn on a 330 x 176 grid; centre + scale it into the bigger control.
-            g.Clear(Color.FromArgb(4, 13, 30));
-            float s = Math.Min(Width / 330f, Height / 176f);
-            GraphicsState gs = g.Save();
-            g.TranslateTransform((Width - 330 * s) / 2f, (Height - 176 * s) / 2f);
-            g.ScaleTransform(s, s);
-            DrawByteNovaFinalSuccessReference(g);
-            g.Restore(gs);
+            // Express-theme success screen, drawn natively at the control's real size.
+            XtDrawSuccess(g);
             return;
         }
 
@@ -3925,6 +3919,296 @@ internal class TCntrl : UserControl
             on ? XT_LOCKED : XT_TEXT,
             TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine |
             TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
+    }
+
+    // =====================================================================
+    // Express theme - BOOKING SUCCESS screen (visual only).
+    // Shows every value the old golden screen showed, plus login type / user+slot.
+    // =====================================================================
+    private static readonly Color XT_SUCCESS = Color.FromArgb(22, 163, 74);
+    private static readonly Color XT_SUCCESS_L = Color.FromArgb(34, 197, 94);
+
+    private void XtDrawSuccess(Graphics g)
+    {
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+        g.Clear(XT_BG);
+        int W = Width, M = 10, CW = W - M * 2;
+
+        // ---------- values (same sources the old screen used) ----------
+        string status = (_byteNovaFinalSuccessText ?? "").Trim();
+        if (status.Length == 0 && lblStatus != null) status = (lblStatus.Text ?? "").Trim();
+        if (status.Length == 0) status = "Ticket booked successfully";
+        string time = lblTime != null && !string.IsNullOrWhiteSpace(lblTime.Text) ? lblTime.Text.Trim() : DateTime.Now.ToString("HH:mm:ss");
+        string journey = lblJourney != null ? (lblJourney.Text ?? "").Trim() : "";
+        string train = cboTrain != null ? (cboTrain.Text ?? "").Trim() : "";
+        string cls = cboClass != null ? (cboClass.Text ?? "").Trim() : "";
+        string date = lblDate != null ? (lblDate.Text ?? "").Trim() : "";
+        string avl = lblAvailability != null ? (lblAvailability.Text ?? "").Trim() : "";
+        string bank = selectredbank ?? "";
+        if (string.IsNullOrWhiteSpace(bank) && cboGateway != null)
+        {
+            string gt = cboGateway.Text ?? "";
+            int sep = gt.IndexOf("_");
+            bank = (sep > 0 ? gt.Substring(0, sep) : gt).Trim();
+            if (bank.StartsWith("Select-", StringComparison.OrdinalIgnoreCase)) bank = "";
+        }
+        string login = lblLoginType != null ? (lblLoginType.Text ?? "").Trim() : "";
+        string userSlot = lbl_slot != null ? (lbl_slot.Text ?? "").Trim() : "";
+
+        // ---------- 1. success ribbon ----------
+        Rectangle rib = new Rectangle(M, M, CW, 40);
+        XtFill(g, new RectangleF(rib.X, rib.Y + 1.5f, rib.Width - 1, rib.Height - 1), 10, Color.FromArgb(60, 21, 128, 61), Color.Empty);
+        using (GraphicsPath rp = XtRound(new RectangleF(rib.X, rib.Y, rib.Width - 1, rib.Height - 1), 10))
+        {
+            using (LinearGradientBrush rb = new LinearGradientBrush(rib, XT_SUCCESS, XT_SUCCESS_L, LinearGradientMode.Horizontal))
+                g.FillPath(rb, rp);
+            Region oc = g.Clip;
+            g.SetClip(rp, CombineMode.Intersect);
+            using (SolidBrush gl = new SolidBrush(Color.FromArgb(36, 255, 255, 255)))
+                g.FillRectangle(gl, rib.X, rib.Y, rib.Width, rib.Height / 2);
+            g.Clip = oc;
+        }
+        int rcy = rib.Y + rib.Height / 2;
+        using (SolidBrush wb = new SolidBrush(Color.White))
+            g.FillEllipse(wb, rib.X + 9, rcy - 12, 24, 24);
+        XtSIcon(g, "check", new RectangleF(rib.X + 14, rcy - 7, 14, 14), XT_SUCCESS, 2.2f);
+
+        // time chip on the right
+        using (Font tf = new Font("Segoe UI Semibold", 9.5F))
+        {
+            Size ts = TextRenderer.MeasureText(g, time, tf, Size.Empty, TextFormatFlags.NoPadding);
+            Rectangle chip = new Rectangle(rib.Right - 12 - (ts.Width + 34), rcy - 13, ts.Width + 34, 26);
+            XtFill(g, chip, 13, Color.White, Color.Empty);
+            XtGlyph(g, "clock", new Rectangle(chip.X + 9, rcy - 6, 12, 12), XT_SUCCESS);
+            TextRenderer.DrawText(g, time, tf, new Rectangle(chip.X + 26, chip.Y, chip.Width - 28, chip.Height), Color.FromArgb(21, 128, 61),
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+
+            Rectangle tr = new Rectangle(rib.X + 42, rib.Y, chip.X - rib.X - 50, rib.Height);
+            using (Font hf = new Font("Segoe UI Semibold", 12F))
+                TextRenderer.DrawText(g, "Ticket Booked", hf, tr, Color.White,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
+        }
+
+        // ---------- 2. status / PNR line ----------
+        Rectangle st = new Rectangle(M, rib.Bottom + 6, CW, 44);
+        XtCard(g, st);
+        XtSIcon(g, "ticket", new RectangleF(st.X + 14, st.Y + st.Height / 2f - 8, 18, 16), XT_ORANGE, 1.8f);
+        XtFitText(g, status, "Segoe UI", FontStyle.Bold, 13f, 8.5f,
+            new Rectangle(st.X + 40, st.Y + 3, st.Width - 50, st.Height - 6), XT_NAVY, true);
+
+        // ---------- 3. details grid ----------
+        Rectangle dg = new Rectangle(M, st.Bottom + 6, CW, 54);
+        XtCard(g, dg);
+        string[] caps = { "JOURNEY", "TRAIN", "CLASS", "DATE" };
+        string[] vals = { journey, train, cls, date };
+        string[] icons = { "pin", "train", "seat", "calendar" };
+        float[] weights = { 1.45f, 0.95f, 0.75f, 1.0f };
+        float wsum = 0; foreach (float wv in weights) wsum += wv;
+        float cx = dg.X + 12, avail = dg.Width - 18;
+        for (int i = 0; i < 4; i++)
+        {
+            int colW = (int)(avail * weights[i] / wsum);
+            Rectangle col = new Rectangle((int)cx, dg.Y, colW, dg.Height);
+            if (i > 0)
+                using (Pen sp = new Pen(Color.FromArgb(230, 236, 245)))
+                    g.DrawLine(sp, col.X - 4, dg.Y + 10, col.X - 4, dg.Bottom - 10);
+            XtSIcon(g, icons[i], new RectangleF(col.X + 2, dg.Y + 10, 12, 12), XT_ORANGE, 1.5f);
+            using (Font cf = new Font("Segoe UI Semibold", 7.5F))
+                TextRenderer.DrawText(g, caps[i], cf, new Rectangle(col.X + 18, dg.Y + 8, col.Width - 20, 16), XT_MUTED,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+            string v = string.IsNullOrEmpty(vals[i]) ? "-" : vals[i];
+            XtFitText(g, v, "Segoe UI", FontStyle.Bold, 10.5f, 7.5f,
+                new Rectangle(col.X + 2, dg.Y + 26, col.Width - 8, 24), XT_TEXT, false);
+            cx += colW;
+        }
+
+        // ---------- 4. availability / fare + bank + login badges ----------
+        Rectangle bs = new Rectangle(M, dg.Bottom + 6, CW, 46);
+        XtCard(g, bs);
+        int bcy = bs.Y + bs.Height / 2;
+        int right = bs.Right - 10;
+        using (Font bf = new Font("Segoe UI Semibold", 8.5F))
+        {
+            if (login.Length > 0)
+                right = XtBadge(g, login, bf, right, bcy, Color.FromArgb(219, 234, 254), XT_BLUE, "globe") - 6;
+            if (bank.Length > 0)
+                right = XtBadge(g, bank, bf, right, bcy, Color.FromArgb(255, 237, 213), Color.FromArgb(194, 65, 12), "card") - 6;
+        }
+        XtSIcon(g, "train", new RectangleF(bs.X + 14, bcy - 7, 14, 14), XT_SUCCESS, 1.6f);
+        XtFitText(g, avl.Length > 0 ? avl : "-", "Segoe UI", FontStyle.Bold, 10f, 7.5f,
+            new Rectangle(bs.X + 34, bs.Y + 2, Math.Max(20, right - (bs.X + 34) - 4), bs.Height - 4), Color.FromArgb(21, 128, 61), true);
+
+        // ---------- 5. footer: user / slot + brand ----------
+        Rectangle ft = new Rectangle(M, bs.Bottom + 4, CW, Height - bs.Bottom - 4 - 4);
+        int fcy = ft.Y + ft.Height / 2;
+        int brandW = 0;
+        using (Font nf = new Font("Segoe UI", 9.5F, FontStyle.Bold | FontStyle.Italic))
+        {
+            Size ns = TextRenderer.MeasureText(g, "Express", nf, Size.Empty, TextFormatFlags.NoPadding);
+            brandW = 18 + 5 + ns.Width;
+            int bx = ft.Right - brandW;
+            Image logo = LoadBrandLogo();
+            Rectangle lr = new Rectangle(bx, fcy - 9, 18, 18);
+            if (logo != null)
+            {
+                InterpolationMode im = g.InterpolationMode;
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.DrawImage(logo, lr);
+                g.InterpolationMode = im;
+            }
+            else
+            {
+                XtFill(g, lr, 4, Color.FromArgb(132, 204, 22), Color.Empty);
+                using (Font ef = new Font("Segoe UI", 8F, FontStyle.Bold))
+                    TextRenderer.DrawText(g, "E", ef, lr, Color.FromArgb(46, 16, 101),
+                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+            }
+            TextRenderer.DrawText(g, "Express", nf, new Rectangle(bx + 23, ft.Y, ns.Width + 4, ft.Height), XT_NAVY,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+        }
+        if (userSlot.Length > 0)
+        {
+            XtGlyph(g, "user", new Rectangle(ft.X + 4, fcy - 6, 12, 12), XT_MUTED);
+            XtFitText(g, userSlot, "Segoe UI", FontStyle.Regular, 8.5f, 7f,
+                new Rectangle(ft.X + 20, ft.Y, ft.Width - brandW - 30, ft.Height), XT_MUTED, false);
+        }
+
+        using (Pen fr = new Pen(XT_FRAME))
+            g.DrawRectangle(fr, 0, 0, Width - 1, Height - 1);
+    }
+
+    // Pill badge drawn right-aligned ending at `right`; returns its left edge.
+    private int XtBadge(Graphics g, string text, Font f, int right, int cy, Color fill, Color fg, string icon)
+    {
+        // Shrink the font (down to 7pt) before ever cutting the text; ellipsis only as a last resort.
+        const int maxW = 200;
+        Font use = f;
+        Font owned = null;
+        Size ts = TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding);
+        for (float pt = f.SizeInPoints - 0.5f; ts.Width + 34 > maxW && pt >= 7f; pt -= 0.5f)
+        {
+            if (owned != null) owned.Dispose();
+            owned = new Font(f.FontFamily, pt, f.Style);
+            use = owned;
+            ts = TextRenderer.MeasureText(g, text, use, Size.Empty, TextFormatFlags.NoPadding);
+        }
+        int w = Math.Min(maxW, ts.Width + 34);
+        Rectangle r = new Rectangle(right - w, cy - 12, w, 24);
+        XtFill(g, r, 12, fill, Color.Empty);
+        XtSIcon(g, icon, new RectangleF(r.X + 9, cy - 6, 12, 12), fg, 1.5f);
+        TextRenderer.DrawText(g, text, use, new Rectangle(r.X + 25, r.Y, r.Width - 29, r.Height), fg,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding |
+            TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
+        if (owned != null) owned.Dispose();
+        return r.X;
+    }
+
+    // Draws text at the largest size (maxPt..minPt) that fits on one line; if it still doesn't fit,
+    // wraps onto two lines (when allowed) so the full value stays readable; ellipsis only as last resort.
+    private static void XtFitText(Graphics g, string text, string family, FontStyle style, float maxPt, float minPt,
+        Rectangle r, Color color, bool allowWrap)
+    {
+        if (r.Width < 4 || r.Height < 4 || string.IsNullOrEmpty(text)) return;
+        const TextFormatFlags one = TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine;
+        for (float pt = maxPt; pt >= minPt - 0.01f; pt -= 0.5f)
+        {
+            using (Font f = new Font(family, pt, style))
+            {
+                Size s = TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding);
+                if (s.Width <= r.Width && s.Height <= r.Height)
+                {
+                    TextRenderer.DrawText(g, text, f, r, color, one);
+                    return;
+                }
+            }
+        }
+        if (allowWrap)
+        {
+            const TextFormatFlags wrap = TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding |
+                                         TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl;
+            for (float pt = Math.Min(maxPt, 10f); pt >= minPt - 0.01f; pt -= 0.5f)
+            {
+                using (Font f = new Font(family, pt, style))
+                {
+                    Size s = TextRenderer.MeasureText(g, text, f, new Size(r.Width, int.MaxValue), TextFormatFlags.NoPadding | TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl);
+                    if (s.Height <= r.Height)
+                    {
+                        TextRenderer.DrawText(g, text, f, r, color, wrap);
+                        return;
+                    }
+                }
+            }
+            using (Font f = new Font(family, minPt, style))
+                TextRenderer.DrawText(g, text, f, r, color, wrap | TextFormatFlags.EndEllipsis);
+            return;
+        }
+        using (Font f = new Font(family, minPt, style))
+            TextRenderer.DrawText(g, text, f, r, color, one | TextFormatFlags.EndEllipsis);
+    }
+
+    // Lucide-style 2px line icons for the success screen.
+    private static void XtSIcon(Graphics g, string kind, RectangleF r, Color c, float stroke)
+    {
+        SmoothingMode old = g.SmoothingMode;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        float x = r.X, y = r.Y, w = r.Width, h = r.Height;
+        using (Pen p = new Pen(c, stroke))
+        using (SolidBrush b = new SolidBrush(c))
+        {
+            p.StartCap = LineCap.Round; p.EndCap = LineCap.Round; p.LineJoin = LineJoin.Round;
+            switch (kind)
+            {
+                case "check":
+                    g.DrawLines(p, new[] { new PointF(x + w * 0.12f, y + h * 0.55f), new PointF(x + w * 0.4f, y + h * 0.82f), new PointF(x + w * 0.9f, y + h * 0.2f) });
+                    break;
+                case "ticket":
+                    using (GraphicsPath tp = XtArt.Round(new RectangleF(x, y + h * 0.1f, w, h * 0.8f), 2.5f))
+                        g.DrawPath(p, tp);
+                    using (Pen d = new Pen(c, 1.2f) { DashStyle = DashStyle.Dot })
+                        g.DrawLine(d, x + w * 0.62f, y + h * 0.18f, x + w * 0.62f, y + h * 0.82f);
+                    g.DrawLine(p, x + w * 0.18f, y + h * 0.4f, x + w * 0.45f, y + h * 0.4f);
+                    g.DrawLine(p, x + w * 0.18f, y + h * 0.6f, x + w * 0.38f, y + h * 0.6f);
+                    break;
+                case "pin":
+                    g.DrawEllipse(p, x + w * 0.2f, y, w * 0.6f, h * 0.6f);
+                    g.FillEllipse(b, x + w * 0.42f, y + h * 0.2f, w * 0.16f, h * 0.16f);
+                    g.DrawLine(p, x + w * 0.5f, y + h * 0.62f, x + w * 0.5f, y + h);
+                    break;
+                case "train":
+                    using (GraphicsPath tp = XtArt.Round(new RectangleF(x + w * 0.15f, y, w * 0.7f, h * 0.78f), 2))
+                        g.DrawPath(p, tp);
+                    g.DrawLine(p, x + w * 0.15f, y + h * 0.42f, x + w * 0.85f, y + h * 0.42f);
+                    g.DrawLine(p, x + w * 0.3f, y + h * 0.82f, x + w * 0.15f, y + h);
+                    g.DrawLine(p, x + w * 0.7f, y + h * 0.82f, x + w * 0.85f, y + h);
+                    break;
+                case "seat":
+                    g.DrawLines(p, new[] { new PointF(x + w * 0.22f, y), new PointF(x + w * 0.22f, y + h * 0.62f), new PointF(x + w * 0.85f, y + h * 0.62f) });
+                    g.DrawLine(p, x + w * 0.3f, y + h * 0.62f, x + w * 0.22f, y + h);
+                    g.DrawLine(p, x + w * 0.78f, y + h * 0.62f, x + w * 0.85f, y + h);
+                    g.DrawLine(p, x + w * 0.22f, y + h * 0.36f, x + w * 0.7f, y + h * 0.36f);
+                    break;
+                case "calendar":
+                    using (GraphicsPath cp = XtArt.Round(new RectangleF(x, y + h * 0.14f, w, h * 0.86f), 2))
+                        g.DrawPath(p, cp);
+                    g.DrawLine(p, x, y + h * 0.42f, x + w, y + h * 0.42f);
+                    g.DrawLine(p, x + w * 0.3f, y, x + w * 0.3f, y + h * 0.26f);
+                    g.DrawLine(p, x + w * 0.7f, y, x + w * 0.7f, y + h * 0.26f);
+                    break;
+                case "card":
+                    using (GraphicsPath cp = XtArt.Round(new RectangleF(x, y + h * 0.15f, w, h * 0.7f), 2))
+                        g.DrawPath(p, cp);
+                    g.DrawLine(p, x, y + h * 0.38f, x + w, y + h * 0.38f);
+                    g.DrawLine(p, x + w * 0.2f, y + h * 0.65f, x + w * 0.42f, y + h * 0.65f);
+                    break;
+                case "globe":
+                    g.DrawEllipse(p, x, y, w, h);
+                    g.DrawEllipse(p, x + w * 0.28f, y, w * 0.44f, h);
+                    g.DrawLine(p, x, y + h / 2, x + w, y + h / 2);
+                    break;
+            }
+        }
+        g.SmoothingMode = old;
     }
 
     private void ByteNovaModernPanelPaint(object sender, PaintEventArgs e)

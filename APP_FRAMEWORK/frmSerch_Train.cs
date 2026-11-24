@@ -1440,7 +1440,8 @@ internal class frmSerch_Train : Form
             btnSelect.SetBounds(cardW - 14 - selW, cy - 17, selW, 34);
             int fareX = x + 170;
             lblfare.SetBounds(fareX, cy - 14, Math.Max(120, btnSelect.Left - 12 - fareX), 28);
-            GetSeatAvlPic.SetBounds(fareX, cy - 14, 180, 28);
+            // the seat-check flag control is parked off-screen; the visible loader is the centred overlay
+            GetSeatAvlPic.SetBounds(-400, -400, 4, 4);
 
             // columns: everything before the days must end at 571 (first day X)
             int[] w = { 62, 150, 52, 60, 52, 60, 56, 57 };
@@ -2036,58 +2037,247 @@ internal class frmSerch_Train : Form
     {
         if (GetSeatAvlPic == null) return;
 
+        // GetSeatAvlPic stays the logic's "checking" flag (method_6 shows it, method_5 hides it).
+        // It is parked off-screen; its Visible state drives a centred overlay over a blurred page.
         GetSeatAvlPic.Image = null;
         GetSeatAvlPic.BackColor = NV_Card;
         GetSeatAvlPic.Paint -= GetSeatAvlPic_LoaderPaint;
         GetSeatAvlPic.Paint += GetSeatAvlPic_LoaderPaint;
+        GetSeatAvlPic.VisibleChanged -= NovaSeatFlagChanged;
+        GetSeatAvlPic.VisibleChanged += NovaSeatFlagChanged;
+
+        novaSeatOv = new NovaSeatOverlay();
+        novaSeatOv.Visible = false;
+        novaSeatOv.Paint += NovaSeatOverlayPaint;
+        Controls.Add(novaSeatOv);
 
         byteNovaSeatLoaderTimer = new System.Windows.Forms.Timer();
-        byteNovaSeatLoaderTimer.Interval = 70;
+        byteNovaSeatLoaderTimer.Interval = 16;
         byteNovaSeatLoaderTimer.Tick += delegate
         {
-            byteNovaSeatLoaderStep = (byteNovaSeatLoaderStep + 1) % 12;
-            if (GetSeatAvlPic.Visible) GetSeatAvlPic.Invalidate();
+            if (novaSeatOv != null && !novaSeatOv.IsDisposed && novaSeatOv.Visible)
+                novaSeatOv.Invalidate(novaSeatCard);
+            else
+                byteNovaSeatLoaderTimer.Stop();
         };
-        byteNovaSeatLoaderTimer.Start();
-        FormClosed += delegate { byteNovaSeatLoaderTimer.Stop(); byteNovaSeatLoaderTimer.Dispose(); };
+        FormClosed += delegate
+        {
+            byteNovaSeatLoaderTimer.Stop();
+            byteNovaSeatLoaderTimer.Dispose();
+            if (novaSeatBlur != null) { novaSeatBlur.Dispose(); novaSeatBlur = null; }
+        };
     }
 
     private void GetSeatAvlPic_LoaderPaint(object sender, PaintEventArgs e)
     {
-        PictureBox box = sender as PictureBox;
-        if (box == null || box.Width < 10 || box.Height < 10) return;
-        Graphics g = e.Graphics;
-        g.SmoothingMode = SmoothingMode.AntiAlias;
-        g.Clear(NV_Card);
+        // the flag control itself is off-screen; nothing to draw
+        e.Graphics.Clear(NV_Card);
+    }
 
-        Rectangle pill = new Rectangle(0, 0, box.Width - 1, box.Height - 1);
-        using (GraphicsPath pp = NovaPath(pill, pill.Height / 2))
+    // ---- centred overlay ----
+
+    private sealed class NovaSeatOverlay : Control
+    {
+        public NovaSeatOverlay()
         {
-            using (SolidBrush pb = new SolidBrush(Color.FromArgb(238, 245, 255))) g.FillPath(pb, pp);
-            using (Pen pen = new Pen(Color.FromArgb(200, 218, 244), 1f)) g.DrawPath(pen, pp);
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer |
+                     ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+            TabStop = false;
+            Cursor = Cursors.WaitCursor;
         }
+    }
 
-        int size = Math.Min(box.Height - 8, 18);
-        int cx = 12 + size / 2;
-        int cy = box.Height / 2;
-        for (int i = 0; i < 12; i++)
+    private NovaSeatOverlay novaSeatOv;
+    private Bitmap novaSeatBlur;
+    private Rectangle novaSeatCard;
+    private DateTime novaSeatStart;
+
+    private void NovaSeatFlagChanged(object sender, EventArgs e)
+    {
+        // method_5 hides the flag from the seat-check thread - marshal to the UI thread
+        if (IsDisposed || !IsHandleCreated) return;
+        if (InvokeRequired)
         {
-            double angle = (Math.PI * 2.0 * i / 12.0) - Math.PI / 2.0;
-            float x1 = cx + (float)(Math.Cos(angle) * (size * 0.27));
-            float y1 = cy + (float)(Math.Sin(angle) * (size * 0.27));
-            float x2 = cx + (float)(Math.Cos(angle) * (size * 0.48));
-            float y2 = cy + (float)(Math.Sin(angle) * (size * 0.48));
-            int distance = (i - byteNovaSeatLoaderStep + 12) % 12;
-            int alpha = Math.Max(35, 255 - distance * 18);
-            using (Pen p = new Pen(Color.FromArgb(alpha, NV_Link), 2F))
+            try { BeginInvoke(new MethodInvoker(NovaSeatSync)); } catch { }
+            return;
+        }
+        NovaSeatSync();
+    }
+
+    private void NovaSeatSync()
+    {
+        if (IsDisposed || novaSeatOv == null || novaSeatOv.IsDisposed) return;
+        bool show = GetSeatAvlPic != null && GetSeatAvlPic.Visible;
+        if (show == novaSeatOv.Visible) return;
+
+        if (show)
+        {
+            Rectangle cr = ClientRectangle;
+            if (cr.Width < 20 || cr.Height < 20) return;
+            if (novaSeatBlur != null) { novaSeatBlur.Dispose(); novaSeatBlur = null; }
+            novaSeatBlur = NovaSeatSnapshotBlur(cr.Size);
+
+            int cw = Math.Min(340, cr.Width - 40), ch = 132;
+            novaSeatCard = new Rectangle((cr.Width - cw) / 2 - 8, (cr.Height - ch) / 2 - 8, cw + 16, ch + 18);
+
+            novaSeatOv.Bounds = cr;
+            // keep the header close button usable (not covered, not blurred)
+            Region reg = new Region(new Rectangle(Point.Empty, cr.Size));
+            if (btnClose != null && btnClose.Visible)
             {
-                p.StartCap = LineCap.Round; p.EndCap = LineCap.Round;
-                g.DrawLine(p, x1, y1, x2, y2);
+                Rectangle cb = RectangleToClient(btnClose.RectangleToScreen(btnClose.ClientRectangle));
+                cb.Inflate(2, 2);
+                reg.Exclude(cb);
+            }
+            Region old = novaSeatOv.Region;
+            novaSeatOv.Region = reg;
+            if (old != null) old.Dispose();
+
+            novaSeatStart = DateTime.Now;
+            novaSeatOv.Visible = true;
+            novaSeatOv.BringToFront();
+            if (btnClose != null) btnClose.BringToFront();
+            byteNovaSeatLoaderTimer.Start();
+        }
+        else
+        {
+            byteNovaSeatLoaderTimer.Stop();
+            novaSeatOv.Visible = false;
+            if (novaSeatBlur != null) { novaSeatBlur.Dispose(); novaSeatBlur = null; }
+        }
+    }
+
+    private Bitmap NovaSeatSnapshotBlur(Size sz)
+    {
+        // Snapshot of the form itself (independent of other windows on screen); screen grab as fallback.
+        Bitmap shot = new Bitmap(sz.Width, sz.Height);
+        bool ok = false;
+        try
+        {
+            using (Bitmap full = new Bitmap(Math.Max(1, Width), Math.Max(1, Height)))
+            {
+                DrawToBitmap(full, new Rectangle(0, 0, full.Width, full.Height));
+                Point off = PointToScreen(Point.Empty);
+                off.Offset(-Left, -Top);
+                using (Graphics g = Graphics.FromImage(shot))
+                    g.DrawImage(full, new Rectangle(Point.Empty, sz), new Rectangle(off, sz), GraphicsUnit.Pixel);
+                ok = true;
             }
         }
-        using (Font f = new Font("Segoe UI Semibold", 9F, FontStyle.Bold))
-            TextRenderer.DrawText(g, "Checking seats...", f, new Rectangle(cx + size / 2 + 8, 0, box.Width - cx - size, box.Height),
-                NV_Link, TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+        catch { }
+        if (!ok)
+        {
+            try
+            {
+                using (Graphics g = Graphics.FromImage(shot))
+                    g.CopyFromScreen(PointToScreen(Point.Empty), Point.Empty, sz);
+            }
+            catch { }
+        }
+
+        // downscale -> upscale twice = soft blur
+        int sw = Math.Max(1, sz.Width / 7), sh = Math.Max(1, sz.Height / 7);
+        Bitmap blurred = new Bitmap(sz.Width, sz.Height);
+        using (Bitmap small = new Bitmap(sw, sh))
+        using (Bitmap mid = new Bitmap(Math.Max(1, sz.Width / 3), Math.Max(1, sz.Height / 3)))
+        {
+            using (Graphics g = Graphics.FromImage(small))
+            {
+                g.InterpolationMode = InterpolationMode.HighQualityBilinear;
+                g.DrawImage(shot, new Rectangle(0, 0, sw, sh));
+            }
+            using (Graphics g = Graphics.FromImage(mid))
+            {
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                g.DrawImage(small, new Rectangle(0, 0, mid.Width, mid.Height));
+            }
+            using (Graphics g = Graphics.FromImage(blurred))
+            {
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                g.DrawImage(mid, new Rectangle(0, 0, sz.Width, sz.Height));
+                using (SolidBrush w = new SolidBrush(Color.FromArgb(70, 255, 255, 255)))
+                    g.FillRectangle(w, 0, 0, sz.Width, sz.Height);
+                using (SolidBrush n = new SolidBrush(Color.FromArgb(46, 15, 42, 92)))
+                    g.FillRectangle(n, 0, 0, sz.Width, sz.Height);
+            }
+        }
+        shot.Dispose();
+        return blurred;
+    }
+
+    private void NovaSeatOverlayPaint(object sender, PaintEventArgs e)
+    {
+        Graphics g = e.Graphics;
+        Control ov = (Control)sender;
+        if (novaSeatBlur != null) g.DrawImageUnscaled(novaSeatBlur, 0, 0);
+        else using (SolidBrush b = new SolidBrush(Color.FromArgb(225, 232, 242))) g.FillRectangle(b, ov.ClientRectangle);
+
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        double t = (DateTime.Now - novaSeatStart).TotalSeconds;
+        Color orange = Color.FromArgb(245, 146, 28), blue = Color.FromArgb(37, 99, 235);
+
+        // frosted card (novaSeatCard includes an 8px margin for the shadow)
+        Rectangle card = new Rectangle(novaSeatCard.X + 8, novaSeatCard.Y + 8, novaSeatCard.Width - 16, novaSeatCard.Height - 18);
+        for (int i = 3; i >= 1; i--)
+            using (GraphicsPath sp = NovaPath(new Rectangle(card.X - i, card.Y - i + 4, card.Width + i * 2, card.Height + i * 2), 16 + i))
+            using (SolidBrush sb = new SolidBrush(Color.FromArgb(14, 15, 42, 92)))
+                g.FillPath(sb, sp);
+        using (GraphicsPath cp = NovaPath(card, 16))
+        {
+            using (SolidBrush cb = new SolidBrush(Color.FromArgb(246, 255, 255, 255))) g.FillPath(cb, cp);
+            using (Pen pen = new Pen(Color.FromArgb(214, 224, 240), 1f)) g.DrawPath(pen, cp);
+            // blue -> bhagwa top strip
+            Region oldClip = g.Clip;
+            g.SetClip(cp, CombineMode.Intersect);
+            using (LinearGradientBrush tb = new LinearGradientBrush(new Rectangle(card.X, card.Y, card.Width, 4), blue, orange, 0f))
+                g.FillRectangle(tb, card.X, card.Y, card.Width, 4);
+            g.Clip = oldClip;
+        }
+
+        // three bouncing dots (bhagwa, blue, bhagwa)
+        int dotsY = card.Y + 34;
+        int cx = card.X + card.Width / 2;
+        Color[] dc = { orange, blue, orange };
+        for (int i = 0; i < 3; i++)
+        {
+            double ph = t * 2 * Math.PI * 1.3 - i * 0.7;
+            float lift = (float)Math.Max(0, Math.Sin(ph)) * 9f;
+            float d = 10f;
+            float dx = cx + (i - 1) * 18 - d / 2;
+            using (SolidBrush sh = new SolidBrush(Color.FromArgb(30, 15, 42, 92)))
+                g.FillEllipse(sh, dx + 1 + lift * 0.1f, dotsY + d - 1, d - 2 - lift * 0.15f, 3);
+            using (SolidBrush db = new SolidBrush(dc[i]))
+                g.FillEllipse(db, dx, dotsY - lift, d, d);
+        }
+
+        // title + message
+        using (Font tf = new Font("Segoe UI Semibold", 11.5F))
+            TextRenderer.DrawText(g, "Checking seats...", tf, new Rectangle(card.X + 10, card.Y + 50, card.Width - 20, 24),
+                Color.FromArgb(15, 42, 92), TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+        using (Font mf = new Font("Segoe UI", 8.75F))
+            TextRenderer.DrawText(g, "Fetching live seat availability, please wait", mf,
+                new Rectangle(card.X + 10, card.Y + 74, card.Width - 20, 18),
+                Color.FromArgb(100, 116, 139), TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
+                TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
+
+        // indeterminate sliding gradient bar
+        Rectangle track = new Rectangle(card.X + 26, card.Bottom - 22, card.Width - 52, 6);
+        using (GraphicsPath tp = NovaPath(track, 3))
+        {
+            using (SolidBrush tb = new SolidBrush(Color.FromArgb(229, 236, 246))) g.FillPath(tb, tp);
+            Region oldClip = g.Clip;
+            g.SetClip(tp, CombineMode.Intersect);
+            double p = (t * 0.65) % 1.0;
+            int segW = (int)(track.Width * 0.38);
+            int sx = track.X - segW + (int)((track.Width + segW) * (p < 0.5 ? 2 * p * p : 1 - Math.Pow(-2 * p + 2, 2) / 2));
+            Rectangle seg = new Rectangle(sx, track.Y, segW, track.Height);
+            using (LinearGradientBrush sb = new LinearGradientBrush(new Rectangle(seg.X - 1, seg.Y, seg.Width + 2, seg.Height), blue, orange, 0f))
+            using (GraphicsPath segp = NovaPath(seg, 3))
+                g.FillPath(sb, segp);
+            g.Clip = oldClip;
+        }
     }
 
     protected override void Dispose(bool disposing)

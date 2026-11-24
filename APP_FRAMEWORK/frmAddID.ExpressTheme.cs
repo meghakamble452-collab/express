@@ -124,19 +124,20 @@ public partial class frmAddID
         SuspendLayout();
         try
         {
-            pnlHeader.Location = new Point(8, 8);
-            pnlHeader.Size = new Size(w - 16, 34);
+            pnlHeader.Location = new Point(6, 6);
+            pnlHeader.Size = new Size(w - 12, 40);
 
-            formName.Location = new Point(16, 7);
-            formName.Size = new Size(w - 140, 20);
+            formName.Location = new Point(16, 10);
+            formName.Size = new Size(w - 150, 20);
 
-            // 30x24, vertically centred in the 34px header, 6px from its right edge
-            btnClose.Size = new Size(30, 24);
-            btnClose.Location = new Point(pnlHeader.Width - 30 - 6, (pnlHeader.Height - 24) / 2);
+            // bigger close button: 38x30, vertically centred in the 40px header, 6px from its right edge
+            btnClose.Size = new Size(38, 30);
+            btnClose.Location = new Point(pnlHeader.Width - 38 - 6, (pnlHeader.Height - 30) / 2);
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
-            PnlBase.Location = new Point(8, 48);
-            PnlBase.Size = new Size(w - 16, h - 58);
+            // body starts right under the header and uses every remaining pixel
+            PnlBase.Location = new Point(6, 50);
+            PnlBase.Size = new Size(w - 12, h - 56);
 
             ExRound(PnlBase, 11);
 
@@ -156,7 +157,7 @@ public partial class frmAddID
         if (tabHistory == null) return;
 
         tabHistory.BackColor = Color.FromArgb(233, 241, 252);
-        tabHistory.Padding = new Padding(10, 46, 10, 10);
+        tabHistory.Padding = new Padding(8, 42, 8, 8);
 
         foreach (Control c in tabHistory.Controls)
         {
@@ -245,7 +246,7 @@ public partial class frmAddID
 
         if (exHistTitle != null)
         {
-            exHistTitle.SetBounds(10, 10, Math.Max(60, tabHistory.ClientSize.Width - 20), 30);
+            exHistTitle.SetBounds(8, 6, Math.Max(60, tabHistory.ClientSize.Width - 16), 30);
             exHistTitle.BringToFront();
         }
     }
@@ -316,25 +317,40 @@ public partial class frmAddID
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-        Color top = Color.FromArgb(239, 68, 68), bot = Color.FromArgb(205, 32, 38);
-        if (exCloseDown) { top = Color.FromArgb(185, 28, 28); bot = Color.FromArgb(160, 20, 24); }
-        else if (exCloseHot) { top = Color.FromArgb(248, 100, 100); bot = Color.FromArgb(226, 48, 52); }
+        // default: red with white X | hover: white with red X + red border | pressed: dark red, shifted down
+        Color top = Color.FromArgb(239, 68, 68), bot = Color.FromArgb(220, 38, 38);
+        Color edgeC = Color.FromArgb(185, 28, 28), glyph = Color.White;
+        if (exCloseDown)
+        {
+            top = Color.FromArgb(170, 26, 26); bot = Color.FromArgb(140, 20, 20);
+            edgeC = Color.FromArgb(127, 29, 29);
+        }
+        else if (exCloseHot)
+        {
+            top = Color.White; bot = Color.FromArgb(254, 242, 242);
+            edgeC = Color.FromArgb(220, 38, 38); glyph = Color.FromArgb(220, 38, 38);
+        }
 
-        Rectangle r = new Rectangle(1, 1, c.Width - 3, c.Height - 3);
+        Rectangle r = new Rectangle(1, 1, c.Width - 3, c.Height - 4);
         if (exCloseDown) r.Offset(0, 1);
         if (r.Width < 4 || r.Height < 4) return;
 
-        using (GraphicsPath p = ExPath(r, 7))
+        if (!exCloseDown)
+            using (GraphicsPath sp = ExPath(new Rectangle(r.X, r.Y + 2, r.Width, r.Height), 8))
+            using (SolidBrush sh = new SolidBrush(Color.FromArgb(55, 60, 10, 10)))
+                g.FillPath(sh, sp);
+
+        using (GraphicsPath p = ExPath(r, 8))
         {
             using (LinearGradientBrush bg = new LinearGradientBrush(r, top, bot, LinearGradientMode.Vertical))
                 g.FillPath(bg, p);
-            using (Pen edge = new Pen(Color.FromArgb(90, 255, 255, 255), 1f))
+            using (Pen edge = new Pen(edgeC, exCloseHot && !exCloseDown ? 1.6f : 1f))
                 g.DrawPath(edge, p);
         }
 
         // square, centred X (same arm length both ways)
-        float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f, a = 4.5f;
-        using (Pen x = new Pen(Color.White, 2f))
+        float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f, a = 6f;
+        using (Pen x = new Pen(glyph, 2.4f))
         {
             x.StartCap = LineCap.Round;
             x.EndCap = LineCap.Round;

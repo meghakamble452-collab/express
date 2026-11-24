@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using Bunifu.Framework.UI;
 
@@ -27,6 +29,7 @@ public class frmMessege : Form
 	public frmMessege()
 	{
 		InitializeComponent();
+		ApplyExpressSuccessTheme();
 	}
 
 	internal void mm()
@@ -38,6 +41,494 @@ public class frmMessege : Form
 	private void OK_Click(object sender, EventArgs e)
 	{
 		base.DialogResult = DialogResult.OK;
+	}
+
+	// =====================================================================
+	// Express theme - booking success popup (visual layer only).
+	// label1 / label2 / label3 / OK keep their names, texts and handlers;
+	// their content is painted by the cards below.
+	// =====================================================================
+	private static readonly Color XM_BG = Color.FromArgb(236, 242, 251);
+	private static readonly Color XM_GREEN = Color.FromArgb(22, 163, 74);
+	private static readonly Color XM_GREEN_D = Color.FromArgb(21, 128, 61);
+	private static readonly Color XM_ORANGE = Color.FromArgb(245, 146, 28);
+	private static readonly Color XM_ORANGE_D = Color.FromArgb(214, 96, 4);
+	private static readonly Color XM_NAVY = Color.FromArgb(15, 42, 92);
+	private static readonly Color XM_TEXT = Color.FromArgb(30, 41, 59);
+	private static readonly Color XM_MUTED = Color.FromArgb(100, 116, 139);
+	private static readonly Color XM_LINE = Color.FromArgb(220, 228, 241);
+
+	private const int XM_W = 640, XM_HEAD = 78, XM_FOOT = 72, XM_PAD = 16;
+
+	private readonly Font xmFTitle = new Font("Segoe UI Semibold", 15f);
+	private readonly Font xmFSub = new Font("Segoe UI", 9.5f);
+	private readonly Font xmFCap = new Font("Segoe UI Semibold", 8.5f);
+	private readonly Font xmFVal = new Font("Segoe UI Semibold", 10.5f);
+	private readonly Font xmFPnr = new Font("Segoe UI", 15f, FontStyle.Bold);
+	private readonly Font xmFPara = new Font("Segoe UI", 10.5f);
+	private readonly Font xmFBtn = new Font("Segoe UI Semibold", 10.5f);
+	private readonly Font xmFFoot = new Font("Segoe UI", 8.5f, FontStyle.Italic);
+
+	private Panel xmHead;
+	private Panel xmScroll;
+	private XmSurface xmBody;
+	private Button xmClose;
+	private float xmS = 1f;
+	private int xmOkState, xmCloseState;
+
+	private sealed class XmSurface : Panel
+	{
+		public XmSurface()
+		{
+			SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer |
+			         ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+		}
+	}
+
+	private int Xs(float v) { return (int)Math.Round(v * xmS); }
+
+	private void ApplyExpressSuccessTheme()
+	{
+		SuspendLayout();
+		try
+		{
+			using (Graphics g = CreateGraphics()) xmS = Math.Max(1f, g.DpiX / 96f);
+		}
+		catch { xmS = 1f; }
+
+		AutoScaleMode = AutoScaleMode.None;          // layout is computed here in real pixels
+		FormBorderStyle = FormBorderStyle.None;
+		BackColor = XM_BG;
+		DoubleBuffered = true;
+		Padding = new Padding(1);
+
+		// designer labels keep their text (callers may set it); the cards paint it
+		label1.Visible = false;
+		label2.Visible = false;
+		label3.Visible = false;
+		label1.TextChanged += delegate { XmRelayout(); };
+		label2.TextChanged += delegate { XmRelayout(); };
+		label3.TextChanged += delegate { if (panel1 != null) panel1.Invalidate(); };
+
+		// ---- header ----
+		xmHead = new XmSurface { Dock = DockStyle.Top, Height = Xs(XM_HEAD) };
+		xmHead.Paint += XmHeadPaint;
+		xmHead.MouseDown += XmDragDown;
+		xmClose = new Button
+		{
+			FlatStyle = FlatStyle.Flat,
+			Size = new Size(Xs(36), Xs(30)),
+			Cursor = Cursors.Hand,
+			TabStop = false,
+			Text = "",
+			BackColor = XM_GREEN
+		};
+		xmClose.FlatAppearance.BorderSize = 0;
+		xmClose.FlatAppearance.MouseOverBackColor = XM_GREEN;
+		xmClose.FlatAppearance.MouseDownBackColor = XM_GREEN;
+		xmClose.Paint += XmClosePaint;
+		XmHover(xmClose, s => xmCloseState = s);
+		xmClose.Click += delegate { OK.PerformClick(); };   // same result as the OK button
+		xmHead.Controls.Add(xmClose);
+		xmHead.Resize += delegate
+		{
+			xmClose.Location = new Point(xmHead.Width - xmClose.Width - Xs(14), Xs(14));
+		};
+
+		// ---- footer (existing panel1 with the OK button) ----
+		panel1.Dock = DockStyle.Bottom;
+		panel1.Height = Xs(XM_FOOT);
+		panel1.BackColor = XM_BG;
+		typeof(Control).GetProperty("DoubleBuffered",
+			System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+			.SetValue(panel1, true, null);
+		panel1.Paint += XmFootPaint;
+		panel1.Resize += delegate { XmPlaceOk(); };
+
+		OK.FlatStyle = FlatStyle.Flat;
+		OK.FlatAppearance.BorderSize = 0;
+		OK.FlatAppearance.MouseOverBackColor = XM_BG;
+		OK.FlatAppearance.MouseDownBackColor = XM_BG;
+		OK.BackColor = XM_BG;
+		OK.UseVisualStyleBackColor = false;
+		OK.Cursor = Cursors.Hand;
+		OK.Size = new Size(Xs(150), Xs(42));
+		OK.Anchor = AnchorStyles.None;
+		OK.Paint += XmOkPaint;
+		XmHover(OK, s => xmOkState = s);
+
+		// ---- body: scrollable surface holding the message card ----
+		xmScroll = new Panel { Dock = DockStyle.Fill, AutoScroll = true, BackColor = XM_BG };
+		xmBody = new XmSurface { Location = Point.Empty, BackColor = XM_BG };
+		xmBody.Paint += XmBodyPaint;
+		xmScroll.Controls.Add(xmBody);
+		xmScroll.Resize += delegate { XmRelayout(); };
+
+		Controls.Add(xmScroll);
+		Controls.Add(xmHead);
+		xmScroll.BringToFront();      // fill takes the space between header and footer
+		panel1.SendToBack();
+		xmHead.SendToBack();
+
+		Paint += XmFramePaint;
+		ClientSize = new Size(Xs(XM_W), Xs(XM_HEAD + XM_FOOT + 200));
+		ResumeLayout(true);
+	}
+
+	protected override void OnLoad(EventArgs e)
+	{
+		base.OnLoad(e);
+		XmRelayout();
+		XmPlaceOk();
+		CenterToScreen();
+	}
+
+	private void XmDragDown(object sender, MouseEventArgs e)
+	{
+		if (e.Button != MouseButtons.Left) return;
+		Point start = Cursor.Position, origin = Location;
+		Control c = (Control)sender;
+		MouseEventHandler move = null;
+		MouseEventHandler up = null;
+		move = delegate { Location = new Point(origin.X + Cursor.Position.X - start.X, origin.Y + Cursor.Position.Y - start.Y); };
+		up = delegate { c.MouseMove -= move; c.MouseUp -= up; };
+		c.MouseMove += move;
+		c.MouseUp += up;
+	}
+
+	private void XmHover(Control c, Action<int> set)
+	{
+		c.MouseEnter += delegate { set(1); c.Invalidate(); };
+		c.MouseLeave += delegate { set(0); c.Invalidate(); };
+		c.MouseDown += delegate (object s, MouseEventArgs e) { if (e.Button == MouseButtons.Left) { set(2); c.Invalidate(); } };
+		c.MouseUp += delegate
+		{
+			if (c.IsDisposed) return;
+			set(c.ClientRectangle.Contains(c.PointToClient(Cursor.Position)) ? 1 : 0);
+			c.Invalidate();
+		};
+	}
+
+	private void XmPlaceOk()
+	{
+		if (OK == null || panel1 == null) return;
+		OK.Location = new Point(panel1.Width - OK.Width - Xs(XM_PAD + 2), (panel1.Height - OK.Height) / 2);
+	}
+
+	// ---------- message model: "Key : Value" lines become rows, everything else a paragraph ----------
+
+	private sealed class XmLine
+	{
+		public string Key, Value, Para;
+		public bool Divider, Gap;
+	}
+
+	private static List<XmLine> XmParse(string text)
+	{
+		List<XmLine> list = new List<XmLine>();
+		string[] lines = (text ?? "").Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+		foreach (string raw in lines)
+		{
+			string l = raw.Trim();
+			if (l.Length == 0)
+			{
+				if (list.Count > 0 && !list[list.Count - 1].Gap) list.Add(new XmLine { Gap = true });
+				continue;
+			}
+			bool divider = l.Length >= 3;
+			foreach (char ch in l) if ("-=_*~.".IndexOf(ch) < 0) { divider = false; break; }
+			if (divider) { list.Add(new XmLine { Divider = true }); continue; }
+
+			int i = l.IndexOf(':');
+			// a colon between two digits is a time (e.g. 00:00:07), not a "Key : Value" separator
+			bool timeColon = i > 0 && i < l.Length - 1 && char.IsDigit(l[i - 1]) && char.IsDigit(l[i + 1]);
+			if (i > 0 && i <= 28 && i < l.Length - 1 && !timeColon)
+			{
+				string k = l.Substring(0, i).Trim().TrimEnd('-', '=', '>').Trim();
+				string v = l.Substring(i + 1).Trim().TrimStart('-', '=', '>').Trim();
+				if (k.Length > 0 && v.Length > 0 && !k.Contains("http"))
+				{
+					list.Add(new XmLine { Key = k, Value = v });
+					continue;
+				}
+			}
+			list.Add(new XmLine { Para = l });
+		}
+		while (list.Count > 0 && list[list.Count - 1].Gap) list.RemoveAt(list.Count - 1);
+		return list;
+	}
+
+	private const TextFormatFlags XM_WRAP = TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix |
+	                                        TextFormatFlags.Left | TextFormatFlags.TextBoxControl | TextFormatFlags.NoPadding;
+
+	// Lays out (and optionally paints) the card content; returns the card's inner height.
+	private int XmFlow(Graphics g, int x, int y, int w, bool paint)
+	{
+		List<XmLine> lines = XmParse(label2.Text);
+		int keyW = Xs(150), y0 = y;
+		if (lines.Count == 0)
+		{
+			string none = "Your ticket has been booked.";
+			Size s = TextRenderer.MeasureText(g, none, xmFPara, new Size(w, 0), XM_WRAP);
+			if (paint) TextRenderer.DrawText(g, none, xmFPara, new Rectangle(x, y, w, s.Height), XM_TEXT, XM_WRAP);
+			return s.Height;
+		}
+		bool firstRow = true;
+		foreach (XmLine ln in lines)
+		{
+			if (ln.Gap) { y += Xs(6); continue; }
+			if (ln.Divider)
+			{
+				if (paint) using (Pen p = new Pen(XM_LINE)) g.DrawLine(p, x, y + Xs(6), x + w, y + Xs(6));
+				y += Xs(13);
+				continue;
+			}
+			if (ln.Para != null)
+			{
+				Size s = TextRenderer.MeasureText(g, ln.Para, xmFPara, new Size(w, 0), XM_WRAP);
+				if (paint) TextRenderer.DrawText(g, ln.Para, xmFPara, new Rectangle(x, y, w, s.Height + 2), XM_TEXT, XM_WRAP);
+				y += s.Height + Xs(6);
+				firstRow = true;
+				continue;
+			}
+
+			bool pnr = ln.Key.IndexOf("PNR", StringComparison.OrdinalIgnoreCase) >= 0;
+			Font vf = pnr ? xmFPnr : xmFVal;
+			int vw = w - keyW - Xs(12);
+			Size ks = TextRenderer.MeasureText(g, ln.Key.ToUpperInvariant(), xmFCap, new Size(keyW - Xs(18), 0), XM_WRAP);
+			Size vs = TextRenderer.MeasureText(g, ln.Value, vf, new Size(vw, 0), XM_WRAP);
+			int rowH = Math.Max(ks.Height, vs.Height) + Xs(14);
+			if (paint)
+			{
+				if (!firstRow) using (Pen p = new Pen(Color.FromArgb(236, 241, 248))) g.DrawLine(p, x, y, x + w, y);
+				if (pnr)
+					XmFill(g, new RectangleF(x - Xs(6), y + Xs(3), w + Xs(12), rowH - Xs(6)), Xs(8),
+						Color.FromArgb(255, 247, 237), Color.FromArgb(253, 186, 116));
+				int cy = y + rowH / 2;
+				using (SolidBrush dot = new SolidBrush(pnr ? XM_ORANGE : Color.FromArgb(148, 163, 184)))
+					g.FillEllipse(dot, x + Xs(2), cy - Xs(3), Xs(6), Xs(6));
+				TextRenderer.DrawText(g, ln.Key.ToUpperInvariant(), xmFCap,
+					new Rectangle(x + Xs(14), y + (rowH - ks.Height) / 2, keyW - Xs(18), ks.Height + 2),
+					pnr ? XM_ORANGE_D : XM_MUTED, XM_WRAP);
+				TextRenderer.DrawText(g, ln.Value, vf,
+					new Rectangle(x + keyW, y + (rowH - vs.Height) / 2, vw, vs.Height + 2),
+					pnr ? XM_ORANGE_D : XM_NAVY, XM_WRAP);
+			}
+			y += rowH;
+			firstRow = false;
+		}
+		return y - y0;
+	}
+
+	private void XmRelayout()
+	{
+		if (xmBody == null || xmScroll == null || label2 == null || xmInLayout) return;
+		xmInLayout = true;
+		try
+		{
+			Rectangle wa = Screen.FromControl(this).WorkingArea;
+			int chrome = Xs(XM_HEAD) + Xs(XM_FOOT) + 2;
+			int maxBody = Math.Max(Xs(160), wa.Height - Xs(40) - chrome);
+			int fullW = Xs(XM_W) - 2;                                  // form client width minus 1px frame each side
+
+			int bodyH = XmBodyHeight(fullW);
+			bool scroll = bodyH > maxBody;
+			int bodyW = fullW - (scroll ? SystemInformation.VerticalScrollBarWidth : 0);
+			if (scroll) bodyH = XmBodyHeight(bodyW);                    // re-flow for the narrower width
+
+			// grow the window to fit, never beyond the screen; beyond that the body scrolls
+			Size want = new Size(Xs(XM_W), chrome + Math.Min(bodyH, maxBody));
+			if (ClientSize != want) ClientSize = want;
+			xmBody.Size = new Size(bodyW, bodyH);
+			xmBody.Invalidate();
+			if (xmHead != null) xmHead.Invalidate();
+		}
+		finally { xmInLayout = false; }
+	}
+
+	private bool xmInLayout;
+
+	private int XmBodyHeight(int bodyW)
+	{
+		int innerW = bodyW - Xs(XM_PAD) * 2 - 1 - Xs(22) * 2;
+		int contentH;
+		using (Graphics g = CreateGraphics()) contentH = XmFlow(g, 0, 0, innerW, false);
+		return Xs(XM_PAD) + Xs(46) + contentH + Xs(18) + Xs(XM_PAD);
+	}
+
+	// ---------- painting ----------
+
+	private static GraphicsPath XmRound(RectangleF r, float rad)
+	{
+		GraphicsPath p = new GraphicsPath();
+		float d = Math.Min(rad * 2, Math.Min(r.Width, r.Height));
+		if (d < 1) { p.AddRectangle(r); return p; }
+		p.AddArc(r.X, r.Y, d, d, 180, 90);
+		p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+		p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+		p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+		p.CloseFigure();
+		return p;
+	}
+
+	private static void XmFill(Graphics g, RectangleF r, float rad, Color fill, Color border)
+	{
+		if (r.Width < 1 || r.Height < 1) return;
+		using (GraphicsPath p = XmRound(r, rad))
+		{
+			using (SolidBrush b = new SolidBrush(fill)) g.FillPath(b, p);
+			if (border.A > 0) using (Pen pen = new Pen(border, 1f)) g.DrawPath(pen, p);
+		}
+	}
+
+	private Pen XmPen(Color c, float w)
+	{
+		Pen p = new Pen(c, w * xmS);
+		p.StartCap = LineCap.Round; p.EndCap = LineCap.Round; p.LineJoin = LineJoin.Round;
+		return p;
+	}
+
+	private void XmFramePaint(object sender, PaintEventArgs e)
+	{
+		using (Pen p = new Pen(Color.FromArgb(178, 196, 226)))
+			e.Graphics.DrawRectangle(p, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
+	}
+
+	private void XmHeadPaint(object sender, PaintEventArgs e)
+	{
+		Control c = (Control)sender;
+		Graphics g = e.Graphics;
+		g.SmoothingMode = SmoothingMode.AntiAlias;
+		Rectangle r = c.ClientRectangle;
+		using (LinearGradientBrush b = new LinearGradientBrush(r, Color.FromArgb(21, 128, 61), Color.FromArgb(34, 197, 94), LinearGradientMode.Horizontal))
+			g.FillRectangle(b, r);
+		using (SolidBrush shine = new SolidBrush(Color.FromArgb(22, 255, 255, 255)))
+			g.FillRectangle(shine, 0, 0, r.Width, r.Height / 2);
+		// bhagwa underline
+		using (LinearGradientBrush ob = new LinearGradientBrush(new Rectangle(0, r.Height - Xs(4), Math.Max(1, r.Width), Xs(4)),
+			XM_ORANGE_D, Color.FromArgb(248, 158, 44), LinearGradientMode.Horizontal))
+			g.FillRectangle(ob, 0, r.Height - Xs(4), r.Width, Xs(4));
+
+		// check-circle on a white disc with a soft halo
+		int d = Xs(46), cx = Xs(XM_PAD) + d / 2, cy = (r.Height - Xs(4)) / 2;
+		using (SolidBrush halo = new SolidBrush(Color.FromArgb(50, 255, 255, 255)))
+			g.FillEllipse(halo, cx - d / 2 - Xs(4), cy - d / 2 - Xs(4), d + Xs(8), d + Xs(8));
+		using (SolidBrush wb = new SolidBrush(Color.White))
+			g.FillEllipse(wb, cx - d / 2, cy - d / 2, d, d);
+		using (Pen p = XmPen(XM_GREEN, 2.4f))
+		{
+			float rr = d * 0.30f;
+			g.DrawEllipse(p, cx - rr, cy - rr, rr * 2, rr * 2);
+			g.DrawLines(p, new[] { new PointF(cx - rr * 0.45f, cy + rr * 0.02f), new PointF(cx - rr * 0.08f, cy + rr * 0.38f), new PointF(cx + rr * 0.5f, cy - rr * 0.3f) });
+		}
+
+		int tx = cx + d / 2 + Xs(14);
+		int right = (xmClose != null ? xmClose.Left : r.Width) - Xs(10);
+		string sub = (label1.Text ?? "").Trim();
+		Size ts = TextRenderer.MeasureText(g, "Ticket Booked Successfully", xmFTitle, Size.Empty, TextFormatFlags.NoPadding);
+		int ty = sub.Length > 0 ? cy - ts.Height + Xs(2) : cy - ts.Height / 2;
+		TextRenderer.DrawText(g, "Ticket Booked Successfully", xmFTitle, new Rectangle(tx, ty, Math.Max(10, right - tx), ts.Height + 2),
+			Color.White, TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis | TextFormatFlags.SingleLine);
+		if (sub.Length > 0)
+			TextRenderer.DrawText(g, sub, xmFSub, new Rectangle(tx + 1, cy + Xs(3), Math.Max(10, right - tx), Xs(20)),
+				Color.FromArgb(220, 252, 231), TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
+	}
+
+	private void XmBodyPaint(object sender, PaintEventArgs e)
+	{
+		Graphics g = e.Graphics;
+		g.SmoothingMode = SmoothingMode.AntiAlias;
+		g.Clear(XM_BG);
+		int pad = Xs(XM_PAD);
+		RectangleF card = new RectangleF(pad, pad, xmBody.Width - pad * 2 - 1, xmBody.Height - pad * 2);
+		XmFill(g, new RectangleF(card.X, card.Y + 2, card.Width, card.Height), Xs(12), Color.FromArgb(214, 225, 242), Color.Empty);
+		XmFill(g, card, Xs(12), Color.White, XM_LINE);
+
+		// card title: ticket icon + "BOOKING DETAILS" with bhagwa bar
+		int x = (int)card.X + Xs(22), y = (int)card.Y + Xs(14);
+		XmFill(g, new RectangleF(card.X + 1, card.Y + Xs(14), Xs(4), Xs(20)), Xs(2), XM_ORANGE, Color.Empty);
+		using (Pen p = XmPen(XM_ORANGE, 1.8f))
+		{
+			RectangleF t = new RectangleF(x, y + Xs(3), Xs(20), Xs(14));
+			using (GraphicsPath tp = XmRound(t, Xs(3))) g.DrawPath(p, tp);
+			g.DrawLine(p, t.X + t.Width * 0.62f, t.Y + Xs(3), t.X + t.Width * 0.62f, t.Bottom - Xs(3));
+		}
+		TextRenderer.DrawText(g, "BOOKING DETAILS", xmFCap, new Point(x + Xs(28), y + Xs(2)), XM_NAVY, TextFormatFlags.NoPadding);
+		using (Pen p = new Pen(XM_LINE)) g.DrawLine(p, x, y + Xs(28), card.Right - Xs(22), y + Xs(28));
+
+		XmFlow(g, x, (int)card.Y + Xs(46), (int)card.Width - Xs(22) * 2, true);
+	}
+
+	private void XmFootPaint(object sender, PaintEventArgs e)
+	{
+		Control c = (Control)sender;
+		Graphics g = e.Graphics;
+		g.SmoothingMode = SmoothingMode.AntiAlias;
+		g.Clear(XM_BG);
+		using (Pen p = new Pen(XM_LINE)) g.DrawLine(p, Xs(XM_PAD), 0, c.Width - Xs(XM_PAD), 0);
+		// shield-check + regards line (label3's text)
+		int cy = c.Height / 2, x = Xs(XM_PAD + 4);
+		using (Pen p = XmPen(XM_GREEN, 1.8f))
+		{
+			float w = Xs(16), h = Xs(18), sx = x, sy = cy - h / 2;
+			g.DrawLines(p, new[] { new PointF(sx + w / 2, sy), new PointF(sx + w, sy + h * 0.2f), new PointF(sx + w, sy + h * 0.5f),
+				new PointF(sx + w / 2, sy + h), new PointF(sx, sy + h * 0.5f), new PointF(sx, sy + h * 0.2f), new PointF(sx + w / 2, sy) });
+			g.DrawLines(p, new[] { new PointF(sx + w * 0.3f, sy + h * 0.5f), new PointF(sx + w * 0.46f, sy + h * 0.64f), new PointF(sx + w * 0.72f, sy + h * 0.36f) });
+		}
+		int right = (OK != null ? OK.Left : c.Width) - Xs(12);
+		TextRenderer.DrawText(g, label3.Text ?? "", xmFFoot, new Rectangle(x + Xs(24), 0, Math.Max(10, right - x - Xs(24)), c.Height),
+			XM_MUTED, TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.WordBreak);
+	}
+
+	private void XmOkPaint(object sender, PaintEventArgs e)
+	{
+		Button b = (Button)sender;
+		Graphics g = e.Graphics;
+		g.SmoothingMode = SmoothingMode.AntiAlias;
+		g.Clear(XM_BG);
+		int st = xmOkState;
+		RectangleF r = new RectangleF(0.5f, st == 2 ? 2f : 0.5f, b.Width - 2, b.Height - 3);
+		Color top = Color.FromArgb(251, 166, 60), bot = XM_ORANGE_D;
+		if (st == 1) { top = Color.FromArgb(253, 186, 100); bot = Color.FromArgb(234, 118, 14); }
+		if (st == 2) { top = Color.FromArgb(234, 124, 10); bot = Color.FromArgb(180, 74, 4); }
+		if (st != 2) XmFill(g, new RectangleF(r.X, r.Y + 2, r.Width, r.Height), Xs(10), Color.FromArgb(70, 194, 84, 0), Color.Empty);
+		using (GraphicsPath p = XmRound(r, Xs(10)))
+		using (LinearGradientBrush lb = new LinearGradientBrush(r, top, bot, LinearGradientMode.Vertical))
+			g.FillPath(lb, p);
+		if (st == 1) XmFill(g, r, Xs(10), Color.Transparent, XM_NAVY);
+
+		string text = string.IsNullOrEmpty(b.Text) ? "OK" : b.Text;
+		Size ts = TextRenderer.MeasureText(g, text, xmFBtn, Size.Empty, TextFormatFlags.NoPadding);
+		int iw = Xs(16), gw = iw + Xs(8) + ts.Width;
+		int x = (int)(r.X + (r.Width - gw) / 2), cy = (int)(r.Y + r.Height / 2);
+		using (Pen p = XmPen(Color.White, 2.2f))
+			g.DrawLines(p, new[] { new PointF(x + iw * 0.1f, cy), new PointF(x + iw * 0.4f, cy + iw * 0.3f), new PointF(x + iw, cy - iw * 0.32f) });
+		TextRenderer.DrawText(g, text, xmFBtn, new Point(x + iw + Xs(8), cy - ts.Height / 2), Color.White, TextFormatFlags.NoPadding);
+	}
+
+	private void XmClosePaint(object sender, PaintEventArgs e)
+	{
+		Control c = (Control)sender;
+		Graphics g = e.Graphics;
+		g.SmoothingMode = SmoothingMode.AntiAlias;
+		// repaint the header gradient behind so the corners blend
+		Control parent = c.Parent;
+		Rectangle pr = new Rectangle(-c.Left, -c.Top, parent != null ? Math.Max(1, parent.Width) : c.Width, parent != null ? Math.Max(1, parent.Height) : c.Height);
+		using (LinearGradientBrush b = new LinearGradientBrush(pr, Color.FromArgb(21, 128, 61), Color.FromArgb(34, 197, 94), LinearGradientMode.Horizontal))
+			g.FillRectangle(b, 0, 0, c.Width, c.Height);
+
+		int st = xmCloseState;
+		RectangleF r = new RectangleF(0.5f, st == 2 ? 1.5f : 0.5f, c.Width - 2, c.Height - 2.5f);
+		Color fill = st == 2 ? Color.FromArgb(153, 27, 27) : st == 1 ? Color.White : Color.FromArgb(220, 38, 38);
+		Color line = st == 2 ? Color.FromArgb(127, 29, 29) : st == 1 ? Color.FromArgb(220, 38, 38) : Color.FromArgb(185, 28, 28);
+		if (st != 2) XmFill(g, new RectangleF(r.X, r.Y + 1.5f, r.Width, r.Height), Xs(8), Color.FromArgb(60, 0, 0, 0), Color.Empty);
+		XmFill(g, r, Xs(8), fill, line);
+		float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f, k = Xs(6);
+		using (Pen p = XmPen(st == 1 ? Color.FromArgb(220, 38, 38) : Color.White, 2.3f))
+		{
+			g.DrawLine(p, cx - k, cy - k, cx + k, cy + k);
+			g.DrawLine(p, cx + k, cy - k, cx - k, cy + k);
+		}
 	}
 
 	protected override void Dispose(bool disposing)

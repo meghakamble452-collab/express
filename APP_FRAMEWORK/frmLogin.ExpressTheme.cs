@@ -7,6 +7,9 @@ using System.Windows.Forms;
 
 namespace APP_FRAMEWORK
 {
+    // Express KEY LOGIN - visual layer only.
+    // No login / validation / settings logic lives here; it only restyles the existing
+    // controls and mirrors their values (toggles write the same Bunifu switches as before).
     public partial class frmLogin
     {
         [DllImport("gdi32.dll")]
@@ -21,38 +24,51 @@ namespace APP_FRAMEWORK
         private Panel exBrand;
         private Panel exRemember;
         private Panel exAuto;
-        private Panel exLine;
+        private Panel exFloat;          // animated floating label of the licence key field
         private Label exTitle;
         private Label exSub;
-        private Label exVersion;
-        private Label exKeyCap;
-        private Label exPlaceholder;
         private Label exRememberCap;
         private Label exAutoCap;
-        private Label exHint;
 
         private Timer exAnim;
-        private float exHoverSubmit, exHoverExit, exHoverClose;
+        private float exHoverSubmit, exHoverExit, exHoverClose, exHoverStop;
         private bool exPressSubmit, exPressExit, exPressClose;
         private float exRemPos = 1f, exAutoPos = 1f;
+        private float exFloatT, exFocusT, exFieldHover;
+        private Bitmap exLoaderBg;
 
         private float exK = 1f;
         private bool exDrag;
         private int exDragX, exDragY;
 
-        private const float ExD = 0.86f;
-        private const int BASE_W = (int)(540 * ExD);
-        private const int BASE_H = (int)(470 * ExD);
-        private const int CORNER = 20;
-        private const int BTN_RADIUS = 14;
+        // ---- layout (96 dpi units; everything is multiplied by exK on high-dpi) ----
+        private const int BASE_W = 400;
+        private const int BASE_H = 364;
+        private const int HEAD_H = 48;
+        private const int CORNER = 16;
+        private const int BTN_RADIUS = 10;
+        private const int CARD_X = 14, CARD_Y = 62, CARD_W = 372, CARD_H = 288;
+        // content edges inside the card: x 16 .. 356 (buttons and the field border share them)
+        private const int EDGE_L = 16, EDGE_R = 356;
+        // panel2 carries a 3px glow margin on the sides and a 9px notch band on top for the floated label
+        private const int FIELD_PAD = 3, FIELD_NOTCH = 9;
+        private const int FIELD_X = EDGE_L - FIELD_PAD, FIELD_Y = 84, FIELD_W = EDGE_R - EDGE_L + FIELD_PAD * 2, FIELD_H = 60;
+        private const int FIELD_TEXT_X = 42;
+        private static readonly Color ExKeyText = Color.FromArgb(214, 96, 4);
 
-        private static readonly Color ExBtnBlue = Color.FromArgb(11, 99, 206);
-        private static readonly Color ExBtnBlueDown = Color.FromArgb(9, 78, 165);
-        private static readonly Color ExBtnRed = Color.FromArgb(226, 72, 60);
-        private static readonly Color ExBtnRedDown = Color.FromArgb(188, 48, 38);
-        private static readonly Color ExCloseBase = Color.FromArgb(226, 62, 48);
-        private static readonly Color ExCloseDown = Color.FromArgb(195, 58, 44);
-        private static readonly Color ExFieldBg = Color.FromArgb(250, 252, 255);
+        private static readonly Color ExBlue = Color.FromArgb(29, 98, 216);
+        private static readonly Color ExBlueDeep = Color.FromArgb(16, 64, 160);
+        private static readonly Color ExBlueSoft = Color.FromArgb(37, 99, 235);
+        private static readonly Color ExSaffron = Color.FromArgb(245, 146, 28);
+        private static readonly Color ExSaffronL = Color.FromArgb(248, 158, 44);
+        private static readonly Color ExSaffronD = Color.FromArgb(214, 96, 4);
+        private static readonly Color ExRed = Color.FromArgb(220, 38, 38);
+        private static readonly Color ExRedDeep = Color.FromArgb(153, 27, 27);
+        private static readonly Color ExPageBg = Color.FromArgb(236, 242, 251);
+        private static readonly Color ExInk = Color.FromArgb(30, 41, 59);
+        private static readonly Color ExSlate = Color.FromArgb(100, 116, 139);
+        private static readonly Color ExLine = Color.FromArgb(214, 224, 240);
+        private static readonly Color ExFieldBg = Color.White;
 
         private readonly Dictionary<Control, Rectangle> exBaseRect = new Dictionary<Control, Rectangle>();
 
@@ -62,23 +78,25 @@ namespace APP_FRAMEWORK
 
             using (Graphics g = CreateGraphics()) exK = g.DpiX / 96f;
             if (exK < 1f) exK = 1f;
+            ExS_DPI = 1f;   // controls are laid out at 96 dpi first, then the whole tree is scaled once
 
             AutoScaleMode = AutoScaleMode.None;
             FormBorderStyle = FormBorderStyle.None;
             StartPosition = FormStartPosition.CenterScreen;
             ClientSize = new Size(BASE_W, BASE_H);
-            BackColor = UiTheme.Bg;
-            ForeColor = UiTheme.Text;
+            BackColor = ExPageBg;
+            ForeColor = ExInk;
             Font = UiTheme.FBase;
             DoubleBuffered = true;
 
-            // Bunifu apna region laga ke hamare rounded corners ko square kar deta hai
+            // Bunifu would square our rounded corners with its own region
             try { bunifuElipse1.TargetControl = null; } catch { }
             bunifuElipse1.ElipseRadius = (int)(CORNER * exK);
 
             Paint -= ExFormPaint;
             Paint += ExFormPaint;
 
+            // legacy surfaces stay in the form (logic uses them) but are not shown
             panel1.Visible = false;
             pnlFooter.Visible = false;
             checkBox1.Visible = false;
@@ -108,10 +126,12 @@ namespace APP_FRAMEWORK
             bunifuSeparator2.Visible = false;
             InfoList2.Visible = false;
 
+            // ---------------- header ----------------
             exHeader = new Panel();
             exHeader.Location = new Point(0, 0);
-            exHeader.Size = new Size(BASE_W, 66);
-            exHeader.BackColor = UiTheme.HeaderA;
+            exHeader.Size = new Size(BASE_W, HEAD_H);
+            exHeader.BackColor = ExBlue;
+            ExBuffer(exHeader);
             exHeader.Paint += ExHeaderPaint;
             exHeader.MouseDown += ExHeaderDown;
             exHeader.MouseMove += ExHeaderMove;
@@ -121,45 +141,44 @@ namespace APP_FRAMEWORK
             exHeader.BringToFront();
 
             exClose = new Panel();
-            exClose.Size = new Size(36, 32);
-            exClose.Location = new Point(BASE_W - 50, 17);
+            exClose.Size = new Size(30, 26);
+            exClose.Location = new Point(BASE_W - 12 - 30, (HEAD_H - 3 - 26) / 2);
             exClose.BackColor = Color.Transparent;
             exClose.Cursor = Cursors.Hand;
+            ExBuffer(exClose);
             exClose.Paint += ExClosePaint;
             exClose.Click += (s, e) => Close();
             exHeader.Controls.Add(exClose);
             exClose.BringToFront();
 
+            // ---------------- card ----------------
             exCard = new Panel();
-            exCard.Location = new Point(20, 78);
-            exCard.Size = new Size(500, 380);
-            exCard.BackColor = Color.White;
+            exCard.Location = new Point(CARD_X, CARD_Y);
+            exCard.Size = new Size(CARD_W, CARD_H);
+            exCard.BackColor = ExPageBg;          // the white rounded card is painted (smooth corners)
+            ExBuffer(exCard);
             exCard.Paint += ExCardPaint;
             exCard.Click += (s, e) => ActiveControl = null;
             Controls.Add(exCard);
             exCard.BringToFront();
-            ExRoundControl(exCard, 18);
 
             exBrand = new Panel();
-            exBrand.Location = new Point(18, 18);
-            exBrand.Size = new Size(56, 56);
+            exBrand.Location = new Point(EDGE_L, 18);
+            exBrand.Size = new Size(42, 42);
             exBrand.BackColor = Color.Transparent;
+            ExBuffer(exBrand);
             exBrand.Paint += ExBrandPaint;
             exBrand.Click += (s, e) => ActiveControl = null;
             exCard.Controls.Add(exBrand);
 
-            exTitle = ExLabel("EXPRESS", 88, 6, new Font("Segoe UI", 20F, FontStyle.Bold | FontStyle.Italic), UiTheme.HeaderA);
+            // the only "EXPRESS" on the popup - next to the logo
+            exTitle = ExLabel("EXPRESS", 68, 17, new Font("Segoe UI", 14F, FontStyle.Bold | FontStyle.Italic), ExBlue);
             exTitle.AutoSize = false;
-            exTitle.Size = new Size(260, 42);
+            exTitle.Size = new Size(150, 26);
             exTitle.TextAlign = ContentAlignment.MiddleLeft;
-            exSub = ExLabel("PREMIUM TATKAL SOFTWARE", 90, 48, new Font("Segoe UI Semibold", 7.5F, FontStyle.Bold), Color.FromArgb(112, 133, 160));
+            exSub = ExLabel("PREMIUM TATKAL SOFTWARE", 70, 42, new Font("Segoe UI Semibold", 6.75F), ExSlate);
 
-            exVersion = ExLabel("v0.0.1 • SECURE", 332, 18, new Font("Segoe UI", 7.5F), Color.FromArgb(140, 158, 182));
-            exVersion.AutoSize = false;
-            exVersion.Width = 150;
-            exVersion.Height = 14;
-            exVersion.TextAlign = ContentAlignment.TopRight;
-
+            // MAC DETAIL - kept (object + MouseHover handler) but hidden, as before the redesign
             label4.Parent = exCard;
             label4.Text = "MAC DETAIL";
             label4.AutoSize = false;
@@ -173,61 +192,60 @@ namespace APP_FRAMEWORK
             label4.BringToFront();
             label4.Visible = false;
 
-            exLine = new Panel();
-            exLine.Location = new Point(18, 92);
-            exLine.Size = new Size(464, 1);
-            exLine.BackColor = UiTheme.Border;
-            exLine.Visible = false;
-            exCard.Controls.Add(exLine);
-
-            exKeyCap = ExLabel("LICENCE KEY", 18, 102, new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold), Color.FromArgb(92, 113, 141));
-
+            // ---------------- licence key field (floating label) ----------------
             panel2.Parent = exCard;
-            panel2.Location = new Point(18, 122);
-            panel2.Size = new Size(464, 52);
-            panel2.BackColor = Color.White;
+            panel2.Location = new Point(FIELD_X, FIELD_Y);
+            panel2.Size = new Size(FIELD_W, FIELD_H);
+            panel2.BackColor = Color.White;       // card colour; the field itself is painted rounded
+            panel2.Region = null;
+            ExBuffer(panel2);
             panel2.Paint -= ExFieldPaint;
             panel2.Paint += ExFieldPaint;
+            panel2.Cursor = Cursors.IBeam;
             panel2.Click += (s, e) => txtLogin.Focus();
-            ExRoundControl(panel2, 12);
+            panel2.MouseEnter += (s, e) => exFieldHover = 1f;
+            panel2.MouseLeave += (s, e) => exFieldHover = 0f;
 
             txtLogin.Parent = panel2;
-            txtLogin.Location = new Point(14, 14);
-            txtLogin.Size = new Size(436, 24);
             txtLogin.BorderStyle = BorderStyle.None;
             txtLogin.BackColor = ExFieldBg;
-            txtLogin.ForeColor = UiTheme.Text;
-            txtLogin.Font = new Font("Segoe UI Semibold", 13F, FontStyle.Bold);
+            txtLogin.ForeColor = ExKeyText;                  // typed key in bhagwa
+            txtLogin.Font = new Font("Segoe UI Semibold", 10F);
+            // vertically centred inside the painted box (box = FIELD_NOTCH .. FIELD_H - FIELD_PAD)
+            int boxMid = (FIELD_NOTCH + (FIELD_H - FIELD_PAD)) / 2;
+            txtLogin.Location = new Point(FIELD_TEXT_X, boxMid - txtLogin.PreferredHeight / 2);
+            txtLogin.Size = new Size(FIELD_W - FIELD_TEXT_X - 14, txtLogin.PreferredHeight);
             txtLogin.TextAlign = HorizontalAlignment.Left;
             txtLogin.HideSelection = false;
-            txtLogin.Enter += (s, e) => { ExUpdatePlaceholder(); panel2.Invalidate(); };
-            txtLogin.Leave += (s, e) => { ExUpdatePlaceholder(); panel2.Invalidate(); };
-            txtLogin.TextChanged += (s, e) => ExUpdatePlaceholder();
+            txtLogin.Enter += (s, e) => panel2.Invalidate();
+            txtLogin.Leave += (s, e) => panel2.Invalidate();
+            txtLogin.MouseEnter += (s, e) => exFieldHover = 1f;
+            txtLogin.MouseLeave += (s, e) => exFieldHover = 0f;
+            txtLogin.BackColorChanged += (s, e) => { if (txtLogin.BackColor != ExFieldBg) txtLogin.BackColor = ExFieldBg; };
 
-            exPlaceholder = new Label();
-            exPlaceholder.AutoSize = false;
-            exPlaceholder.Size = new Size(320, 22);
-            exPlaceholder.Location = new Point(32, 137);
-            exPlaceholder.Text = "Enter your licence key";
-            exPlaceholder.Font = new Font("Segoe UI Semibold", 12F);
-            exPlaceholder.ForeColor = Color.FromArgb(158, 173, 192);
-            exPlaceholder.BackColor = ExFieldBg;
-            exPlaceholder.Cursor = Cursors.IBeam;
-            exPlaceholder.UseCompatibleTextRendering = true;
-            exPlaceholder.TextAlign = ContentAlignment.MiddleLeft;
-            exPlaceholder.Click += (s, e) => txtLogin.Focus();
-            exCard.Controls.Add(exPlaceholder);
+            exFloat = new Panel();
+            exFloat.BackColor = ExFieldBg;
+            exFloat.Cursor = Cursors.IBeam;
+            ExBuffer(exFloat);
+            exFloat.Paint += ExFloatPaint;
+            exFloat.Click += (s, e) => txtLogin.Focus();
+            exFloat.MouseEnter += (s, e) => exFieldHover = 1f;
+            exFloat.MouseLeave += (s, e) => exFieldHover = 0f;
+            panel2.Controls.Add(exFloat);
+            exFloat.BringToFront();
 
-            exRemember = ExToggle(new Point(18, 190), true, ExRememberToggle);
-            exRememberCap = ExLabel("Remember My Key", 74, 191, new Font("Segoe UI", 9.5F), Color.FromArgb(62, 84, 112));
+            // ---------------- toggles (mirror the Bunifu switches the logic reads) ----------------
+            exRemember = ExToggle(new Point(EDGE_L, 162), true, ExRememberToggle);
+            exRememberCap = ExLabel("Remember My Key", EDGE_L + 44, 163, new Font("Segoe UI", 8.5F), ExInk);
             exRememberCap.Cursor = Cursors.Hand;
             exRememberCap.Click += ExRememberToggle;
 
-            exAuto = ExToggle(new Point(18, 220), true, ExAutoToggle);
-            exAutoCap = ExLabel("Auto Login", 74, 221, new Font("Segoe UI", 9.5F), Color.FromArgb(62, 84, 112));
+            exAuto = ExToggle(new Point(196, 162), true, ExAutoToggle);
+            exAutoCap = ExLabel("Auto Login", 196 + 44, 163, new Font("Segoe UI", 8.5F), ExInk);
             exAutoCap.Cursor = Cursors.Hand;
             exAutoCap.Click += ExAutoToggle;
 
+            // "Stop IP Block" - kept (object + CheckedChanged logic) but hidden, as before the redesign
             byteNovaRestartOption.Parent = exCard;
             byteNovaRestartOption.Location = new Point(18, 252);
             byteNovaRestartOption.ForeColor = Color.FromArgb(74, 96, 124);
@@ -236,97 +254,138 @@ namespace APP_FRAMEWORK
             byteNovaRestartOption.BringToFront();
             byteNovaRestartOption.Visible = false;
 
-            bunifuFlatButton2.Parent = exCard;
-            bunifuFlatButton2.Location = new Point(18, 288);
-            bunifuFlatButton2.Size = new Size(150, 48);
-            bunifuFlatButton2.BorderRadius = BTN_RADIUS;
-            bunifuFlatButton2.BackColor = Color.Transparent;
-            bunifuFlatButton2.Normalcolor = ExBtnRed;
-            bunifuFlatButton2.Activecolor = ExBtnRed;
-            bunifuFlatButton2.OnHovercolor = ExBtnRed;
-            bunifuFlatButton2.Textcolor = Color.White;
-            bunifuFlatButton2.OnHoverTextColor = Color.White;
-            bunifuFlatButton2.Cursor = Cursors.Hand;
-            bunifuFlatButton2.Text = "";
-            bunifuFlatButton2.Paint += ExExitPaint;
-            ExRoundControl(bunifuFlatButton2, BTN_RADIUS);
+            // ---------------- buttons (same left/right edges as the field) ----------------
+            ExStyleButton(bunifuFlatButton2, new Point(EDGE_L, 200), new Size(108, 40), Color.White, ExExitPaint);
+            ExStyleButton(bunifuFlatButton1, new Point(EDGE_L + 108 + 10, 200), new Size(EDGE_R - (EDGE_L + 108 + 10), 40), ExBlue, ExSubmitPaint);
 
-            bunifuFlatButton1.Parent = exCard;
-            bunifuFlatButton1.Location = new Point(178, 288);
-            bunifuFlatButton1.Size = new Size(300, 48);
-            bunifuFlatButton1.BorderRadius = BTN_RADIUS;
-            bunifuFlatButton1.BackColor = Color.Transparent;
-            bunifuFlatButton1.Normalcolor = ExBtnBlue;
-            bunifuFlatButton1.Activecolor = ExBtnBlue;
-            bunifuFlatButton1.OnHovercolor = ExBtnBlue;
-            bunifuFlatButton1.Textcolor = Color.White;
-            bunifuFlatButton1.OnHoverTextColor = Color.White;
-            bunifuFlatButton1.Cursor = Cursors.Hand;
-            bunifuFlatButton1.Text = "";
-            bunifuFlatButton1.Paint += ExSubmitPaint;
-            ExRoundControl(bunifuFlatButton1, BTN_RADIUS);
-
-            exHint = ExLabel("Server se validate hone ke baad software khulega.", 18, 344, new Font("Segoe UI", 8.5F), Color.FromArgb(122, 142, 166));
-
+            // ---------------- validating overlay ----------------
             if (byteNovaServerLoader != null)
             {
                 byteNovaServerLoader.Paint -= ByteNovaServerLoaderPaint;
+                byteNovaServerLoader.Paint -= ExLoaderPaint;
                 byteNovaServerLoader.Paint += ExLoaderPaint;
-                byteNovaServerLoader.BackColor = Color.White;
-                byteNovaServerLoader.Size = new Size(330, 152);
+                byteNovaServerLoader.BackColor = ExPageBg;
+                byteNovaServerLoader.Size = new Size(BASE_W, BASE_H - HEAD_H);
+                byteNovaServerLoader.Cursor = Cursors.WaitCursor;
+                byteNovaServerLoader.VisibleChanged -= ExLoaderVisibleChanged;
+                byteNovaServerLoader.VisibleChanged += ExLoaderVisibleChanged;
+                byteNovaServerLoader.Click -= ExLoaderClick;
+                byteNovaServerLoader.Click += ExLoaderClick;
             }
-
-            ExScaleTree(this, ExD);
-            exHeader.Size = new Size(ClientSize.Width, exHeader.Height);
-            exClose.Location = new Point(ClientSize.Width - exClose.Width - 16, 12);
 
             if (exK > 1f)
             {
                 ExScaleTree(this, exK);
                 ClientSize = new Size((int)(BASE_W * exK), (int)(BASE_H * exK));
             }
+            ExS_DPI = exK;
             MinimumSize = ClientSize;
             MaximumSize = ClientSize;
+            exHeader.Width = ClientSize.Width;
 
             ExApplyRegion();
-            ExRoundControl(panel2, 12);
-            ExRoundControl(bunifuFlatButton1, BTN_RADIUS);
-            ExRoundControl(bunifuFlatButton2, BTN_RADIUS);
-
-            if (byteNovaServerLoader != null)
-                byteNovaServerLoader.Location = new Point(
-                    (ClientSize.Width - byteNovaServerLoader.Width) / 2,
-                    (ClientSize.Height - byteNovaServerLoader.Height) / 2);
 
             exAnim = new Timer();
             exAnim.Interval = 16;
             exAnim.Tick += ExAnimTick;
             exAnim.Start();
 
-            exRemPos = bunifuToggleRememberSwitch.Value ? 1f : 0f;
-            exAutoPos = bunifuToggleAutoLoginSwitch.Value ? 1f : 0f;
-            exRemember.Tag = bunifuToggleRememberSwitch.Value;
-            exAuto.Tag = bunifuToggleAutoLoginSwitch.Value;
-
-            exPlaceholder.BringToFront();
-            ExUpdatePlaceholder();
+            ExSyncToggles();
+            exFloatT = ExFloatTarget();
+            ExLayoutFloat();
 
             ResumeLayout(true);
             PerformLayout();
-            Invalidate();
+            Invalidate(true);
         }
 
         // ------------------------------------------------------------------
-        private void ExUpdatePlaceholder()
+        // helpers
+        // ------------------------------------------------------------------
+        private static void ExBuffer(Control c)
         {
-            if (exPlaceholder == null) return;
-            exPlaceholder.Visible = txtLogin.Text.Length == 0 && !txtLogin.Focused;
+            try
+            {
+                typeof(Control).GetProperty("DoubleBuffered",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                    .SetValue(c, true, null);
+            }
+            catch { }
+        }
+
+        private void ExStyleButton(Bunifu.Framework.UI.BunifuFlatButton b, Point at, Size size, Color baseCol, PaintEventHandler paint)
+        {
+            b.Parent = exCard;
+            b.Location = at;
+            b.Size = size;
+            b.BorderRadius = BTN_RADIUS;
+            b.BackColor = Color.White;
+            b.Normalcolor = baseCol;
+            b.Activecolor = baseCol;
+            b.OnHovercolor = baseCol;
+            b.Textcolor = Color.White;
+            b.OnHoverTextColor = Color.White;
+            b.Cursor = Cursors.Hand;
+            b.Text = "";
+            b.Region = null;
+            b.Paint -= paint;
+            b.Paint += paint;
+            b.BringToFront();
+        }
+
+        private void ExSyncToggles()
+        {
+            if (exRemember == null || exAuto == null) return;
+            exRemember.Tag = bunifuToggleRememberSwitch.Value;
+            exAuto.Tag = bunifuToggleAutoLoginSwitch.Value;
+            exRemPos = bunifuToggleRememberSwitch.Value ? 1f : 0f;
+            exAutoPos = bunifuToggleAutoLoginSwitch.Value ? 1f : 0f;
+            exRemember.Invalidate();
+            exAuto.Invalidate();
+        }
+
+        private float ExFloatTarget()
+        {
+            return (txtLogin.Focused || txtLogin.TextLength > 0) ? 1f : 0f;
+        }
+
+        // Floating label: rests on the input line, rises to the top-left and shrinks when active.
+        private void ExLayoutFloat()
+        {
+            if (exFloat == null) return;
+            float t = ExEase(exFloatT);
+            // rest: on the text line, vertically centred in the box; floated: a notch on the top border
+            float boxMid = (FIELD_NOTCH + (FIELD_H - FIELD_PAD)) / 2f;
+            float restY = boxMid - 10f, restH = 20f, restX = FIELD_TEXT_X;
+            float upY = FIELD_NOTCH - 7f, upH = 14f, upX = FIELD_PAD + 11f;
+            float restW = (panel2.Width / ExS_DPI) - FIELD_TEXT_X - 14f;
+            float upW;
+            using (Font uf = new Font("Segoe UI", 7.5F, FontStyle.Bold))
+                upW = TextRenderer.MeasureText("LICENCE KEY", uf, Size.Empty, TextFormatFlags.NoPadding).Width + 10f;
+            float x = restX + (upX - restX) * t;
+            float y = restY + (upY - restY) * t;
+            float w = restW + (upW - restW) * t;
+            float h = restH + (upH - restH) * t;
+            Rectangle want = new Rectangle(ExS(x), ExS(y), ExS(w), ExS(h));
+            if (exFloat.Bounds != want) exFloat.Bounds = want;
+            exFloat.Invalidate();
+        }
+
+        private static float ExEase(float t)
+        {
+            t = Math.Max(0f, Math.Min(1f, t));
+            return 1f - (1f - t) * (1f - t) * (1f - t);   // ease-out cubic
         }
 
         private static GraphicsPath ExRound(Rectangle r, int radius)
         {
+            return ExRoundF(new RectangleF(r.X, r.Y, r.Width, r.Height), radius);
+        }
+
+        private static GraphicsPath ExRoundF(RectangleF r, float radius)
+        {
             GraphicsPath p = new GraphicsPath();
-            int d = Math.Min(radius * 2, Math.Min(r.Width, r.Height));
+            float d = Math.Min(radius * 2, Math.Min(r.Width, r.Height));
             if (d <= 1) { p.AddRectangle(r); return p; }
             p.AddArc(r.X, r.Y, d, d, 180, 90);
             p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
@@ -380,7 +439,7 @@ namespace APP_FRAMEWORK
             }
         }
 
-        // sirf bounds scale hote hain, fonts nahi - isliye koi vibration nahi
+        // only bounds scale, fonts do not - no vibration
         private void ExApplyScale(Control parent, float s, Point parentCenter)
         {
             foreach (Control c in parent.Controls)
@@ -410,7 +469,7 @@ namespace APP_FRAMEWORK
             l.Font = font;
             l.ForeColor = color;
             l.BackColor = Color.Transparent;
-            l.UseCompatibleTextRendering = true;
+            l.UseCompatibleTextRendering = false;
             l.Click += (s, e) => ActiveControl = null;
             exCard.Controls.Add(l);
             l.BringToFront();
@@ -421,10 +480,11 @@ namespace APP_FRAMEWORK
         {
             Panel t = new Panel();
             t.Location = p;
-            t.Size = new Size(46, 24);
-            t.BackColor = Color.Transparent;
+            t.Size = new Size(36, 20);
+            t.BackColor = Color.White;
             t.Cursor = Cursors.Hand;
             t.Tag = state;
+            ExBuffer(t);
             t.Paint += ExTogglePaint;
             t.Click += onClick;
             exCard.Controls.Add(t);
@@ -472,38 +532,33 @@ namespace APP_FRAMEWORK
 
         private void ExAnimTick(object sender, EventArgs e)
         {
-            if (!Visible) return;
+            if (!Visible || IsDisposed) return;
 
             Point pc = Cursor.Position;
             Point inCard = exCard.PointToClient(pc);
             Point inHead = exHeader.PointToClient(pc);
             bool down = Control.MouseButtons == MouseButtons.Left;
+            bool loaderUp = byteNovaServerLoader != null && byteNovaServerLoader.Visible;
 
-            bool overSubmit = bunifuFlatButton1.Enabled && bunifuFlatButton1.Bounds.Contains(inCard);
-            bool overExit = bunifuFlatButton2.Bounds.Contains(inCard);
+            bool overSubmit = !loaderUp && bunifuFlatButton1.Enabled && bunifuFlatButton1.Bounds.Contains(inCard);
+            bool overExit = !loaderUp && bunifuFlatButton2.Bounds.Contains(inCard);
             bool overClose = exClose.Bounds.Contains(inHead);
 
             float ns = ExApproach(exHoverSubmit, overSubmit ? 1f : 0f);
             bool ps = overSubmit && down;
-
             if (ns != exHoverSubmit || ps != exPressSubmit)
             {
                 exHoverSubmit = ns;
                 exPressSubmit = ps;
-                bunifuFlatButton1.Normalcolor = ps ? ExBtnBlueDown : ExMix(ExBtnBlue, Color.White, ns * 0.9f);
-                bunifuFlatButton1.Activecolor = bunifuFlatButton1.Normalcolor;
                 bunifuFlatButton1.Invalidate();
             }
 
             float ne = ExApproach(exHoverExit, overExit ? 1f : 0f);
             bool pe = overExit && down;
-
             if (ne != exHoverExit || pe != exPressExit)
             {
                 exHoverExit = ne;
                 exPressExit = pe;
-                bunifuFlatButton2.Normalcolor = pe ? ExBtnRedDown : ExMix(ExBtnRed, Color.White, ne * 0.9f);
-                bunifuFlatButton2.Activecolor = bunifuFlatButton2.Normalcolor;
                 bunifuFlatButton2.Invalidate();
             }
 
@@ -516,20 +571,30 @@ namespace APP_FRAMEWORK
                 exClose.Invalidate();
             }
 
-            bool remOn = (bool)exRemember.Tag;
-            bool autoOn = (bool)exAuto.Tag;
+            // keep the painted toggles in step with the real switches (method_4 sets them on Load)
+            if ((bool)exRemember.Tag != bunifuToggleRememberSwitch.Value) exRemember.Tag = bunifuToggleRememberSwitch.Value;
+            if ((bool)exAuto.Tag != bunifuToggleAutoLoginSwitch.Value) exAuto.Tag = bunifuToggleAutoLoginSwitch.Value;
 
-            float nr = ExApproach(exRemPos, remOn ? 1f : 0f);
+            float nr = ExApproach(exRemPos, (bool)exRemember.Tag ? 1f : 0f);
             if (nr != exRemPos) { exRemPos = nr; exRemember.Invalidate(); }
 
-            float na = ExApproach(exAutoPos, autoOn ? 1f : 0f);
+            float na = ExApproach(exAutoPos, (bool)exAuto.Tag ? 1f : 0f);
             if (na != exAutoPos) { exAutoPos = na; exAuto.Invalidate(); }
+
+            // floating label + focus ring
+            float ft = ExApproach(exFloatT, ExFloatTarget());
+            float fo = ExApproach(exFocusT, txtLogin.Focused ? 1f : 0f);
+            if (ft != exFloatT) { exFloatT = ft; ExLayoutFloat(); }
+            if (fo != exFocusT) { exFocusT = fo; panel2.Invalidate(); exFloat.Invalidate(); }
+
+            if (loaderUp) byteNovaServerLoader.Invalidate(ExLoaderCardRect(byteNovaServerLoader));
         }
 
         private static Color ExMix(Color a, Color b, float t)
         {
             t = Math.Max(0f, Math.Min(1f, t));
             return Color.FromArgb(
+                (int)(a.A + (b.A - a.A) * t),
                 (int)(a.R + (b.R - a.R) * t),
                 (int)(a.G + (b.G - a.G) * t),
                 (int)(a.B + (b.B - a.B) * t));
@@ -542,317 +607,656 @@ namespace APP_FRAMEWORK
             return (int)Math.Round(v * ExS_DPI);
         }
 
+        private static void ExText(Graphics g, string text, Font f, Rectangle r, Color c, TextFormatFlags flags)
+        {
+            TextRenderer.DrawText(g, text, f, r, c, flags | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+        }
+
+        // Lucide-style icons on a 24x24 grid (2px stroke, round caps / joins).
+        private static void ExIcon(Graphics g, string kind, RectangleF r, Color c, float stroke)
+        {
+            GraphicsState st = g.Save();
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.TranslateTransform(r.X, r.Y);
+            g.ScaleTransform(r.Width / 24f, r.Height / 24f);
+            float w = stroke * 24f / r.Width;
+            using (Pen p = new Pen(c, w))
+            {
+                p.StartCap = LineCap.Round; p.EndCap = LineCap.Round; p.LineJoin = LineJoin.Round;
+                switch (kind)
+                {
+                    case "key":
+                        g.DrawEllipse(p, 2.5f, 11.5f, 9f, 9f);
+                        g.DrawLine(p, 10.4f, 13.6f, 21f, 3f);
+                        g.DrawLine(p, 15.5f, 8.5f, 18.5f, 11.5f);
+                        g.DrawLine(p, 18.5f, 5.5f, 21f, 8f);
+                        break;
+                    case "shield":
+                        using (GraphicsPath sp = new GraphicsPath())
+                        {
+                            sp.AddLine(12f, 2.5f, 20f, 5.5f);
+                            sp.AddLine(20f, 5.5f, 20f, 12f);
+                            sp.AddBezier(20f, 12f, 20f, 17f, 16f, 20f, 12f, 22f);
+                            sp.AddBezier(12f, 22f, 8f, 20f, 4f, 17f, 4f, 12f);
+                            sp.AddLine(4f, 12f, 4f, 5.5f);
+                            sp.CloseFigure();
+                            g.DrawPath(p, sp);
+                        }
+                        g.DrawLines(p, new[] { new PointF(9f, 12f), new PointF(11f, 14f), new PointF(15f, 10f) });
+                        break;
+                    case "login":
+                        g.DrawLines(p, new[] { new PointF(15f, 3f), new PointF(19f, 3f), new PointF(21f, 5f), new PointF(21f, 19f), new PointF(19f, 21f), new PointF(15f, 21f) });
+                        g.DrawLines(p, new[] { new PointF(10f, 7f), new PointF(15f, 12f), new PointF(10f, 17f) });
+                        g.DrawLine(p, 15f, 12f, 3f, 12f);
+                        break;
+                    case "power":
+                        g.DrawArc(p, 3f, 4f, 18f, 18f, -50f, 280f);
+                        g.DrawLine(p, 12f, 2f, 12f, 12f);
+                        break;
+                    case "x":
+                        g.DrawLine(p, 6f, 6f, 18f, 18f);
+                        g.DrawLine(p, 18f, 6f, 6f, 18f);
+                        break;
+                    case "check":
+                        g.DrawLines(p, new[] { new PointF(5f, 12.5f), new PointF(10f, 17.5f), new PointF(19f, 7f) });
+                        break;
+                    case "info":
+                        g.DrawEllipse(p, 2f, 2f, 20f, 20f);
+                        g.DrawLine(p, 12f, 16f, 12f, 11.5f);
+                        g.DrawLine(p, 12f, 8f, 12.01f, 8f);
+                        break;
+                    case "wifi":
+                        g.DrawArc(p, 2f, 7f, 20f, 20f, 225f, 90f);
+                        g.DrawArc(p, 6f, 11f, 12f, 12f, 225f, 90f);
+                        g.DrawLine(p, 12f, 20f, 12.01f, 20f);
+                        break;
+                }
+            }
+            g.Restore(st);
+        }
+
+        // ------------------------------------------------------------------
+        // painting
         // ------------------------------------------------------------------
         private void ExFormPaint(object sender, PaintEventArgs e)
         {
-            ExS_DPI = exK;
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
 
-            using (SolidBrush bg = new SolidBrush(UiTheme.Bg))
-                e.Graphics.FillRectangle(bg, new Rectangle(0, 0, ClientSize.Width, ClientSize.Height));
+            using (SolidBrush bg = new SolidBrush(ExPageBg))
+                g.FillRectangle(bg, new Rectangle(0, 0, ClientSize.Width, ClientSize.Height));
 
-            Rectangle b = new Rectangle(0, 0, ClientSize.Width, ClientSize.Height);
+            Rectangle b = new Rectangle(0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
             using (GraphicsPath path = ExRound(b, ExS(CORNER)))
-            {
-                using (LinearGradientBrush lb = new LinearGradientBrush(b, UiTheme.HeaderA, UiTheme.Green, 20f))
-                {
-                    lb.InterpolationColors = new ColorBlend
-                    {
-                        Positions = new float[] { 0f, 0.55f, 1f },
-                        Colors = new Color[] { Color.FromArgb(58, 123, 213), Color.FromArgb(90, 200, 120), Color.FromArgb(150, 120, 235) }
-                    };
-                    using (Pen pen = new Pen(lb, 2.2f * exK))
-                        e.Graphics.DrawPath(pen, path);
-                }
-            }
+            using (LinearGradientBrush lb = new LinearGradientBrush(new Rectangle(0, 0, ClientSize.Width, ClientSize.Height), ExBlue, ExSaffron, 35f))
+            using (Pen pen = new Pen(lb, 1.6f * exK))
+                g.DrawPath(pen, path);
         }
 
         private void ExHeaderPaint(object sender, PaintEventArgs e)
         {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
             Rectangle r = new Rectangle(0, 0, exHeader.Width, exHeader.Height);
-            using (GraphicsPath path = ExRound(new Rectangle(-ExS(CORNER), 0, r.Width + ExS(CORNER) * 2, r.Height + ExS(CORNER)), ExS(CORNER)))
-            using (LinearGradientBrush bg = new LinearGradientBrush(r, UiTheme.HeaderA, UiTheme.HeaderB, 0f))
-                e.Graphics.FillPath(bg, path);
 
-            using (Font f = new Font("Segoe UI", 13F * exK, FontStyle.Bold | FontStyle.Italic))
-                TextRenderer.DrawText(e.Graphics, "EXPRESS   |   KEY LOGIN", f,
-                    new Point(ExS(20), ExS(21)), Color.White,
-                    TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+            using (LinearGradientBrush bg = new LinearGradientBrush(r, ExBlueDeep, ExBlueSoft, 0f))
+            {
+                bg.InterpolationColors = new ColorBlend
+                {
+                    Positions = new[] { 0f, 0.6f, 1f },
+                    Colors = new[] { ExBlueDeep, ExBlue, Color.FromArgb(59, 130, 246) }
+                };
+                g.FillRectangle(bg, r);
+            }
+            using (SolidBrush gloss = new SolidBrush(Color.FromArgb(22, 255, 255, 255)))
+                g.FillRectangle(gloss, 0, 0, r.Width, (r.Height - ExS(3)) / 2);
+
+            // bhagwa underline
+            Rectangle ul = new Rectangle(0, r.Height - ExS(3), r.Width, ExS(3));
+            using (LinearGradientBrush ob = new LinearGradientBrush(new Rectangle(ul.X, ul.Y, Math.Max(1, ul.Width), Math.Max(1, ul.Height)), ExSaffronD, ExSaffronL, 0f))
+                g.FillRectangle(ob, ul);
+
+            // key badge + "Key Login" (the brand name appears only once, beside the logo in the card)
+            int h = r.Height - ExS(3);
+            Rectangle badge = new Rectangle(ExS(14), (h - ExS(26)) / 2, ExS(26), ExS(26));
+            using (SolidBrush sh = new SolidBrush(Color.FromArgb(45, 0, 0, 0)))
+                g.FillEllipse(sh, badge.X, badge.Y + ExS(1), badge.Width, badge.Height);
+            using (SolidBrush wb = new SolidBrush(Color.White))
+                g.FillEllipse(wb, badge);
+            ExIcon(g, "key", new RectangleF(badge.X + ExS(6), badge.Y + ExS(6), ExS(14), ExS(14)), ExSaffronD, 1.9f * exK);
+
+            using (Font tf = new Font("Segoe UI Semibold", 10.5F * exK))
+            {
+                Size ts = TextRenderer.MeasureText(g, "Key Login", tf, Size.Empty, TextFormatFlags.NoPadding);
+                ExText(g, "Key Login", tf, new Rectangle(badge.Right + ExS(10), (h - ts.Height) / 2, ts.Width + ExS(4), ts.Height),
+                    Color.White, TextFormatFlags.Left);
+            }
         }
 
         private void ExClosePaint(object sender, PaintEventArgs e)
         {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+
+            // repaint the header gradient under the button (transparent panel)
+            Rectangle pr = new Rectangle(-exClose.Left, -exClose.Top, Math.Max(1, exHeader.Width), Math.Max(1, exHeader.Height));
+            using (LinearGradientBrush bg = new LinearGradientBrush(pr, ExBlueDeep, Color.FromArgb(59, 130, 246), 0f))
+            {
+                bg.InterpolationColors = new ColorBlend
+                {
+                    Positions = new[] { 0f, 0.6f, 1f },
+                    Colors = new[] { ExBlueDeep, ExBlue, Color.FromArgb(59, 130, 246) }
+                };
+                g.FillRectangle(bg, 0, 0, exClose.Width, exClose.Height);
+            }
 
             int dy = exPressClose ? ExS(1) : 0;
-            Rectangle r = new Rectangle(0, dy, exClose.Width - 1, exClose.Height - 1 - dy);
+            RectangleF r = new RectangleF(0.5f, 0.5f + dy, exClose.Width - 2f, exClose.Height - 2f - ExS(1));
 
-            Color bgCol = exPressClose
-                ? ExCloseDown
-                : ExMix(ExCloseBase, Color.White, exHoverClose * 0.92f);
-            Color xCol = exPressClose
-                ? Color.White
-                : ExMix(Color.White, ExCloseDown, exHoverClose);
+            // default red / hover white + red X + red border / pressed dark red
+            Color fill = exPressClose ? ExRedDeep : ExMix(ExRed, Color.White, exHoverClose);
+            Color line = exPressClose ? Color.FromArgb(127, 29, 29) : ExMix(Color.FromArgb(185, 28, 28), ExRed, exHoverClose);
+            Color glyph = exPressClose ? Color.White : ExMix(Color.White, ExRed, exHoverClose);
 
-            using (GraphicsPath path = ExRound(r, ExS(9)))
+            if (!exPressClose)
+                using (GraphicsPath sp = ExRoundF(new RectangleF(r.X, r.Y + ExS(1.5f), r.Width, r.Height), ExS(8)))
+                using (SolidBrush sb = new SolidBrush(Color.FromArgb(60, 0, 0, 0)))
+                    g.FillPath(sb, sp);
+            using (GraphicsPath path = ExRoundF(r, ExS(8)))
             {
-                using (SolidBrush bg = new SolidBrush(bgCol))
-                    e.Graphics.FillPath(bg, path);
-
-                if (exHoverClose > 0.05f)
-                {
-                    using (Pen border = new Pen(Color.FromArgb((int)(170 * exHoverClose), ExCloseBase), 1.3f * exK))
-                        e.Graphics.DrawPath(border, path);
-                }
+                using (SolidBrush b = new SolidBrush(fill)) g.FillPath(b, path);
+                using (Pen p = new Pen(line, 1.2f * exK)) g.DrawPath(p, path);
             }
-
-            using (Pen p = new Pen(xCol, 2.2f * exK))
-            {
-                p.StartCap = LineCap.Round;
-                p.EndCap = LineCap.Round;
-                int m = ExS(11);
-                e.Graphics.DrawLine(p, m, ExS(10) + dy, exClose.Width - m, exClose.Height - ExS(10) + dy);
-                e.Graphics.DrawLine(p, exClose.Width - m, ExS(10) + dy, m, exClose.Height - ExS(10) + dy);
-            }
+            float s = ExS(16);
+            ExIcon(g, "x", new RectangleF(r.X + (r.Width - s) / 2f, r.Y + (r.Height - s) / 2f, s, s), glyph, 2.4f * exK);
         }
 
         private void ExCardPaint(object sender, PaintEventArgs e)
         {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            Rectangle r = new Rectangle(0, 0, exCard.Width - 1, exCard.Height - 1);
-            using (GraphicsPath path = ExRound(r, ExS(18)))
-            using (Pen pen = new Pen(UiTheme.Border, 1f * exK))
-                e.Graphics.DrawPath(pen, path);
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            RectangleF r = new RectangleF(0.5f, 0.5f, exCard.Width - 2f, exCard.Height - 2f - ExS(2));
+
+            using (GraphicsPath sh = ExRoundF(new RectangleF(r.X, r.Y + ExS(2), r.Width, r.Height), ExS(16)))
+            using (SolidBrush sb = new SolidBrush(Color.FromArgb(214, 225, 243)))
+                g.FillPath(sb, sh);
+            using (GraphicsPath path = ExRoundF(r, ExS(16)))
+            {
+                using (SolidBrush b = new SolidBrush(Color.White)) g.FillPath(b, path);
+                using (Pen pen = new Pen(ExLine, 1f)) g.DrawPath(pen, path);
+            }
+
+            // "SECURE" badge (shield-check) top-right
+            using (Font bf = new Font("Segoe UI", 7F * exK, FontStyle.Bold))
+            {
+                Size ts = TextRenderer.MeasureText(g, "SECURE", bf, Size.Empty, TextFormatFlags.NoPadding);
+                int bw = ts.Width + ExS(28);
+                Rectangle badge = new Rectangle(ExS(EDGE_R) - bw, ExS(28), bw, ExS(20));
+                using (GraphicsPath bp = ExRound(badge, badge.Height / 2))
+                {
+                    using (SolidBrush b = new SolidBrush(Color.FromArgb(220, 252, 231))) g.FillPath(b, bp);
+                    using (Pen p = new Pen(Color.FromArgb(134, 239, 172), 1f)) g.DrawPath(p, bp);
+                }
+                ExIcon(g, "shield", new RectangleF(badge.X + ExS(7), badge.Y + ExS(4), ExS(12), ExS(12)), Color.FromArgb(21, 128, 61), 1.5f * exK);
+                ExText(g, "SECURE", bf, new Rectangle(badge.X + ExS(22), badge.Y, ts.Width + ExS(4), badge.Height),
+                    Color.FromArgb(21, 128, 61), TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+
+                using (Font vf = new Font("Segoe UI", 7F * exK))
+                    ExText(g, "v0.0.1", vf, new Rectangle(badge.X - ExS(56), badge.Y, ExS(50), badge.Height),
+                        ExSlate, TextFormatFlags.Right | TextFormatFlags.VerticalCenter);
+            }
+
+            // thin divider between brand and form
+            using (Pen p = new Pen(Color.FromArgb(234, 239, 247), 1f))
+                g.DrawLine(p, ExS(EDGE_L), ExS(72), ExS(EDGE_R), ExS(72));
+
+            // footer hint with info icon (centred, quiet)
+            using (Font hf = new Font("Segoe UI", 7.75F * exK))
+            {
+                string hint = "Server se validate hone ke baad software khulega.";
+                Size hs = TextRenderer.MeasureText(g, hint, hf, Size.Empty, TextFormatFlags.NoPadding);
+                int iw = ExS(13), gap = ExS(6);
+                int fx = (exCard.Width - (iw + gap + hs.Width)) / 2;
+                int fy = ExS(256);
+                ExIcon(g, "info", new RectangleF(fx, fy + (ExS(18) - iw) / 2f, iw, iw), ExSaffron, 1.5f * exK);
+                ExText(g, hint, hf, new Rectangle(fx + iw + gap, fy, hs.Width + ExS(4), ExS(18)), ExSlate,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+            }
         }
 
         private void ExBrandPaint(object sender, PaintEventArgs e)
         {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            Rectangle r = new Rectangle(0, 0, exBrand.Width, exBrand.Height);
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            RectangleF r = new RectangleF(1f, 1f, exBrand.Width - 3f, exBrand.Height - 3f);
 
-            using (GraphicsPath path = ExRound(r, ExS(14)))
-            using (LinearGradientBrush bg = new LinearGradientBrush(r, Color.FromArgb(232, 242, 255), Color.FromArgb(212, 232, 254), 90f))
-                e.Graphics.FillPath(bg, path);
+            using (GraphicsPath path = ExRoundF(r, ExS(14)))
+            {
+                using (LinearGradientBrush bg = new LinearGradientBrush(r, Color.FromArgb(255, 247, 237), Color.FromArgb(255, 237, 213), 90f))
+                    g.FillPath(bg, path);
+                using (LinearGradientBrush rim = new LinearGradientBrush(r, ExSaffronL, ExSaffronD, 45f))
+                using (Pen p = new Pen(rim, 1.6f * exK))
+                    g.DrawPath(p, path);
+            }
 
             if (byteNovaLogoImage != null)
             {
-                int box = ExS(46);
+                int box = exBrand.Width - ExS(12);
                 float scale = Math.Min((float)box / byteNovaLogoImage.Width, (float)box / byteNovaLogoImage.Height);
                 int w = Math.Max(1, (int)(byteNovaLogoImage.Width * scale));
                 int h = Math.Max(1, (int)(byteNovaLogoImage.Height * scale));
-                e.Graphics.DrawImage(byteNovaLogoImage, new Rectangle((exBrand.Width - w) / 2, (exBrand.Height - h) / 2, w, h));
+                g.DrawImage(byteNovaLogoImage, new Rectangle((exBrand.Width - w) / 2, (exBrand.Height - h) / 2, w, h));
             }
             else
             {
-                using (Font f = new Font("Segoe UI Black", 22F * exK, FontStyle.Bold))
-                    TextRenderer.DrawText(e.Graphics, "E", f, new Rectangle(0, 0, exBrand.Width, exBrand.Height),
-                        UiTheme.HeaderA, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                using (Font f = new Font("Segoe UI Black", 20F * exK, FontStyle.Bold))
+                    ExText(g, "E", f, new Rectangle(0, 0, exBrand.Width, exBrand.Height), ExSaffronD,
+                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             }
         }
 
         private void ExFieldPaint(object sender, PaintEventArgs e)
         {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            Rectangle r = new Rectangle(0, 0, panel2.Width - 1, panel2.Height - 1);
-            bool focused = txtLogin.Focused;
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.Clear(Color.White);
 
-            using (GraphicsPath path = ExRound(r, ExS(12)))
+            float f = exFocusT;
+            // outlined box: exactly EDGE_L..EDGE_R in card space, top border leaves room for the notch label
+            RectangleF r = new RectangleF(ExS(FIELD_PAD) + 0.5f, ExS(FIELD_NOTCH) + 0.5f,
+                panel2.Width - ExS(FIELD_PAD * 2) - 1f, panel2.Height - ExS(FIELD_NOTCH) - ExS(FIELD_PAD) - 1f);
+
+            // focus glow ring
+            if (f > 0.01f)
+                using (GraphicsPath gp = ExRoundF(RectangleF.Inflate(r, ExS(2.5f), ExS(2.5f)), ExS(13)))
+                using (SolidBrush gb = new SolidBrush(Color.FromArgb((int)(52 * f), ExBlueSoft)))
+                    g.FillPath(gb, gp);
+
+            using (GraphicsPath path = ExRoundF(r, ExS(11)))
             {
-                using (SolidBrush bg = new SolidBrush(ExFieldBg))
-                    e.Graphics.FillPath(bg, path);
-
-                if (focused)
-                {
-                    using (Pen glow = new Pen(Color.FromArgb(45, UiTheme.HeaderB), 5f * exK))
-                        e.Graphics.DrawPath(glow, path);
-                }
-                using (Pen pen = new Pen(focused ? UiTheme.HeaderB : UiTheme.Border, 1.4f * exK))
-                    e.Graphics.DrawPath(pen, path);
+                using (SolidBrush bg = new SolidBrush(ExFieldBg)) g.FillPath(bg, path);
+                Color idle = exFieldHover > 0f ? Color.FromArgb(148, 163, 184) : Color.FromArgb(203, 213, 225);
+                using (Pen pen = new Pen(ExMix(idle, ExBlueSoft, f), (1.2f + 0.6f * f) * exK))
+                    g.DrawPath(pen, path);
             }
+
+            // bhagwa accent that grows along the bottom while focused
+            if (f > 0.01f)
+            {
+                float lw = (r.Width - ExS(28)) * ExEase(f);
+                float lx = r.X + (r.Width - lw) / 2f;
+                using (GraphicsPath lp = ExRoundF(new RectangleF(lx, r.Bottom - ExS(2.5f), lw, ExS(2.5f)), ExS(1.2f)))
+                using (LinearGradientBrush lb = new LinearGradientBrush(new RectangleF(lx - 1, r.Bottom - 3, lw + 2, 4), ExSaffronD, ExSaffronL, 0f))
+                    g.FillPath(lb, lp);
+            }
+
+            // icon centred vertically in the box, centred in the column left of the text
+            Color ic = ExMix(Color.FromArgb(120, 136, 160), ExSaffronD, f);
+            float isz = ExS(16);
+            float colL = r.X, colR = ExS(FIELD_TEXT_X) - ExS(4);
+            ExIcon(g, "key", new RectangleF(colL + (colR - colL - isz) / 2f, r.Y + (r.Height - isz) / 2f, isz, isz), ic, 1.9f * exK);
+        }
+
+        private void ExFloatPaint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            g.Clear(ExFieldBg);   // white: at rest it matches the box, floated it is the notch over the border
+            float t = ExEase(exFloatT);
+            float size = (9.5F + (7.5F - 9.5F) * t) * exK;
+            Color rest = Color.FromArgb(128, 142, 164);
+            Color up = ExMix(ExSlate, ExBlueSoft, exFocusT);
+            Color col = ExMix(rest, up, t);
+            string text = t > 0.5f ? "LICENCE KEY" : "Enter your licence key";
+            using (Font f = new Font("Segoe UI", size, t > 0.5f ? FontStyle.Bold : FontStyle.Regular))
+                ExText(g, text, f, new Rectangle(ExS(5f * t), 0, exFloat.Width - ExS(5f * t), exFloat.Height), col,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
         }
 
         private void ExTogglePaint(object sender, PaintEventArgs e)
         {
             Panel t = (Panel)sender;
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.Clear(Color.White);
 
             float pos = (t == exRemember) ? exRemPos : exAutoPos;
-            Rectangle r = new Rectangle(0, 0, t.Width - 1, t.Height - 1);
+            RectangleF r = new RectangleF(0.5f, 0.5f, t.Width - 2f, t.Height - 2f);
 
-            using (GraphicsPath path = ExRound(r, t.Height / 2))
+            using (GraphicsPath path = ExRoundF(r, r.Height / 2f))
             {
-                using (SolidBrush bg = new SolidBrush(ExMix(Color.FromArgb(203, 212, 224), UiTheme.Green, pos)))
-                    e.Graphics.FillPath(bg, path);
-
-                int knob = t.Height - ExS(6);
-                int x = ExS(3) + (int)((t.Width - knob - ExS(6)) * pos);
-                using (SolidBrush kn = new SolidBrush(Color.White))
-                    e.Graphics.FillEllipse(kn, x, ExS(3), knob, knob);
+                using (LinearGradientBrush on = new LinearGradientBrush(r, ExSaffronD, ExSaffronL, 0f))
+                using (SolidBrush off = new SolidBrush(Color.FromArgb(226, 232, 240)))
+                {
+                    g.FillPath(off, path);
+                    if (pos > 0.01f)
+                    {
+                        Region old = g.Clip;
+                        g.SetClip(new RectangleF(r.X, r.Y, r.Width * pos + 1, r.Height + 1), CombineMode.Intersect);
+                        g.FillPath(on, path);
+                        g.Clip = old;
+                    }
+                }
+                using (Pen border = new Pen(ExMix(Color.FromArgb(203, 213, 225), ExSaffronD, pos), 1f))
+                    g.DrawPath(border, path);
             }
+
+            float knob = r.Height - ExS(5);
+            float x = r.X + ExS(2.5f) + (r.Width - knob - ExS(5)) * pos;
+            float y = r.Y + ExS(2.5f);
+            using (SolidBrush sh = new SolidBrush(Color.FromArgb(55, 15, 23, 42)))
+                g.FillEllipse(sh, x, y + ExS(1), knob, knob);
+            using (SolidBrush kn = new SolidBrush(ExMix(Color.FromArgb(148, 163, 184), Color.White, pos)))
+                g.FillEllipse(kn, x, y, knob, knob);
+        }
+
+        private void ExStopPaint(object sender, PaintEventArgs e)
+        {
+            CheckBox c = (CheckBox)sender;
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.Clear(Color.White);
+
+            float bs = ExS(16);
+            RectangleF box = new RectangleF(ExS(1), (c.Height - bs) / 2f, bs, bs);
+            using (GraphicsPath bp = ExRoundF(box, ExS(4)))
+            {
+                if (c.Checked)
+                {
+                    using (LinearGradientBrush b = new LinearGradientBrush(box, ExSaffronL, ExSaffronD, 90f)) g.FillPath(b, bp);
+                }
+                else
+                {
+                    using (SolidBrush b = new SolidBrush(exHoverStop > 0f ? Color.FromArgb(255, 247, 237) : Color.White)) g.FillPath(b, bp);
+                    using (Pen p = new Pen(exHoverStop > 0f ? ExSaffron : Color.FromArgb(148, 163, 184), 1.3f * exK)) g.DrawPath(p, bp);
+                }
+            }
+            if (c.Checked)
+                ExIcon(g, "check", new RectangleF(box.X + ExS(2), box.Y + ExS(2), bs - ExS(4), bs - ExS(4)), Color.White, 2.2f * exK);
+
+            ExText(g, c.Text, c.Font, new Rectangle((int)box.Right + ExS(8), 0, c.Width - (int)box.Right - ExS(8), c.Height),
+                c.Checked ? ExSaffronD : ExInk, TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
         }
 
         private void ExSubmitPaint(object sender, PaintEventArgs e)
         {
             Control c = (Control)sender;
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.Clear(Color.White);
 
+            bool on = c.Enabled;
             float h = exHoverSubmit;
-            int dy = exPressSubmit ? ExS(2) : 0;
-            Rectangle r = new Rectangle(0, dy, c.Width - 1, c.Height - 1 - dy);
+            int dy = exPressSubmit ? ExS(1) : 0;
+            RectangleF r = new RectangleF(0.5f, 0.5f + dy, c.Width - 2f, c.Height - 2f - ExS(2));
 
-            Color top, bottom, fg;
-            if (exPressSubmit)
+            Color a = ExMix(ExBlueDeep, Color.FromArgb(37, 99, 235), h * 0.6f);
+            Color b = ExMix(ExBlueSoft, Color.FromArgb(96, 165, 250), h * 0.5f);
+            if (exPressSubmit) { a = ExMix(ExBlueDeep, Color.Black, 0.15f); b = ExBlueDeep; }
+            if (!on) { a = Color.FromArgb(148, 175, 222); b = Color.FromArgb(170, 194, 232); }
+
+            if (on && !exPressSubmit)
+                using (GraphicsPath sp = ExRoundF(new RectangleF(r.X, r.Y + ExS(2), r.Width, r.Height), ExS(BTN_RADIUS)))
+                using (SolidBrush sb = new SolidBrush(Color.FromArgb((int)(45 + 50 * h), 29, 78, 216)))
+                    g.FillPath(sb, sp);
+
+            using (GraphicsPath path = ExRoundF(r, ExS(BTN_RADIUS)))
             {
-                top = bottom = ExBtnBlueDown;
-                fg = Color.White;
+                using (LinearGradientBrush bg = new LinearGradientBrush(r, a, b, 0f)) g.FillPath(bg, path);
+                Region old = g.Clip;
+                g.SetClip(path, CombineMode.Intersect);
+                using (SolidBrush gl = new SolidBrush(Color.FromArgb(28, 255, 255, 255)))
+                    g.FillRectangle(gl, r.X, r.Y, r.Width, r.Height / 2f);
+                // bhagwa base line on hover
+                if (on && h > 0.02f)
+                    using (LinearGradientBrush ob = new LinearGradientBrush(new RectangleF(r.X, r.Bottom - ExS(3), r.Width, ExS(3) + 1), ExSaffronD, ExSaffronL, 0f))
+                        g.FillRectangle(ob, r.X, r.Bottom - ExS(3) * h, r.Width, ExS(3) * h);
+                g.Clip = old;
             }
-            else
+
+            using (Font f = new Font("Segoe UI Semibold", 9.5F * exK))
             {
-                top = ExMix(ExBtnBlue, Color.White, h * 0.9f);
-                bottom = ExMix(UiTheme.HeaderB, Color.White, h * 0.9f);
-                fg = ExMix(Color.White, ExBtnBlueDown, h);
-            }
-
-            using (GraphicsPath path = ExRound(r, ExS(BTN_RADIUS)))
-            {
-                using (LinearGradientBrush bg = new LinearGradientBrush(r, top, bottom, 0f))
-                    e.Graphics.FillPath(bg, path);
-
-                if (h > 0.04f && !exPressSubmit)
-                {
-                    using (Pen border = new Pen(Color.FromArgb((int)(190 * h), ExBtnBlue), 1.2f * exK))
-                        e.Graphics.DrawPath(border, path);
-                }
-
-                using (Font f = new Font("Segoe UI Semibold", 10.5F * exK, FontStyle.Bold))
-                    TextRenderer.DrawText(e.Graphics, "SUBMIT", f, r, fg,
-                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                string text = "SUBMIT";
+                Size ts = TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding);
+                float isz = ExS(18);
+                float gw = ts.Width + ExS(10) + isz;
+                float x = r.X + (r.Width - gw) / 2f + ExS(3) * h;   // content nudges right on hover
+                float cy = r.Y + r.Height / 2f;
+                ExText(g, text, f, new Rectangle((int)x, (int)(cy - ts.Height / 2f) - 1, ts.Width + ExS(4), ts.Height + 2), Color.White, TextFormatFlags.Left);
+                ExIcon(g, "login", new RectangleF(x + ts.Width + ExS(10), cy - isz / 2f, isz, isz), Color.White, 2.1f * exK);
             }
         }
 
         private void ExExitPaint(object sender, PaintEventArgs e)
         {
             Control c = (Control)sender;
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.Clear(Color.White);
 
             float h = exHoverExit;
-            int dy = exPressExit ? ExS(2) : 0;
-            Rectangle r = new Rectangle(0, dy, c.Width - 1, c.Height - 1 - dy);
+            int dy = exPressExit ? ExS(1) : 0;
+            RectangleF r = new RectangleF(0.5f, 0.5f + dy, c.Width - 2f, c.Height - 2f - ExS(2));
 
-            Color bgCol, fg;
-            if (exPressExit)
+            Color fill = exPressExit ? ExRed : ExMix(Color.White, Color.FromArgb(254, 226, 226), h);
+            Color line = exPressExit ? ExRedDeep : ExMix(Color.FromArgb(252, 165, 165), ExRed, h);
+            Color fg = exPressExit ? Color.White : ExMix(Color.FromArgb(220, 38, 38), Color.FromArgb(185, 28, 28), h);
+
+            using (GraphicsPath path = ExRoundF(r, ExS(BTN_RADIUS)))
             {
-                bgCol = ExBtnRedDown;
-                fg = Color.White;
-            }
-            else
-            {
-                bgCol = ExMix(ExBtnRed, Color.White, h * 0.9f);
-                fg = ExMix(Color.White, ExBtnRedDown, h);
+                using (SolidBrush b = new SolidBrush(fill)) g.FillPath(b, path);
+                using (Pen p = new Pen(line, 1.3f * exK)) g.DrawPath(p, path);
             }
 
-            using (GraphicsPath path = ExRound(r, ExS(BTN_RADIUS)))
+            using (Font f = new Font("Segoe UI Semibold", 9.5F * exK))
             {
-                using (SolidBrush bg = new SolidBrush(bgCol))
-                    e.Graphics.FillPath(bg, path);
+                string text = "EXIT";
+                Size ts = TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding);
+                float isz = ExS(17);
+                float gw = isz + ExS(8) + ts.Width;
+                float x = r.X + (r.Width - gw) / 2f;
+                float cy = r.Y + r.Height / 2f;
+                ExIcon(g, "power", new RectangleF(x, cy - isz / 2f, isz, isz), fg, 2.1f * exK);
+                ExText(g, text, f, new Rectangle((int)(x + isz + ExS(8)), (int)(cy - ts.Height / 2f) - 1, ts.Width + ExS(4), ts.Height + 2), fg, TextFormatFlags.Left);
+            }
+        }
 
-                if (h > 0.04f && !exPressExit)
+        // ------------------------------------------------------------------
+        // validating overlay (frosted card over the blurred, dimmed form body)
+        // ------------------------------------------------------------------
+        private void ExLoaderVisibleChanged(object sender, EventArgs e)
+        {
+            PictureBox box = byteNovaServerLoader;
+            if (box == null) return;
+            if (box.Visible)
+            {
+                // the logic centres it; the overlay covers the whole body under the header
+                int top = exHeader != null ? exHeader.Height : 0;
+                box.Bounds = new Rectangle(0, top, ClientSize.Width, ClientSize.Height - top);
+                ExCaptureLoaderBg(box);
+                box.BringToFront();
+            }
+            else if (exLoaderBg != null)
+            {
+                exLoaderBg.Dispose();
+                exLoaderBg = null;
+            }
+        }
+
+        // Validation really starts once SUBMIT gets disabled; before that (e.g. empty key) the overlay can be dismissed.
+        private void ExLoaderClick(object sender, EventArgs e)
+        {
+            PictureBox box = byteNovaServerLoader;
+            if (box == null || !bunifuFlatButton1.Enabled) return;
+            Point p = box.PointToClient(Cursor.Position);
+            if (!ExLoaderCardRect(box).Contains(p)) box.Visible = false;
+        }
+
+        private void ExCaptureLoaderBg(PictureBox box)
+        {
+            try
+            {
+                if (exLoaderBg != null) { exLoaderBg.Dispose(); exLoaderBg = null; }
+                int w = Math.Max(1, box.Width), h = Math.Max(1, box.Height);
+                using (Bitmap full = new Bitmap(w, h))
                 {
-                    using (Pen border = new Pen(Color.FromArgb((int)(190 * h), ExBtnRed), 1.2f * exK))
-                        e.Graphics.DrawPath(border, path);
-                }
+                    using (Graphics g = Graphics.FromImage(full)) g.Clear(ExPageBg);
+                    Rectangle cr = new Rectangle(exCard.Left - box.Left, exCard.Top - box.Top, exCard.Width, exCard.Height);
+                    exCard.DrawToBitmap(full, cr);
 
-                using (Font f = new Font("Segoe UI Semibold", 10.5F * exK, FontStyle.Bold))
-                    TextRenderer.DrawText(e.Graphics, "EXIT", f, r, fg,
-                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    // cheap blur: downscale then upscale
+                    int sw = Math.Max(1, w / 6), shh = Math.Max(1, h / 6);
+                    using (Bitmap small = new Bitmap(sw, shh))
+                    {
+                        using (Graphics g = Graphics.FromImage(small))
+                        {
+                            g.InterpolationMode = InterpolationMode.HighQualityBilinear;
+                            g.DrawImage(full, new Rectangle(0, 0, sw, shh));
+                        }
+                        exLoaderBg = new Bitmap(w, h);
+                        using (Graphics g = Graphics.FromImage(exLoaderBg))
+                        {
+                            g.InterpolationMode = InterpolationMode.HighQualityBilinear;
+                            g.PixelOffsetMode = PixelOffsetMode.Half;
+                            g.DrawImage(small, new Rectangle(0, 0, w, h));
+                        }
+                    }
+                }
             }
+            catch
+            {
+                exLoaderBg = null;
+            }
+        }
+
+        private Rectangle ExLoaderCardRect(Control box)
+        {
+            int cw = Math.Min(box.Width - ExS(28), ExS(312));
+            int ch = ExS(176);
+            return new Rectangle((box.Width - cw) / 2, (box.Height - ch) / 2, cw, ch);
+        }
+
+        private string ExLoaderStatusLine()
+        {
+            try
+            {
+                string all = InfoList2 != null ? InfoList2.Text : "";
+                if (string.IsNullOrWhiteSpace(all)) return "";
+                string[] lines = all.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                return lines.Length > 0 ? lines[lines.Length - 1].Trim().TrimEnd('.') : "";
+            }
+            catch { return ""; }
         }
 
         private void ExLoaderPaint(object sender, PaintEventArgs e)
         {
             PictureBox box = (PictureBox)sender;
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-            e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-            Rectangle r = new Rectangle(0, 0, box.Width - 1, box.Height - 1);
-            using (GraphicsPath path = ExRound(r, ExS(16)))
+            if (exLoaderBg != null) g.DrawImageUnscaled(exLoaderBg, 0, 0);
+            else g.Clear(ExPageBg);
+            using (SolidBrush dim = new SolidBrush(Color.FromArgb(120, 15, 30, 62)))
+                g.FillRectangle(dim, 0, 0, box.Width, box.Height);
+
+            float time = Environment.TickCount / 1000f;
+            Rectangle card = ExLoaderCardRect(box);
+            RectangleF cr = new RectangleF(card.X + 0.5f, card.Y + 0.5f, card.Width - 1f, card.Height - 1f);
+
+            // frosted card with soft shadow
+            using (GraphicsPath sp = ExRoundF(new RectangleF(cr.X, cr.Y + ExS(4), cr.Width, cr.Height), ExS(18)))
+            using (SolidBrush sb = new SolidBrush(Color.FromArgb(70, 2, 6, 23)))
+                g.FillPath(sb, sp);
+            using (GraphicsPath path = ExRoundF(cr, ExS(18)))
             {
-                using (SolidBrush bg = new SolidBrush(Color.White))
-                    e.Graphics.FillPath(bg, path);
+                using (SolidBrush b = new SolidBrush(Color.FromArgb(248, 255, 255, 255))) g.FillPath(b, path);
+                using (Pen p = new Pen(Color.FromArgb(220, 228, 240), 1f)) g.DrawPath(p, path);
 
-                using (LinearGradientBrush lb = new LinearGradientBrush(r, UiTheme.HeaderA, UiTheme.Green, 20f))
+                // top gradient strip blue -> bhagwa
+                Region old = g.Clip;
+                g.SetClip(path, CombineMode.Intersect);
+                using (LinearGradientBrush tb = new LinearGradientBrush(new RectangleF(cr.X, cr.Y, cr.Width, ExS(4)), ExBlue, ExSaffron, 0f))
+                    g.FillRectangle(tb, cr.X, cr.Y, cr.Width, ExS(4));
+                g.Clip = old;
+            }
+
+            // badge with expanding "radar" pulse rings (no spinner)
+            float bcx = cr.X + cr.Width / 2f, bcy = cr.Y + ExS(40);
+            float br = ExS(20);
+            for (int i = 0; i < 2; i++)
+            {
+                float ph = ((time * 0.9f) + i * 0.5f) % 1f;
+                float rr = br + ExS(14) * ph;
+                int alpha = (int)(110 * (1f - ph));
+                using (Pen ring = new Pen(Color.FromArgb(alpha, ExSaffron), 2f * exK))
+                    g.DrawEllipse(ring, bcx - rr, bcy - rr, rr * 2, rr * 2);
+            }
+            RectangleF bb = new RectangleF(bcx - br, bcy - br, br * 2, br * 2);
+            using (LinearGradientBrush bg = new LinearGradientBrush(bb, ExBlue, ExBlueSoft, 90f))
+                g.FillEllipse(bg, bb);
+            ExIcon(g, "shield", new RectangleF(bcx - ExS(11), bcy - ExS(11), ExS(22), ExS(22)), Color.White, 2f * exK);
+
+            // title + bouncing dots
+            using (Font tf = new Font("Segoe UI Semibold", 12F * exK))
+            {
+                string title = "Validating key";
+                Size ts = TextRenderer.MeasureText(g, title, tf, Size.Empty, TextFormatFlags.NoPadding);
+                float dotsW = ExS(24);
+                float tx = bcx - (ts.Width + ExS(6) + dotsW) / 2f;
+                float ty = cr.Y + ExS(70);
+                ExText(g, title, tf, new Rectangle((int)tx, (int)ty, ts.Width + ExS(4), ts.Height + 2), Color.FromArgb(15, 42, 92), TextFormatFlags.Left);
+                float dx = tx + ts.Width + ExS(6);
+                float baseY = ty + ts.Height * 0.72f;
+                for (int i = 0; i < 3; i++)
                 {
-                    lb.InterpolationColors = new ColorBlend
-                    {
-                        Positions = new float[] { 0f, 0.55f, 1f },
-                        Colors = new Color[] { Color.FromArgb(58, 123, 213), Color.FromArgb(90, 200, 120), Color.FromArgb(150, 120, 235) }
-                    };
-                    using (Pen pen = new Pen(lb, 2f * exK))
-                        e.Graphics.DrawPath(pen, path);
+                    float ph = (float)Math.Sin((time * 7.0) - i * 0.8);
+                    float lift = Math.Max(0f, ph) * ExS(4);
+                    Color dc = i == 1 ? ExSaffron : ExBlueSoft;
+                    float d = ExS(5);
+                    using (SolidBrush db = new SolidBrush(Color.FromArgb(150 + (int)(105 * Math.Max(0f, ph)), dc)))
+                        g.FillEllipse(db, dx + i * ExS(8), baseY - lift - d / 2f, d, d);
                 }
             }
 
-            int bs = ExS(36);
-            Rectangle badge = new Rectangle((box.Width - bs) / 2, ExS(16), bs, bs);
-            using (GraphicsPath bp = ExRound(badge, ExS(10)))
+            using (Font mf = new Font("Segoe UI", 8.75F * exK))
+                ExText(g, "Please wait, server se response aa raha hai", mf,
+                    new Rectangle(card.X + ExS(14), card.Y + ExS(98), card.Width - ExS(28), ExS(18)),
+                    ExSlate, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+
+            string status = ExLoaderStatusLine();
+            if (status.Length > 0)
+                using (Font sf = new Font("Segoe UI", 7.75F * exK))
+                    ExText(g, status, sf,
+                        new Rectangle(card.X + ExS(14), card.Y + ExS(118), card.Width - ExS(28), ExS(16)),
+                        ExBlueSoft, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+
+            // indeterminate progress: two gradient segments sliding at different speeds
+            int tw = card.Width - ExS(64);
+            RectangleF track = new RectangleF(card.X + (card.Width - tw) / 2f, card.Bottom - ExS(26), tw, ExS(6));
+            using (GraphicsPath tp = ExRoundF(track, track.Height / 2f))
             {
-                using (LinearGradientBrush bg = new LinearGradientBrush(badge, Color.FromArgb(232, 242, 255), Color.FromArgb(212, 232, 254), 90f))
-                    e.Graphics.FillPath(bg, bp);
-
-                if (byteNovaLogoImage != null)
-                {
-                    int inner = bs - ExS(10);
-                    float sc = Math.Min((float)inner / byteNovaLogoImage.Width, (float)inner / byteNovaLogoImage.Height);
-                    int w = Math.Max(1, (int)(byteNovaLogoImage.Width * sc));
-                    int h = Math.Max(1, (int)(byteNovaLogoImage.Height * sc));
-                    e.Graphics.DrawImage(byteNovaLogoImage,
-                        new Rectangle(badge.X + (bs - w) / 2, badge.Y + (bs - h) / 2, w, h));
-                }
-                else
-                {
-                    using (Font f = new Font("Segoe UI Black", 13F * exK, FontStyle.Bold))
-                        TextRenderer.DrawText(e.Graphics, "E", f, badge, UiTheme.HeaderA,
-                            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-                }
+                using (SolidBrush tb = new SolidBrush(Color.FromArgb(226, 232, 240))) g.FillPath(tb, tp);
+                Region old = g.Clip;
+                g.SetClip(tp, CombineMode.Intersect);
+                float p1 = (time * 0.55f) % 1f;
+                float p2 = (time * 0.55f + 0.55f) % 1f;
+                ExSeg(g, track, ExEase(p1) * 1.4f - 0.35f, 0.38f);
+                ExSeg(g, track, (p2 * p2) * 1.5f - 0.25f, 0.18f);
+                g.Clip = old;
             }
+        }
 
-            using (Font f = new Font("Segoe UI Semibold", 10F * exK, FontStyle.Bold))
-                TextRenderer.DrawText(e.Graphics, "VALIDATING KEY", f,
-                    new Rectangle(0, ExS(58), box.Width, ExS(18)), UiTheme.HeaderA,
-                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-
-            using (Font f = new Font("Segoe UI", 8F * exK))
-                TextRenderer.DrawText(e.Graphics, "Please wait, server se response aa raha hai", f,
-                    new Rectangle(0, ExS(78), box.Width, ExS(16)), Color.FromArgb(130, 148, 170),
-                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-
-            int tw = ExS(220);
-            int th = ExS(6); bunifuElipse1.ElipseRadius = (int)(CORNER * exK);
-            Rectangle track = new Rectangle((box.Width - tw) / 2, ExS(108), tw, th);
-
-            using (GraphicsPath tp = ExRound(track, th / 2))
-            using (SolidBrush tb = new SolidBrush(Color.FromArgb(228, 236, 246)))
-                e.Graphics.FillPath(tb, tp);
-
-            int sw = ExS(80);
-            float pos = byteNovaServerLoaderStep / 11f;
-            int sx = track.X + (int)((track.Width + sw) * pos) - sw;
-            Rectangle seg = new Rectangle(sx, track.Y, sw, th);
-
-            Region oldClip = e.Graphics.Clip;
-            e.Graphics.SetClip(track);
-            using (GraphicsPath sp = ExRound(seg, Math.Max(2, th / 2)))
-            using (LinearGradientBrush sb = new LinearGradientBrush(seg, UiTheme.HeaderA, UiTheme.HeaderB, 0f))
-                e.Graphics.FillPath(sb, sp);
-            e.Graphics.Clip = oldClip;
+        private static void ExSeg(Graphics g, RectangleF track, float startFrac, float lenFrac)
+        {
+            float x = track.X + track.Width * startFrac;
+            float w = track.Width * lenFrac;
+            if (x > track.Right || x + w < track.X) return;
+            RectangleF s = new RectangleF(x, track.Y, w, track.Height);
+            using (GraphicsPath sp = ExRoundF(s, track.Height / 2f))
+            using (LinearGradientBrush sb = new LinearGradientBrush(new RectangleF(s.X - 1, s.Y, s.Width + 2, s.Height), ExBlueSoft, ExSaffron, 0f))
+                g.FillPath(sb, sp);
         }
 
         // ------------------------------------------------------------------
@@ -867,6 +1271,11 @@ namespace APP_FRAMEWORK
             ClientSize = s;
             CenterToScreen();
             ExApplyRegion();
+
+            // frmLogin_Load (method_4) has set the real switch values by now
+            ExSyncToggles();
+            exFloatT = ExFloatTarget();
+            ExLayoutFloat();
 
             exBaseRect.Clear();
             ExCaptureBase(this);
@@ -883,7 +1292,7 @@ namespace APP_FRAMEWORK
             base.OnShown(e);
 
             ExApplyRegion();
-            // kuch der tak region dobara lagate raho, taaki koi override na kar sake
+            // re-assert the rounded region for a moment so nothing can override it
             int reassert = 0;
             Timer fix = new Timer();
             fix.Interval = 16;
@@ -898,28 +1307,23 @@ namespace APP_FRAMEWORK
                 }
             };
             fix.Start();
-            ExUpdatePlaceholder();
 
-            // ---- sirf fade, size bilkul change nahi => koi vibration nahi ----
+            // fade in only (size never changes => no vibration)
             Opacity = 0;
-
             int step = 0;
             const int total = 8;
-
             Timer fade = new Timer();
             fade.Interval = 16;
             fade.Tick += (s, ev) =>
             {
                 step++;
                 Opacity = Math.Min(1.0, step / (double)total);
-
                 if (step >= total)
                 {
                     fade.Stop();
                     fade.Dispose();
                     Opacity = 1;
                     ExApplyRegion();
-                    ExRoundControl(exCard, 18);
                 }
             };
             fade.Start();
@@ -933,7 +1337,8 @@ namespace APP_FRAMEWORK
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
-            if (exAnim != null) exAnim.Stop();
+            if (exAnim != null) { exAnim.Stop(); exAnim.Dispose(); exAnim = null; }
+            if (exLoaderBg != null) { exLoaderBg.Dispose(); exLoaderBg = null; }
             base.OnFormClosed(e);
         }
     }

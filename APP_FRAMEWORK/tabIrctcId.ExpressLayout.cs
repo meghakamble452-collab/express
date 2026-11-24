@@ -1327,8 +1327,8 @@ internal partial class tabIrctcId
         grdUsers.ScrollBars = ScrollBars.Vertical;
         grdUsers.AllowUserToAddRows = false;
         grdUsers.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-        grdUsers.ColumnHeadersHeight = P(42);
-        grdUsers.RowTemplate.Height = P(40);
+        grdUsers.ColumnHeadersHeight = P(36);
+        grdUsers.RowTemplate.Height = P(34);
         grdUsers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         grdUsers.SelectionMode = DataGridViewSelectionMode.CellSelect;
         grdUsers.AllowUserToResizeRows = false;
@@ -1851,67 +1851,87 @@ internal partial class tabIrctcId
 
     private void ExLayoutLite(int W, int H)
     {
-        int M = P(16), GX = P(20), ROW = P(40), GAP = P(12);
+        // Compact "Add new IRCTC ID" card: the title band also carries the check boxes,
+        // and User ID | Password | Mobile | ADD sit in ONE row. Everything else goes to the table.
+        int M = P(10), GX = P(16), ROW = P(36);
         int innerW = W - M * 2;
 
-        int topY = P(10);
-        int row1 = P(44);
-        int row2 = row1 + ROW + GAP;
-        int rowCk = row2 + ROW + P(14);
-        int topH = rowCk + P(26) + P(16);
+        int topY = P(8);
+        int rowCk = P(8);                 // check boxes share the title band (title is painted at y 13)
+        int row1 = P(40);
+
+        // one-row widths
+        int l1 = ExTextW(label37) + P(4), l2 = ExTextW(lblPassword) + P(4), l3 = ExTextW(label4) + P(4);
+        int btnW = P(168), fg = P(14), lg = P(6);
+        int fw = (innerW - GX * 2 - l1 - l2 - l3 - lg * 3 - fg * 3 - btnW) / 3;
+        bool oneRow = fw >= P(130);
+        int row2 = row1 + ROW + P(8);
+        int topH = (oneRow ? row1 + ROW : row2 + ROW) + P(10);
 
         SuspendLayout();
         try
         {
             ExPut(grpAddID, M, topY, innerW, topH);
             ExRound(grpAddID, P(11));
-
-            // one shared label column so both rows line up
-            int lw = Math.Max(ExTextW(label37), ExTextW(label4)) + P(4);
-            int l2 = ExTextW(lblPassword) + P(4);
-            int btnW = P(184);
-            int fg = P(22);
-            int avail = innerW - GX * 2 - lw - P(8) - fg - l2 - P(8) - fg - btnW;
-            int fw = Math.Max(P(150), avail / 2);
-
-            // row 1: User ID | Password | ADD IRCTC ID
-            int x = GX;
-            ExPut(label37, x, row1, lw, ROW); x += lw + P(8);
-            ExPut(exFId, x, row1, fw, ROW); ExFieldInner(txtLogin, fw, ROW); x += fw + fg;
-            ExPut(lblPassword, x, row1, l2, ROW); x += l2 + P(8);
-            ExPut(exFPwd, x, row1, fw, ROW); ExFieldInner(txtPassword, fw, ROW); x += fw + fg;
-
-            int btnX = Math.Max(x, innerW - GX - btnW);
-            ExPut(btnIDSave, btnX, row1, btnW, ROW);
-            ExRound(btnIDSave, P(10));
-
-            // row 2: Mobile No (same column as User ID)
-            x = GX;
-            ExPut(label4, x, row2, lw, ROW); x += lw + P(8);
-            ExPut(exFMob, x, row2, fw, ROW); ExFieldInner(textmob, fw, ROW);
             label5.Visible = false;
             exFPass.Visible = false;
-            ExPut(button5, btnX, row2 + P(4), btnW, ROW - P(8));
-            ExRound(button5, P(9));
 
-            // row 3: check boxes
-            int ckX = GX;
+            int x = GX;
+            int btnX;
+            if (oneRow)
+            {
+                // User ID | Password | Mobile No | ADD IRCTC ID
+                ExPut(label37, x, row1, l1, ROW); x += l1 + lg;
+                ExPut(exFId, x, row1, fw, ROW); ExFieldInner(txtLogin, fw, ROW); x += fw + fg;
+                ExPut(lblPassword, x, row1, l2, ROW); x += l2 + lg;
+                ExPut(exFPwd, x, row1, fw, ROW); ExFieldInner(txtPassword, fw, ROW); x += fw + fg;
+                ExPut(label4, x, row1, l3, ROW); x += l3 + lg;
+                ExPut(exFMob, x, row1, fw, ROW); ExFieldInner(textmob, fw, ROW); x += fw + fg;
+                btnX = innerW - GX - btnW;
+                ExPut(btnIDSave, btnX, row1, btnW, ROW);
+            }
+            else
+            {
+                // narrow window: two tight rows (User ID | Password | ADD) + (Mobile No)
+                int lw = Math.Max(l1, l3);
+                int fw2 = Math.Max(P(130), (innerW - GX * 2 - lw - l2 - lg * 2 - fg * 2 - btnW) / 2);
+                ExPut(label37, x, row1, lw, ROW); x += lw + lg;
+                ExPut(exFId, x, row1, fw2, ROW); ExFieldInner(txtLogin, fw2, ROW); x += fw2 + fg;
+                ExPut(lblPassword, x, row1, l2, ROW); x += l2 + lg;
+                ExPut(exFPwd, x, row1, fw2, ROW); ExFieldInner(txtPassword, fw2, ROW); x += fw2 + fg;
+                btnX = Math.Max(x, innerW - GX - btnW);
+                ExPut(btnIDSave, btnX, row1, btnW, ROW);
+                x = GX;
+                ExPut(label4, x, row2, lw, ROW); x += lw + lg;
+                ExPut(exFMob, x, row2, fw2, ROW); ExFieldInner(textmob, fw2, ROW);
+            }
+            ExRound(btnIDSave, P(10));
+
+            // title band: check boxes right after the painted title, CREATE NEW ID (if shown) at the far right
+            int titleW;
+            using (Graphics tg = CreateGraphics())
+                titleW = TextRenderer.MeasureText(tg, grpAddID.Text ?? "", grpAddID.Font, new Size(800, 60), TextFormatFlags.NoPadding).Width;
+            int b5W = P(150);
+            ExPut(button5, innerW - GX - b5W, rowCk + P(1), b5W, P(26));
+            ExRound(button5, P(8));
+
+            int ckX = P(28) + titleW + P(26);
             int ck1 = ExTextW(chkValidate) + P(24);
-            ExPut(chkValidate, ckX, rowCk, ck1, P(26)); ckX += ck1 + P(28);
+            ExPut(chkValidate, ckX, rowCk, ck1, P(26)); ckX += ck1 + P(22);
             int ck2 = ExTextW(chkShowPwd) + P(24);
-            ExPut(chkShowPwd, ckX, rowCk, ck2, P(26)); ckX += ck2 + P(28);
+            ExPut(chkShowPwd, ckX, rowCk, ck2, P(26)); ckX += ck2 + P(22);
             ExPut(checkBox1, ckX, rowCk, ExTextW(checkBox1) + P(24), P(26));
 
             // saved list: card fills ALL remaining height, grid scrolls inside it
-            int cardY = topY + topH + P(14);
-            int cardH = Math.Max(P(180), H - cardY - P(12));
+            int cardY = topY + topH + P(8);
+            int cardH = Math.Max(P(180), H - cardY - P(8));
             exGridCard = new Rectangle(M, cardY, innerW, cardH);
-            int titleH = P(48);
+            int titleH = P(38);
 
             grdUsers.Region = null;
-            ExPut(grdUsers, M + P(10), cardY + titleH, innerW - P(20), cardH - titleH - P(10));
+            ExPut(grdUsers, M + P(8), cardY + titleH, innerW - P(16), cardH - titleH - P(8));
 
-            ExPut(label6, M + P(220), cardY + P(13), Math.Max(P(60), innerW - P(380)), P(22));
+            ExPut(label6, M + P(200), cardY + P(8), Math.Max(P(60), innerW - P(340)), P(22));
             label6.BringToFront();
 
             ExPut(pnlloader, M + (innerW / 2) - P(216), cardY + (cardH / 2) - P(32), P(433), P(65));
@@ -2070,10 +2090,11 @@ internal partial class tabIrctcId
             using (Pen pen = new Pen(ExLine, P(1.2f))) g.DrawPath(pen, path);
         }
 
+        // compact title band (EX_GRID_TITLE tall) so the table gets the most room
         using (SolidBrush ob = new SolidBrush(ExLime))
-            g.FillRectangle(ob, r.X + P(18), r.Y + P(17), P(3), P(14));
+            g.FillRectangle(ob, r.X + P(16), r.Y + P(12), P(3), P(14));
         using (Font tf = ExFS(13f, FontStyle.Bold))
-            TextRenderer.DrawText(g, "SAVED IRCTC IDS", tf, new Point(r.X + P(28), r.Y + P(15)), ExInk,
+            TextRenderer.DrawText(g, "SAVED IRCTC IDS", tf, new Point(r.X + P(26), r.Y + P(10)), ExInk,
                 TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
 
         int n = grdUsers != null ? grdUsers.Rows.Count : 0;
@@ -2081,7 +2102,7 @@ internal partial class tabIrctcId
         using (Font cf = ExFS(11.5f, FontStyle.Bold))
         {
             int cw = TextRenderer.MeasureText(g, cnt, cf, new Size(500, 50), TF_MEASURE).Width + P(22);
-            Rectangle chip = new Rectangle(r.Right - P(18) - cw, r.Y + P(13), cw, P(22));
+            Rectangle chip = new Rectangle(r.Right - P(16) - cw, r.Y + P(8), cw, P(22));
             using (GraphicsPath cp = ExPath(chip, P(11)))
             using (SolidBrush cb = new SolidBrush(ExBlend(ExLime, Color.White, 0.84f)))
                 g.FillPath(cb, cp);
@@ -2093,7 +2114,7 @@ internal partial class tabIrctcId
     private void ExGridCountChanged(bool resetHot)
     {
         if (resetHot) { exHotRow = -1; exHotCol = -1; exHotPrev = Color.Empty; }
-        if (!exGridCard.IsEmpty) Invalidate(new Rectangle(exGridCard.X, exGridCard.Y, exGridCard.Width, P(48)));
+        if (!exGridCard.IsEmpty) Invalidate(new Rectangle(exGridCard.X, exGridCard.Y, exGridCard.Width, P(40)));
         grdUsers.Invalidate();
     }
 
