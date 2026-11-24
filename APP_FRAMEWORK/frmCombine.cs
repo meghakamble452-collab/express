@@ -520,7 +520,8 @@ public class frmCombine : Form
         foreach (Control c in tab.Controls)
         {
             if (!c.Visible) continue;
-            if (c is Button || c is Panel) continue;
+            if (c is Button) continue;
+            if (c is Panel && !(c is FieldBox)) continue;
             items.Add(c);
         }
 
@@ -552,7 +553,7 @@ public class frmCombine : Form
         if (rows.Count > 1)
         {
             int free = avail - sum;
-            gap = Math.Max(8, Math.Min(18, free / rows.Count));
+            gap = Math.Max(10, Math.Min(26, free / rows.Count));
         }
 
         int y = 16;
