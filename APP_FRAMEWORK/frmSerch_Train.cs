@@ -1134,166 +1134,309 @@ internal class frmSerch_Train : Form
     }
 
 
-    // BYTE NOVA visual-only theme. Existing train/seat/quota functions remain unchanged.
+    // =================================================================
+    //  Nova visual layer - Train List popup (full redesign)
+    //  Visual only. Search / seat / quota / fare logic untouched.
+    // =================================================================
+
+    private static readonly Color NV_Page = Color.FromArgb(233, 241, 252);
+    private static readonly Color NV_Card = Color.White;
+    private static readonly Color NV_Line = Color.FromArgb(206, 222, 244);
+    private static readonly Color NV_Grid = Color.FromArgb(226, 235, 247);
+    private static readonly Color NV_Text = Color.FromArgb(24, 44, 78);
+    private static readonly Color NV_Muted = Color.FromArgb(150, 166, 188);
+    private static readonly Color NV_Head = Color.FromArgb(108, 130, 164);
+    private static readonly Color NV_Blue = Color.FromArgb(18, 76, 196);
+    private static readonly Color NV_Blue2 = Color.FromArgb(48, 140, 244);
+    private static readonly Color NV_Orange = Color.FromArgb(245, 146, 28);
+
+    private int[] novaHeadX = new int[0];
+
+    private static GraphicsPath NovaPath(Rectangle r, int radius)
+    {
+        GraphicsPath p = new GraphicsPath();
+        int d = Math.Max(2, radius * 2);
+        if (d > r.Width) d = r.Width;
+        if (d > r.Height) d = r.Height;
+        p.AddArc(r.X, r.Y, d, d, 180, 90);
+        p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+        p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+        p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+        p.CloseFigure();
+        return p;
+    }
+
+    private static Region NovaRegion(Rectangle r, int radius)
+    {
+        using (GraphicsPath p = NovaPath(r, radius))
+            return new Region(p);
+    }
+
+    private static void NovaRound(Control c, int radius)
+    {
+        if (c == null) return;
+        Action apply = delegate
+        {
+            if (c.Width > 2 && c.Height > 2)
+                c.Region = NovaRegion(new Rectangle(0, 0, c.Width, c.Height), radius);
+        };
+        c.Resize += delegate { apply(); };
+        apply();
+    }
+
     private void ApplyByteNovaLatestStyle()
     {
-        Color formBg = Color.FromArgb(3, 15, 30);
-        Color panelBg = Color.FromArgb(8, 29, 50);
-        Color cyan = Color.FromArgb(198, 244, 50);
-        Color blue = Color.FromArgb(36, 111, 255);
-        Color gold = Color.FromArgb(255, 190, 45);
-        Color text = Color.FromArgb(238, 248, 255);
-        Color muted = Color.FromArgb(164, 196, 218);
+        SuspendLayout();
 
-        BackColor = formBg;
-        ForeColor = text;
+        C0AA0 = Color.White;
+        color_0 = Color.FromArgb(246, 250, 255);
+        color_2 = Color.FromArgb(255, 246, 214);
+        borderStyle_0 = BorderStyle.None;
+
+        BackColor = NV_Page;
+        ForeColor = NV_Text;
         FormBorderStyle = FormBorderStyle.None;
+        ClientSize = new Size(1122, 640);
+        StartPosition = FormStartPosition.CenterParent;
+        DoubleBuffered = true;
+        Font = new Font("Segoe UI", 8.5F, FontStyle.Regular);
 
-        if (bunifuElipse_0 != null) bunifuElipse_0.ElipseRadius = 9;
+        if (bunifuElipse_0 != null) bunifuElipse_0.ElipseRadius = 14;
 
-        if (pnlHeader != null)
-        {
-            pnlHeader.BackColor = Color.FromArgb(3, 29, 59);
-            pnlHeader.BorderStyle = BorderStyle.None;
-            pnlHeader.Location = new Point(0, 0);
-            pnlHeader.Size = new Size(ClientSize.Width, 23);
-            pnlHeader.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            pnlHeader.Paint -= ByteNovaHeaderPaint;
-            pnlHeader.Paint += ByteNovaHeaderPaint;
-        }
+        // ---- header ----
+        pnlHeader.BackColor = NV_Blue;
+        pnlHeader.BorderStyle = BorderStyle.None;
+        pnlHeader.SetBounds(0, 0, ClientSize.Width, 46);
+        pnlHeader.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        pnlHeader.Paint -= NovaHeaderPaint;
+        pnlHeader.Paint += NovaHeaderPaint;
 
-        if (label2 != null)
-        {
-            label2.ForeColor = Color.White;
-            label2.BackColor = Color.Transparent;
-            label2.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
-        }
+        label2.Text = "TRAIN LIST";
+        label2.AutoSize = false;
+        label2.SetBounds(22, 11, 320, 24);
+        label2.Font = new Font("Segoe UI Semibold", 11F, FontStyle.Bold);
+        label2.ForeColor = Color.White;
+        label2.BackColor = Color.Transparent;
+        label2.TextAlign = ContentAlignment.MiddleLeft;
 
-        if (grpOpen != null)
-        {
-            grpOpen.BackColor = panelBg;
-            grpOpen.ForeColor = cyan;
-            grpOpen.Paint -= ByteNovaQuotaPaint;
-            grpOpen.Paint += ByteNovaQuotaPaint;
-        }
+        btnClose.Size = new Size(26, 26);
+        btnClose.Location = new Point(ClientSize.Width - 40, 10);
+        btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnClose.BackColor = Color.FromArgb(228, 62, 56);
+        btnClose.SizeMode = PictureBoxSizeMode.Zoom;
+        btnClose.Zoom = 0;
+        btnClose.Cursor = Cursors.Hand;
+        btnClose.BringToFront();
+        NovaRound(btnClose, 8);
+        btnClose.MouseEnter += delegate { btnClose.BackColor = Color.FromArgb(198, 42, 38); };
+        btnClose.MouseLeave += delegate { btnClose.BackColor = Color.FromArgb(228, 62, 56); };
 
-        if (pnlMain != null)
-        {
-            pnlMain.BackColor = Color.FromArgb(5, 22, 39);
-            pnlMain.Paint -= ByteNovaMainPaint;
-            pnlMain.Paint += ByteNovaMainPaint;
-        }
+        // ---- quota card ----
+        grpOpen.BackColor = NV_Card;
+        grpOpen.FlatStyle = FlatStyle.Flat;
+        grpOpen.SetBounds(14, 56, ClientSize.Width - 28, 44);
+        grpOpen.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        grpOpen.Paint -= NovaCardPaint;
+        grpOpen.Paint += NovaCardPaint;
 
-        if (pnlloader != null) pnlloader.BackColor = Color.FromArgb(10, 36, 60);
-
-        Label[] headers = new Label[] {
-            label4, label5, B3AAA, C3AA0, label8, label9, label10, label11,
-            label12, label13, label14, label15, label16, B2AAA, C2AA0,
-            label19, label20, label21, label22, label23, label24, label25, label26
-        };
-        foreach (Label h in headers)
-        {
-            if (h == null) continue;
-            h.BackColor = Color.FromArgb(13, 51, 82);
-            h.ForeColor = text;
-            h.BorderStyle = BorderStyle.FixedSingle;
-            h.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
-        }
-
-        Label[] info = new Label[] { label2, label3, label27, label28, label29, label30, C4AA0, lblfare };
-        foreach (Label l in info)
-        {
-            if (l == null) continue;
-            l.BackColor = Color.Transparent;
-            l.ForeColor = l == lblfare ? gold : text;
-            l.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-        }
+        label3.SetBounds(18, 15, 0, 0);
+        label3.ForeColor = NV_Head;
+        label3.Font = new Font("Segoe UI Semibold", 7.5F, FontStyle.Bold);
 
         RadioButton[] quotas = new RadioButton[] { rdCK, rdPT, rdGN, rdLD, rdPG };
-        foreach (RadioButton r in quotas)
+        int[] qx = new int[] { 108, 160, 210, 262, 312 };
+        int[] qw = new int[] { 46, 44, 46, 44, 96 };
+        for (int i = 0; i < quotas.Length; i++)
         {
+            RadioButton r = quotas[i];
             if (r == null) continue;
-            r.BackColor = Color.Transparent;
-            r.ForeColor = text;
-            r.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-
-            // Keep the native radio indicator visible/checkable.
-            // FlatStyle.Flat on the dark Nova background can hide the checked dot.
-            r.FlatStyle = FlatStyle.Standard;
-            r.UseVisualStyleBackColor = true;
-            r.AutoCheck = true;
+            r.AutoSize = false;
+            r.Appearance = Appearance.Button;
+            r.FlatStyle = FlatStyle.Flat;
+            r.FlatAppearance.BorderSize = 1;
+            r.FlatAppearance.BorderColor = NV_Line;
+            r.SetBounds(qx[i], 10, qw[i], 24);
+            r.TextAlign = ContentAlignment.MiddleCenter;
+            r.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Bold);
+            r.BackColor = NV_Card;
+            r.ForeColor = NV_Text;
+            r.Cursor = Cursors.Hand;
+            r.UseVisualStyleBackColor = false;
+            NovaRound(r, 7);
+            r.CheckedChanged -= NovaQuotaChecked;
+            r.CheckedChanged += NovaQuotaChecked;
+            NovaQuotaChecked(r, EventArgs.Empty);
         }
 
-        if (chkIRCTC != null)
+        B4AAA.BackColor = Color.FromArgb(255, 190, 45);
+        B4AAA.BorderStyle = BorderStyle.None;
+        B4AAA.SetBounds(420, 14, 16, 16);
+
+        C4AA0.SetBounds(444, 15, 0, 0);
+        C4AA0.ForeColor = NV_Head;
+        C4AA0.Font = new Font("Segoe UI", 7.5F, FontStyle.Regular);
+
+        chkIRCTC.SetBounds(560, 13, 0, 0);
+        chkIRCTC.ForeColor = NV_Head;
+        chkIRCTC.Font = new Font("Segoe UI", 8F, FontStyle.Regular);
+
+        GetSeatAvlPic.SetBounds(659, 12, 170, 22);
+        lblfare.SetBounds(712, 15, 0, 0);
+        lblfare.ForeColor = Color.FromArgb(214, 122, 12);
+        lblfare.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
+
+        btnSelect.AutoSize = false;
+        btnSelect.SetBounds(ClientSize.Width - 200, 10, 170, 26);
+        btnSelect.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnSelect.BackColor = NV_Blue;
+        btnSelect.ForeColor = Color.White;
+        btnSelect.FlatStyle = FlatStyle.Flat;
+        btnSelect.FlatAppearance.BorderSize = 0;
+        btnSelect.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
+        btnSelect.Cursor = Cursors.Hand;
+        btnSelect.UseVisualStyleBackColor = false;
+        NovaRound(btnSelect, 8);
+
+        // ---- grid header band ----
+        Label[] heads = new Label[] {
+            label4, label5, B3AAA, C3AA0, label8, label9, label10, label11,
+            label12, label13, label14, label15, label16, B2AAA, C2AA0,
+            label19, label20, label21, label22, label23, label24, label25,
+            label26, label27, label28, label29
+        };
+        novaHeadX = new int[heads.Length];
+        for (int i = 0; i < heads.Length; i++)
         {
-            chkIRCTC.BackColor = Color.Transparent;
-            chkIRCTC.ForeColor = muted;
-            chkIRCTC.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            chkIRCTC.FlatStyle = FlatStyle.Flat;
+            Label h = heads[i];
+            if (h == null) continue;
+            h.Location = new Point(h.Left, 108);
+            h.Size = new Size(h.Width, 26);
+            novaHeadX[i] = h.Left;
+            h.BorderStyle = BorderStyle.None;
+            h.BackColor = NV_Blue;
+            h.ForeColor = Color.White;
+            h.Font = new Font("Segoe UI Semibold", 7.5F, FontStyle.Bold);
+            h.Text = h.Text.ToUpper();
         }
 
-        if (B4AAA != null) B4AAA.BackColor = gold;
+        // ---- grid body ----
+        pnlMain.SetBounds(0, 134, ClientSize.Width, ClientSize.Height - 148);
+        pnlMain.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        pnlMain.BackColor = NV_Card;
+        pnlMain.AutoScrollMinSize = new Size(1102, 1400);
+        pnlMain.ControlAdded -= NovaMainControlAdded;
+        pnlMain.ControlAdded += NovaMainControlAdded;
 
-        if (btnSelect != null)
-        {
-            btnSelect.BackColor = blue;
-            btnSelect.ForeColor = Color.White;
-            btnSelect.FlatStyle = FlatStyle.Flat;
-            btnSelect.FlatAppearance.BorderSize = 1;
-            btnSelect.FlatAppearance.BorderColor = cyan;
-            btnSelect.FlatAppearance.MouseOverBackColor = Color.FromArgb(28, 132, 225);
-            btnSelect.FlatAppearance.MouseDownBackColor = Color.FromArgb(15, 82, 168);
-            btnSelect.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-        }
+        if (pnlloader != null) pnlloader.SetBounds(500, 200, 76, 77);
 
-        if (btnClose != null)
-        {
-            btnClose.BackColor = Color.FromArgb(5, 43, 77);
-            btnClose.Zoom = 0;
-            btnClose.SizeMode = PictureBoxSizeMode.Zoom;
-            btnClose.Size = new Size(21, 21);
-            btnClose.Location = new Point(pnlHeader.ClientSize.Width - 24, 0);
-            btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        }
+        Paint -= NovaFormPaint;
+        Paint += NovaFormPaint;
 
-        Paint -= ByteNovaFormPaint;
-        Paint += ByteNovaFormPaint;
+        ResumeLayout(false);
         Invalidate(true);
     }
 
-    private void ByteNovaHeaderPaint(object sender, PaintEventArgs e)
+    private void NovaQuotaChecked(object sender, EventArgs e)
+    {
+        RadioButton r = sender as RadioButton;
+        if (r == null) return;
+        r.BackColor = r.Checked ? NV_Orange : NV_Card;
+        r.ForeColor = r.Checked ? Color.White : NV_Text;
+        r.FlatAppearance.BorderColor = r.Checked ? NV_Orange : NV_Line;
+    }
+
+    private void NovaMainControlAdded(object sender, ControlEventArgs e)
+    {
+        Control c = e.Control;
+        if (c == null) return;
+
+        c.BorderStyle = BorderStyle.None;
+        c.Paint -= NovaCellPaint;
+        c.Paint += NovaCellPaint;
+
+        LinkLabel lnk = c as LinkLabel;
+        Label lbl = c as Label;
+
+        if (lnk != null)
+        {
+            lnk.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
+            lnk.LinkColor = lnk.Enabled ? NV_Blue : NV_Muted;
+            lnk.ActiveLinkColor = NV_Orange;
+            lnk.VisitedLinkColor = lnk.Enabled ? NV_Blue : NV_Muted;
+            lnk.LinkBehavior = LinkBehavior.NeverUnderline;
+            lnk.Cursor = Cursors.Hand;
+        }
+        else if (lbl != null)
+        {
+            lbl.Font = new Font("Segoe UI", 8.5F, FontStyle.Regular);
+            string t = lbl.Text;
+            if (t == "Y")
+            {
+                lbl.ForeColor = Color.FromArgb(22, 140, 74);
+                lbl.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
+            }
+            else if (t == "X")
+            {
+                lbl.ForeColor = Color.FromArgb(192, 204, 220);
+            }
+            else
+            {
+                lbl.ForeColor = NV_Text;
+            }
+        }
+    }
+
+    private void NovaCellPaint(object sender, PaintEventArgs e)
     {
         Control c = sender as Control;
         if (c == null || c.Width < 2 || c.Height < 2) return;
+        using (Pen p = new Pen(NV_Grid, 1f))
+        {
+            e.Graphics.DrawLine(p, 0, c.Height - 1, c.Width, c.Height - 1);
+            e.Graphics.DrawLine(p, c.Width - 1, 0, c.Width - 1, c.Height);
+        }
+    }
+
+    private void NovaCardPaint(object sender, PaintEventArgs e)
+    {
+        Control c = sender as Control;
+        if (c == null || c.Width < 4 || c.Height < 4) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        Rectangle r = new Rectangle(0, 0, c.Width - 1, c.Height - 1);
+        using (GraphicsPath p = NovaPath(r, 9))
+        {
+            using (SolidBrush fill = new SolidBrush(NV_Card)) g.FillPath(fill, p);
+            using (Pen pen = new Pen(NV_Line, 1f)) g.DrawPath(pen, p);
+        }
+    }
+
+    private void NovaHeaderPaint(object sender, PaintEventArgs e)
+    {
+        Control c = sender as Control;
+        if (c == null || c.Width < 2 || c.Height < 4) return;
         Rectangle r = c.ClientRectangle;
-        using (LinearGradientBrush b = new LinearGradientBrush(
-            r, Color.FromArgb(2, 23, 52), Color.FromArgb(5, 53, 91),
-            LinearGradientMode.Horizontal))
-            e.Graphics.FillRectangle(b, r);
-        using (Pen p = new Pen(Color.FromArgb(198, 244, 50), 1.5F))
-            e.Graphics.DrawLine(p, 0, r.Height - 1, r.Width, r.Height - 1);
+        using (LinearGradientBrush bg = new LinearGradientBrush(
+            new Rectangle(0, 0, Math.Max(2, r.Width), Math.Max(2, r.Height)),
+            NV_Blue, NV_Blue2, LinearGradientMode.Horizontal))
+            e.Graphics.FillRectangle(bg, r);
+        using (SolidBrush b = new SolidBrush(NV_Orange))
+            e.Graphics.FillRectangle(b, 0, r.Height - 3, r.Width, 3);
     }
 
-    private void ByteNovaQuotaPaint(object sender, PaintEventArgs e)
+    private void NovaFormPaint(object sender, PaintEventArgs e)
     {
-        Control c = sender as Control;
-        if (c == null || c.Width < 3 || c.Height < 3) return;
-        using (Pen p = new Pen(Color.FromArgb(0, 170, 225), 1F))
-            e.Graphics.DrawRectangle(p, 0, 0, c.ClientSize.Width - 1, c.ClientSize.Height - 1);
-    }
+        Graphics g = e.Graphics;
 
-    private void ByteNovaMainPaint(object sender, PaintEventArgs e)
-    {
-        Control c = sender as Control;
-        if (c == null || c.Width < 3 || c.Height < 3) return;
-        using (Pen p = new Pen(Color.FromArgb(28, 91, 130), 1F))
-            e.Graphics.DrawRectangle(p, 0, 0, c.ClientSize.Width - 1, c.ClientSize.Height - 1);
-    }
+        using (SolidBrush band = new SolidBrush(NV_Blue))
+            g.FillRectangle(band, 0, 108, ClientSize.Width, 26);
 
-    private void ByteNovaFormPaint(object sender, PaintEventArgs e)
-    {
-        using (Pen p = new Pen(Color.FromArgb(198, 244, 50), 1F))
-            e.Graphics.DrawRectangle(p, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
+        using (Pen sep = new Pen(Color.FromArgb(62, 124, 222), 1f))
+            foreach (int x in novaHeadX)
+                if (x > 0) g.DrawLine(sep, x, 108, x, 134);
+
+        using (Pen p = new Pen(NV_Line, 1f))
+            g.DrawRectangle(p, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
     }
 
 
@@ -1321,7 +1464,7 @@ internal class frmSerch_Train : Form
         if (box == null || box.Width < 10 || box.Height < 10) return;
 
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        e.Graphics.Clear(Color.FromArgb(8, 29, 50));
+        e.Graphics.Clear(Color.White);
 
         int size = Math.Min(box.Height - 6, 18);
         int cx = 6 + size / 2;
@@ -1337,7 +1480,7 @@ internal class frmSerch_Train : Form
 
             int distance = (i - byteNovaSeatLoaderStep + 12) % 12;
             int alpha = Math.Max(35, 255 - distance * 18);
-            using (Pen p = new Pen(Color.FromArgb(alpha, 0, 205, 255), 2F))
+            using (Pen p = new Pen(Color.FromArgb(alpha, 18, 76, 196), 2F))
             {
                 p.StartCap = LineCap.Round;
                 p.EndCap = LineCap.Round;
@@ -1346,7 +1489,7 @@ internal class frmSerch_Train : Form
         }
 
         using (Font f = new Font("Segoe UI", 8.5F, FontStyle.Bold))
-        using (Brush b = new SolidBrush(Color.White))
+        using (Brush b = new SolidBrush(NV_Text))
         {
             e.Graphics.DrawString("Checking Seats...", f, b, 31, Math.Max(2, (box.Height - f.Height) / 2));
         }

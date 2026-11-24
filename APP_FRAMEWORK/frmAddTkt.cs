@@ -5041,7 +5041,7 @@ internal class frmAddTkt : Form
     private int NovaLayoutJourney(int cw)
     {
         int R = cw - 16;
-        int c1 = 16, c2 = 320, c3 = 624, L = 76, FH = NV_FH;
+        int c1 = 16, c2 = 320, c3 = 606, L = 76, FH = NV_FH;
         int r1 = 40, r2 = 76, r3 = 112;
 
         // row 1 : From [swap] To | Date | Find
@@ -5049,10 +5049,11 @@ internal class frmAddTkt : Form
         NovaPlace(txtFrom, c1 + L, r1, 172, FH);
         btnArrow.SetBounds(c1 + L + 172 + 8, r1, 32, FH);
         NovaLbl(label5, c2, r1, L, FH);
-        NovaPlace(txtTo, c2 + L, r1, 204, FH);
-        NovaLbl(label4, c3, r1, 42, FH);
-        if (novaDate != null) novaDate.SetBounds(c3 + 40, r1, 180, FH);
-        btnFindTrain.SetBounds(c3 + 40 + 180 + 8, r1, R - (c3 + 40 + 180 + 8), FH);
+        NovaPlace(txtTo, c2 + L, r1, 190, FH);
+        NovaLbl(label4, c3, r1, 40, FH);
+        if (novaDate != null) novaDate.SetBounds(c3 + 40, r1, 176, FH);
+        // Find gets ~80px so icon + text have breathing room on both sides
+        btnFindTrain.SetBounds(c3 + 40 + 176 + 10, r1, R - (c3 + 40 + 176 + 10), FH);
 
         // row 2 : Bdg Pt | Train No | Train Type
         NovaLbl(label9, c1, r2, L, FH);
@@ -5062,7 +5063,7 @@ internal class frmAddTkt : Form
         NovaPlace(cboBdlist, c1 + L, r2, 212, FH);
         cboBdlist.BringToFront();
         NovaLbl(label10, c2, r2, L, FH);
-        NovaPlace(txtTrainNo, c2 + L, r2, 204, FH);
+        NovaPlace(txtTrainNo, c2 + L, r2, 190, FH);
         NovaLbl(label39, c3, r2, 84, FH);
         NovaPlace(cboType, c3 + 84, r2, R - (c3 + 84), FH);
 
@@ -5553,9 +5554,14 @@ internal class frmAddTkt : Form
         int isz = kind == "primary" ? 18 : 16, igap = 8;
         int tw = TextRenderer.MeasureText(g, text, b.Font, new Size(2000, 100), TextFormatFlags.NoPadding).Width;
         int total = isz + igap + tw;
+        if (total > r.Width - 24)   // never let icon/text touch the edges: drop the icon if space is short
+        {
+            isz = 0; igap = 0;
+            total = tw;
+        }
         int sx = r.X + (r.Width - total) / 2;
         int oy = down ? 1 : 0;
-        NovaDrawIcon(g, icon, new Rectangle(sx, r.Y + (r.Height - isz) / 2 + oy, isz, isz), fg);
+        if (isz > 0) NovaDrawIcon(g, icon, new Rectangle(sx, r.Y + (r.Height - isz) / 2 + oy, isz, isz), fg);
         TextRenderer.DrawText(g, text, b.Font, new Rectangle(sx + isz + igap, r.Y + oy, tw + 4, r.Height), fg,
             TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
     }
