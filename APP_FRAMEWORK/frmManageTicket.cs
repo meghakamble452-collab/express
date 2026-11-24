@@ -769,344 +769,730 @@ internal class frmManageTicket : Form
     }
 
 
-    // ByteNova Nova visual layer. Existing ticket/database/business handlers remain unchanged.
+    // ===== Express theme (light) - visual layer only. Ticket / database / click logic above is untouched. =====
+    private static readonly Color MT_BG = Color.FromArgb(233, 241, 252);
+    private static readonly Color MT_ORANGE = Color.FromArgb(245, 146, 28);
+    private static readonly Color MT_BLUE = Color.FromArgb(37, 99, 235);
+    private static readonly Color MT_TEXT = Color.FromArgb(30, 41, 59);
+    private static readonly Color MT_MUTED = Color.FromArgb(100, 116, 139);
+    private static readonly Color MT_LINE = Color.FromArgb(230, 236, 245);
+    private static readonly Color MT_BORDER = Color.FromArgb(203, 213, 225);
+    private static readonly Color MT_HEAD_L = Color.FromArgb(14, 52, 120);
+    private static readonly Color MT_HEAD_R = Color.FromArgb(30, 96, 196);
+
+    private const int MT_W = 980, MT_H = 476, MT_HEAD = 60, MT_M = 14;
+    private static readonly string[] MT_HEADS = { "#", "TICKET", "FROM", "TO", "JOURNEY", "QUOTA", "CLASS", "SLOT", "WEB", "APP" };
+    private static readonly int[] MT_COLW = { 40, 104, 62, 62, 86, 50, 52, 84, 60, 60, 70, 70, 62, 72 };
+
+    private readonly Font mtFHead = new Font("Segoe UI", 8F, FontStyle.Bold);
+    private readonly Font mtFCell = new Font("Segoe UI", 9F);
+    private readonly Font mtFSemi = new Font("Segoe UI Semibold", 9F);
+    private readonly Font mtFBold = new Font("Segoe UI", 9F, FontStyle.Bold);
+    private readonly Font mtFPill = new Font("Segoe UI", 8F, FontStyle.Bold);
+    private readonly Font mtFTitle = new Font("Segoe UI Semibold", 13F);
+    private readonly Font mtFSub = new Font("Segoe UI", 8.5F);
+    private readonly Font mtFBtn = new Font("Segoe UI Semibold", 9.5F);
+
+    private Rectangle mtCard;
+    private int mtHotRow = -1, mtHotCol = -1, mtDownRow = -1, mtDownCol = -1;
+    private bool mtCloseHot, mtCloseDown;
+    private readonly Dictionary<Button, int> mtBtnState = new Dictionary<Button, int>();
+
     private void ApplyByteNovaNovaStyle()
     {
         SuspendLayout();
 
         FormBorderStyle = FormBorderStyle.None;
-        BackColor = Color.FromArgb(2, 11, 22);
-        ForeColor = Color.FromArgb(236, 248, 255);
         DoubleBuffered = true;
-        Padding = new Padding(1);
+        BackColor = MT_BG;
+        ForeColor = MT_TEXT;
+        Padding = new Padding(0);
+        ClientSize = new Size(MT_W, MT_H);
 
-        if (pnlHeader != null)
+        // ---- header ----
+        pnlHeader.Dock = DockStyle.Top;
+        pnlHeader.Height = MT_HEAD;
+        pnlHeader.BackColor = MT_HEAD_L;
+        MtBuffer(pnlHeader);
+        pnlHeader.Paint -= MtHeaderPaint;
+        pnlHeader.Paint += MtHeaderPaint;
+        B2AAA.Visible = false;              // title is painted
+        lblCount.Visible = false;           // count is painted as a pill (Text still updated by the code)
+        lblCount.TextChanged -= MtCountChanged;
+        lblCount.TextChanged += MtCountChanged;
+
+        btnClose.Zoom = 0;
+        btnClose.BackColor = Color.Transparent;
+        btnClose.Cursor = Cursors.Hand;
+        btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        btnClose.Size = new Size(38, 32);
+        pnlHeader.Resize -= MtPlaceClose;
+        pnlHeader.Resize += MtPlaceClose;
+        MtPlaceClose(null, EventArgs.Empty);
+        btnClose.Paint -= MtClosePaint;
+        btnClose.Paint += MtClosePaint;
+        btnClose.MouseEnter += delegate { mtCloseHot = true; btnClose.Invalidate(); };
+        btnClose.MouseLeave += delegate { mtCloseHot = false; mtCloseDown = false; btnClose.Invalidate(); };
+        btnClose.MouseDown += delegate { mtCloseDown = true; btnClose.Invalidate(); };
+        btnClose.MouseUp += delegate { mtCloseDown = false; if (!btnClose.IsDisposed) btnClose.Invalidate(); };
+        btnClose.BringToFront();
+
+        // ---- table card ----
+        mtCard = new Rectangle(MT_M, MT_HEAD + 12, MT_W - MT_M * 2, MT_H - MT_HEAD - 12 - 70);
+        grdUsers.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        grdUsers.SetBounds(mtCard.X + 8, mtCard.Y + 8, mtCard.Width - 16, mtCard.Height - 16);
+        MtBuffer(grdUsers);
+        grdUsers.BorderStyle = BorderStyle.None;
+        grdUsers.BackgroundColor = Color.White;
+        grdUsers.GridColor = MT_LINE;
+        grdUsers.CellBorderStyle = DataGridViewCellBorderStyle.None;
+        grdUsers.EnableHeadersVisualStyles = false;
+        grdUsers.RowHeadersVisible = false;
+        grdUsers.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+        grdUsers.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+        grdUsers.ColumnHeadersHeight = 38;
+        grdUsers.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+        grdUsers.RowTemplate.Height = 42;
+        grdUsers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+        grdUsers.ScrollBars = ScrollBars.Vertical;
+        grdUsers.SelectionMode = DataGridViewSelectionMode.CellSelect;
+
+        grdUsers.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(240, 245, 252);
+        grdUsers.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(51, 65, 85);
+        grdUsers.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(240, 245, 252);
+        grdUsers.ColumnHeadersDefaultCellStyle.Font = mtFHead;
+        grdUsers.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.False;
+
+        grdUsers.DefaultCellStyle.BackColor = Color.White;
+        grdUsers.DefaultCellStyle.ForeColor = MT_TEXT;
+        grdUsers.DefaultCellStyle.SelectionBackColor = Color.White;
+        grdUsers.DefaultCellStyle.SelectionForeColor = MT_TEXT;
+        grdUsers.DefaultCellStyle.Font = mtFCell;
+        grdUsers.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
+        grdUsers.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(249, 251, 255);
+        grdUsers.AlternatingRowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(249, 251, 255);
+        grdUsers.AlternatingRowsDefaultCellStyle.SelectionForeColor = MT_TEXT;
+
+        for (int i = 0; i < grdUsers.Columns.Count; i++)
         {
-            pnlHeader.BackColor = Color.FromArgb(4, 30, 56);
-            pnlHeader.Height = 28;
-            pnlHeader.Paint -= ByteNovaManageHeaderPaint;
-            pnlHeader.Paint += ByteNovaManageHeaderPaint;
-        }
+            DataGridViewColumn col = grdUsers.Columns[i];
+            col.AutoSizeMode = (i == grdUsers.Columns.Count - 1)
+                ? DataGridViewAutoSizeColumnMode.Fill
+                : DataGridViewAutoSizeColumnMode.None;
+            col.MinimumWidth = 8;
+            if (i < MT_COLW.Length) col.Width = MT_COLW[i];
+            col.SortMode = DataGridViewColumnSortMode.NotSortable;
 
-        if (B2AAA != null)
-        {
-            B2AAA.Text = "TOTAL TICKET";
-            B2AAA.ForeColor = Color.White;
-            B2AAA.BackColor = Color.Transparent;
-            B2AAA.Font = new Font("Segoe UI Black", 9.5F, FontStyle.Bold);
-            B2AAA.Location = new Point(10, 6);
-        }
-
-        if (lblCount != null)
-        {
-            lblCount.ForeColor = Color.FromArgb(198, 244, 50);
-            lblCount.Font = new Font("Segoe UI Black", 9.5F, FontStyle.Bold);
-            lblCount.BackColor = Color.Transparent;
-            lblCount.Location = new Point(B2AAA != null ? B2AAA.Right + 10 : 90, 6);
-            lblCount.BringToFront();
-        }
-
-        if (btnClose != null)
-        {
-            btnClose.BackColor = Color.Transparent;
-            btnClose.Zoom = 0;
-            btnClose.Cursor = Cursors.Hand;
-            btnClose.Size = new Size(24, 22);
-            btnClose.Location = new Point(Math.Max(0, pnlHeader.Width - 30), 3);
-            btnClose.Paint -= ByteNovaManageClosePaint;
-            btnClose.Paint += ByteNovaManageClosePaint;
-            btnClose.BringToFront();
-        }
-
-        if (grdUsers != null)
-        {
-            grdUsers.EnableHeadersVisualStyles = false;
-            grdUsers.BackgroundColor = Color.FromArgb(3, 17, 31);
-            grdUsers.BorderStyle = BorderStyle.None;
-            grdUsers.GridColor = Color.FromArgb(20, 62, 92);
-            grdUsers.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            grdUsers.RowHeadersVisible = false;
-            grdUsers.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-            grdUsers.ColumnHeadersHeight = 28;
-            grdUsers.RowTemplate.Height = 30;
-            grdUsers.SelectionMode = DataGridViewSelectionMode.CellSelect;
-
-            grdUsers.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(6, 44, 74);
-            grdUsers.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(120, 230, 255);
-            grdUsers.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(6, 44, 74);
-            grdUsers.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.FromArgb(120, 230, 255);
-            grdUsers.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Bold);
-            grdUsers.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-
-            grdUsers.DefaultCellStyle.BackColor = Color.FromArgb(5, 22, 38);
-            grdUsers.DefaultCellStyle.ForeColor = Color.White;
-            grdUsers.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 78, 120);
-            grdUsers.DefaultCellStyle.SelectionForeColor = Color.White;
-            grdUsers.DefaultCellStyle.Font = new Font("Segoe UI", 8F);
-            grdUsers.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-
-            grdUsers.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(7, 27, 45);
-            grdUsers.AlternatingRowsDefaultCellStyle.ForeColor = Color.White;
-            grdUsers.AlternatingRowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 78, 120);
-            grdUsers.AlternatingRowsDefaultCellStyle.SelectionForeColor = Color.White;
-
-            // Buttons ke cell khud paint honge - system flat look hataya
-            grdUsers.CellPainting -= ByteNovaManageCellPainting;
-            grdUsers.CellPainting += ByteNovaManageCellPainting;
-
-            foreach (DataGridViewColumn col in grdUsers.Columns)
+            DataGridViewComboBoxColumn cc = col as DataGridViewComboBoxColumn;
+            if (cc != null)
             {
-                DataGridViewButtonColumn bc = col as DataGridViewButtonColumn;
-                if (bc != null)
-                {
-                    bc.FlatStyle = FlatStyle.Flat;
-                    bc.DefaultCellStyle.BackColor = Color.Transparent;
-                    bc.DefaultCellStyle.SelectionBackColor = Color.Transparent;
-                    bc.DefaultCellStyle.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Bold);
-                }
-
-                DataGridViewComboBoxColumn cc = col as DataGridViewComboBoxColumn;
-                if (cc != null)
-                {
-                    cc.FlatStyle = FlatStyle.Flat;
-                    cc.DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox;
-                    cc.DefaultCellStyle.BackColor = Color.FromArgb(4, 26, 44);
-                    cc.DefaultCellStyle.ForeColor = Color.FromArgb(255, 215, 90);
-                    cc.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 78, 120);
-                    cc.DefaultCellStyle.SelectionForeColor = Color.White;
-                }
+                cc.FlatStyle = FlatStyle.Flat;
+                cc.DefaultCellStyle.BackColor = Color.White;
+                cc.DefaultCellStyle.ForeColor = MT_TEXT;
+                cc.DefaultCellStyle.SelectionBackColor = Color.White;
+                cc.DefaultCellStyle.SelectionForeColor = MT_TEXT;
+                cc.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             }
+            DataGridViewButtonColumn bc = col as DataGridViewButtonColumn;
+            if (bc != null) bc.FlatStyle = FlatStyle.Flat;
         }
+        if (grdUsers.Columns.Count > 0) grdUsers.Columns[grdUsers.Columns.Count - 1].MinimumWidth = 60;
 
-        if (grpOpen != null)
-        {
-            grpOpen.BackColor = Color.FromArgb(4, 22, 40);
-            grpOpen.ForeColor = Color.FromArgb(120, 225, 255);
-            grpOpen.Paint -= ByteNovaManageGroupPaint;
-            grpOpen.Paint += ByteNovaManageGroupPaint;
-        }
+        grdUsers.CellPainting -= MtCellPaint;
+        grdUsers.CellPainting += MtCellPaint;
+        grdUsers.Paint -= MtGridPaint;
+        grdUsers.Paint += MtGridPaint;
+        grdUsers.CellMouseEnter += MtCellHotEnter;
+        grdUsers.CellMouseLeave += MtCellHotLeave;
+        grdUsers.MouseLeave += delegate { int r = mtHotRow; mtHotRow = mtHotCol = -1; MtInvRow(r); };
+        grdUsers.CellMouseDown += MtCellDown;
+        grdUsers.CellMouseUp += MtCellUp;
+        grdUsers.CurrentCellChanged += delegate { if (!grdUsers.IsDisposed) grdUsers.Invalidate(); };
+        grdUsers.EditingControlShowing += MtEditingShowing;
 
-        ByteNovaManageButton(btnNew, Color.FromArgb(0, 120, 88), Color.FromArgb(0, 235, 190));
-        ByteNovaManageButton(btnSubmitAll, Color.FromArgb(0, 92, 148), Color.FromArgb(0, 210, 255));
-        ByteNovaManageButton(btnDeleteAll, Color.FromArgb(126, 30, 48), Color.FromArgb(255, 105, 125));
+        // ---- footer buttons ----
+        MtFooterButton(btnDeleteAll, new Rectangle(MT_W - MT_M - 184 - 12 - 132, mtCard.Bottom + 17, 132, 36));
+        MtFooterButton(btnSubmitAll, new Rectangle(MT_W - MT_M - 184, mtCard.Bottom + 17, 184, 36));
 
+        // Old helper buttons stay hidden (they are called from the table's buttons).
         if (btnSubmit != null) btnSubmit.Visible = false;
         if (btnEdit != null) btnEdit.Visible = false;
         if (btnDelete != null) btnDelete.Visible = false;
 
-        ByteNovaManageInput(cboCredit);
-        ByteNovaManageInput(cboHours);
-        ByteNovaManageInput(cboMinutes);
-        ByteNovaManageInput(cboSeconds);
+        // These were outside the old (small) form; keep them out of sight in the bigger one too.
+        // Moved, not hidden, so their existing behaviour (Checked, PerformClick, etc.) stays the same.
+        foreach (Control c in new Control[] { label5, chkAutoWEB, chkAutoAPP, grpOpen, panel1, label2 })
+            if (c != null) c.Location = new Point(MT_W + 60, c.Top);
 
-        ByteNovaManageCheck(chkAutoWEB);
-        ByteNovaManageCheck(chkAutoAPP);
-        ByteNovaManageRadio(radioVPair);
-        ByteNovaManageRadio(C1AA0);
-
-        if (chkAutoWEB != null) chkAutoWEB.ForeColor = Color.FromArgb(200, 235, 250);
-        if (chkAutoAPP != null) chkAutoAPP.ForeColor = Color.FromArgb(200, 235, 250);
-        if (radioVPair != null) radioVPair.ForeColor = Color.FromArgb(200, 235, 250);
-        if (C1AA0 != null) C1AA0.ForeColor = Color.FromArgb(200, 235, 250);
-
-        if (label2 != null) label2.ForeColor = Color.FromArgb(120, 225, 255);
-
-        Paint -= ByteNovaManageFormPaint;
-        Paint += ByteNovaManageFormPaint;
+        Paint -= MtFormPaint;
+        Paint += MtFormPaint;
 
         ResumeLayout(false);
         PerformLayout();
         Invalidate(true);
     }
 
-    private void ByteNovaManageButton(Button b, Color back, Color border)
+    private static void MtBuffer(Control c)
+    {
+        try
+        {
+            typeof(Control).GetProperty("DoubleBuffered",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .SetValue(c, true, null);
+        }
+        catch { }
+    }
+
+    // Keep the close button in the header's top-right corner, whatever the header's real width is.
+    private void MtPlaceClose(object sender, EventArgs e)
+    {
+        if (btnClose == null || btnClose.IsDisposed || pnlHeader == null) return;
+        int w = Math.Max(pnlHeader.Width, ClientSize.Width);
+        btnClose.Location = new Point(w - MT_M - btnClose.Width, Math.Max(0, (pnlHeader.Height - 3 - btnClose.Height) / 2));
+        btnClose.BringToFront();
+    }
+
+    private void MtCountChanged(object sender, EventArgs e)
+    {
+        if (!pnlHeader.IsDisposed) pnlHeader.Invalidate();
+    }
+
+    private void MtFooterButton(Button b, Rectangle r)
     {
         if (b == null) return;
-
         b.FlatStyle = FlatStyle.Flat;
-        b.FlatAppearance.BorderSize = 1;
-        b.FlatAppearance.BorderColor = border;
-        b.BackColor = back;
-        b.ForeColor = Color.White;
-        b.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
+        b.FlatAppearance.BorderSize = 0;
+        b.FlatAppearance.MouseOverBackColor = MT_BG;
+        b.FlatAppearance.MouseDownBackColor = MT_BG;
+        b.BackColor = MT_BG;
         b.UseVisualStyleBackColor = false;
         b.Cursor = Cursors.Hand;
-        b.FlatAppearance.MouseOverBackColor = ControlPaint.Light(back, 0.18F);
-        b.FlatAppearance.MouseDownBackColor = ControlPaint.Dark(back, 0.12F);
-        b.Height = 30;
+        b.Bounds = r;
+        b.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+        mtBtnState[b] = 0;
+        b.Paint -= MtFooterPaint;
+        b.Paint += MtFooterPaint;
+        b.MouseEnter += delegate { mtBtnState[b] = 1; b.Invalidate(); };
+        b.MouseLeave += delegate { mtBtnState[b] = 0; b.Invalidate(); };
+        b.MouseDown += delegate (object s, MouseEventArgs e) { if (e.Button == MouseButtons.Left) { mtBtnState[b] = 2; b.Invalidate(); } };
+        b.MouseUp += delegate { if (b.IsDisposed) return; mtBtnState[b] = b.ClientRectangle.Contains(b.PointToClient(MousePosition)) ? 1 : 0; b.Invalidate(); };
     }
 
-    private void ByteNovaManageInput(ComboBox c)
+    // ---------------- painting ----------------
+
+    private static GraphicsPath MtRound(RectangleF r, float rad)
     {
-        if (c == null) return;
-        c.FlatStyle = FlatStyle.Flat;
-        c.BackColor = Color.White;
-        c.ForeColor = Color.Black;
-        c.Font = new Font("Segoe UI", 8.5F);
+        GraphicsPath p = new GraphicsPath();
+        float d = Math.Min(rad * 2, Math.Min(r.Width, r.Height));
+        if (d < 1) { p.AddRectangle(r); return p; }
+        p.AddArc(r.X, r.Y, d, d, 180, 90);
+        p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+        p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+        p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+        p.CloseFigure();
+        return p;
     }
 
-    private void ByteNovaManageCheck(CheckBox c)
+    private static void MtFill(Graphics g, RectangleF r, float rad, Color fill, Color border)
     {
-        if (c == null) return;
-        c.BackColor = Color.Transparent;
-        c.ForeColor = Color.White;
-        c.FlatStyle = FlatStyle.Standard;
-        c.UseVisualStyleBackColor = true;
+        using (GraphicsPath p = MtRound(r, rad))
+        {
+            using (SolidBrush b = new SolidBrush(fill)) g.FillPath(b, p);
+            if (border.A > 0) using (Pen pen = new Pen(border, 1F)) g.DrawPath(pen, p);
+        }
     }
 
-    private void ByteNovaManageRadio(RadioButton r)
+    private static Color MtMix(Color a, Color b, float t)
     {
-        if (r == null) return;
-        r.BackColor = Color.Transparent;
-        r.ForeColor = Color.White;
-        r.FlatStyle = FlatStyle.Standard;
-        r.UseVisualStyleBackColor = true;
-        r.AutoCheck = true;
+        return Color.FromArgb(
+            (int)(a.R + (b.R - a.R) * t),
+            (int)(a.G + (b.G - a.G) * t),
+            (int)(a.B + (b.B - a.B) * t));
     }
 
-    private void ByteNovaManageHeaderPaint(object sender, PaintEventArgs e)
+    private void MtFormPaint(object sender, PaintEventArgs e)
+    {
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.Clear(MT_BG);
+
+        // table card with a soft shadow
+        RectangleF sh = new RectangleF(mtCard.X, mtCard.Y + 2, mtCard.Width - 1, mtCard.Height - 1);
+        MtFill(g, sh, 12, Color.FromArgb(214, 225, 242), Color.Empty);
+        MtFill(g, new RectangleF(mtCard.X, mtCard.Y, mtCard.Width - 1, mtCard.Height - 1), 12, Color.White, Color.FromArgb(214, 224, 240));
+
+        // footer help text
+        int y = mtCard.Bottom + 17;
+        Rectangle ic = new Rectangle(MT_M + 4, y + 3, 14, 14);
+        MtIcon(g, "info", ic, MT_BLUE);
+        TextRenderer.DrawText(g, "Choose the Slot and how many Web / App pairs to open, then press Open or Login.",
+            mtFSub, new Rectangle(ic.Right + 8, y, 560, 20), MT_TEXT,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
+        TextRenderer.DrawText(g, "Delete removes the ticket and its passengers permanently.",
+            mtFSub, new Rectangle(ic.Right + 8, y + 18, 560, 18), MT_MUTED,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
+
+        using (Pen p = new Pen(Color.FromArgb(178, 196, 226), 1F))
+            g.DrawRectangle(p, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
+    }
+
+    private void MtHeaderPaint(object sender, PaintEventArgs e)
     {
         Control c = sender as Control;
         if (c == null || c.Width < 4 || c.Height < 4) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
 
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         Rectangle r = new Rectangle(0, 0, c.Width, c.Height);
+        using (LinearGradientBrush bg = new LinearGradientBrush(r, MT_HEAD_L, MT_HEAD_R, LinearGradientMode.Horizontal))
+            g.FillRectangle(bg, r);
+        using (SolidBrush o = new SolidBrush(MT_ORANGE))
+            g.FillRectangle(o, 0, c.Height - 3, c.Width, 3);
 
-        using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, Color.FromArgb(4, 30, 58), Color.FromArgb(30, 22, 74),
-            LinearGradientMode.Horizontal))
-        {
-            ColorBlend blend = new ColorBlend();
-            blend.Positions = new float[] { 0F, 0.35F, 0.7F, 1F };
-            blend.Colors = new Color[]
-            {
-                Color.FromArgb(3, 24, 46),
-                Color.FromArgb(0, 92, 138),
-                Color.FromArgb(22, 58, 140),
-                Color.FromArgb(46, 26, 96)
-            };
-            bg.InterpolationColors = blend;
-            e.Graphics.FillRectangle(bg, r);
-        }
+        int h = c.Height - 3;
+        Rectangle ib = new Rectangle(MT_M + 2, (h - 38) / 2, 38, 38);
+        MtFill(g, ib, 10, Color.FromArgb(40, 255, 255, 255), Color.FromArgb(70, 255, 255, 255));
+        MtIcon(g, "ticket", new Rectangle(ib.X + 9, ib.Y + 11, 20, 16), MT_ORANGE);
 
-        using (Pen lime = new Pen(Color.FromArgb(198, 244, 50), 1.4F))
-            e.Graphics.DrawLine(lime, 0, c.Height - 1, c.Width, c.Height - 1);
+        int tx = ib.Right + 12;
+        string title = "Saved Tickets";
+        Size ts = TextRenderer.MeasureText(g, title, mtFTitle, Size.Empty, TextFormatFlags.NoPadding);
+        TextRenderer.DrawText(g, title, mtFTitle, new Point(tx, ib.Y - 1), Color.White, TextFormatFlags.NoPadding);
+
+        string cnt = (lblCount != null ? lblCount.Text : "0").Trim();
+        int n;
+        string pill = cnt + (int.TryParse(cnt, out n) && n == 1 ? " Ticket" : " Tickets");
+        Size ps = TextRenderer.MeasureText(g, pill, mtFPill, Size.Empty, TextFormatFlags.NoPadding);
+        Rectangle pr = new Rectangle(tx + ts.Width + 10, ib.Y + 2, ps.Width + 18, 20);
+        MtFill(g, pr, 10, MT_ORANGE, Color.Empty);
+        TextRenderer.DrawText(g, pill, mtFPill, pr, Color.White,
+            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+
+        TextRenderer.DrawText(g, "Open, login, edit or delete any saved ticket", mtFSub,
+            new Point(tx + 1, ib.Y + 23), Color.FromArgb(205, 220, 247), TextFormatFlags.NoPadding);
     }
 
-    private void ByteNovaManageGroupPaint(object sender, PaintEventArgs e)
-    {
-        GroupBox g = sender as GroupBox;
-        if (g == null || g.Width < 4 || g.Height < 4) return;
-
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        Rectangle r = new Rectangle(0, 0, g.Width - 1, g.Height - 1);
-
-        using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, Color.FromArgb(5, 30, 50), Color.FromArgb(2, 15, 28),
-            LinearGradientMode.Vertical))
-            e.Graphics.FillRectangle(bg, r);
-
-        using (Pen p = new Pen(Color.FromArgb(0, 150, 205), 1F))
-            e.Graphics.DrawRectangle(p, r);
-    }
-
-    private void ByteNovaManageFormPaint(object sender, PaintEventArgs e)
-    {
-        if (ClientSize.Width < 4 || ClientSize.Height < 4) return;
-
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        Rectangle all = new Rectangle(0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
-
-        using (LinearGradientBrush bg = new LinearGradientBrush(
-            all, Color.FromArgb(3, 18, 33), Color.FromArgb(1, 7, 14),
-            LinearGradientMode.Vertical))
-            e.Graphics.FillRectangle(bg, all);
-
-        using (Pen lime = new Pen(Color.FromArgb(198, 244, 50), 1.4F))
-            e.Graphics.DrawRectangle(lime, all);
-    }
-
-    private void ByteNovaManageCellPainting(object sender, DataGridViewCellPaintingEventArgs e)
-    {
-        if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
-        if (e.ColumnIndex < 10 || e.ColumnIndex > 13) return;
-
-        e.PaintBackground(e.CellBounds, true);
-
-        Color back, border;
-        switch (e.ColumnIndex)
-        {
-            case 10: back = Color.FromArgb(0, 96, 150); border = Color.FromArgb(0, 205, 240); break;
-            case 11: back = Color.FromArgb(76, 52, 152); border = Color.FromArgb(155, 125, 255); break;
-            case 12: back = Color.FromArgb(140, 92, 14); border = Color.FromArgb(255, 195, 75); break;
-            default: back = Color.FromArgb(142, 34, 52); border = Color.FromArgb(255, 110, 130); break;
-        }
-
-        if ((e.State & DataGridViewElementStates.Selected) != 0)
-            back = ControlPaint.Light(back, 0.20F);
-
-        Rectangle r = new Rectangle(
-            e.CellBounds.X + 3, e.CellBounds.Y + 4,
-            e.CellBounds.Width - 7, e.CellBounds.Height - 9);
-
-        if (r.Width > 8 && r.Height > 8)
-        {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-            using (GraphicsPath path = ByteNovaManageRound(r, 6))
-            using (LinearGradientBrush bg = new LinearGradientBrush(
-                r, ControlPaint.Light(back, 0.25F), ControlPaint.Dark(back, 0.12F),
-                LinearGradientMode.Vertical))
-            using (Pen pen = new Pen(border, 1.2F))
-            {
-                e.Graphics.FillPath(bg, path);
-                e.Graphics.DrawPath(pen, path);
-            }
-
-            using (Font f = new Font("Segoe UI Semibold", 8F, FontStyle.Bold))
-                TextRenderer.DrawText(e.Graphics, Convert.ToString(e.Value), f, r, Color.White,
-                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
-                    TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
-        }
-
-        e.Handled = true;
-    }
-
-    private GraphicsPath ByteNovaManageRound(Rectangle r, int radius)
-    {
-        GraphicsPath path = new GraphicsPath();
-        int d = radius * 2;
-        path.AddArc(r.X, r.Y, d, d, 180, 90);
-        path.AddArc(r.Right - d, r.Y, d, d, 270, 90);
-        path.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
-        path.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
-        path.CloseFigure();
-        return path;
-    }
-
-    private void ByteNovaManageClosePaint(object sender, PaintEventArgs e)
+    private void MtClosePaint(object sender, PaintEventArgs e)
     {
         Control c = sender as Control;
         if (c == null) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
 
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        Rectangle r = new Rectangle(1, 1, c.Width - 3, c.Height - 3);
-
+        // repaint the header gradient underneath so the original image never shows
+        Control p = c.Parent;
+        int pw = p != null ? Math.Max(1, p.Width) : c.Width;
+        int ph = p != null ? Math.Max(1, p.Height) : c.Height;
         using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, Color.FromArgb(30, 150, 205), Color.FromArgb(0, 95, 150),
-            LinearGradientMode.Vertical))
-            e.Graphics.FillRectangle(bg, r);
+            new Rectangle(-c.Left, -c.Top, pw, ph), MT_HEAD_L, MT_HEAD_R, LinearGradientMode.Horizontal))
+            g.FillRectangle(bg, 0, 0, c.Width, c.Height);
 
-        using (Pen border = new Pen(Color.FromArgb(140, 235, 255), 1.2F))
-            e.Graphics.DrawRectangle(border, r);
+        RectangleF r = new RectangleF(1, 1, c.Width - 3, c.Height - 3);
+        Color fill = mtCloseDown ? Color.FromArgb(185, 28, 28)
+                   : mtCloseHot ? Color.FromArgb(232, 67, 67)
+                   : Color.FromArgb(38, 255, 255, 255);
+        Color border = mtCloseHot || mtCloseDown ? Color.FromArgb(254, 202, 202) : Color.FromArgb(110, 255, 255, 255);
+        MtFill(g, r, 7, fill, border);
 
-        using (Pen p = new Pen(Color.White, 2F))
+        float cx = c.Width / 2f - 0.5f, cy = c.Height / 2f - 0.5f + (mtCloseDown ? 1 : 0);
+        using (Pen pen = new Pen(Color.White, 2.4F))
+        {
+            pen.StartCap = LineCap.Round;
+            pen.EndCap = LineCap.Round;
+            g.DrawLine(pen, cx - 7, cy - 7, cx + 7, cy + 7);
+            g.DrawLine(pen, cx + 7, cy - 7, cx - 7, cy + 7);
+        }
+    }
+
+    private void MtFooterPaint(object sender, PaintEventArgs e)
+    {
+        Button b = sender as Button;
+        if (b == null) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.Clear(MT_BG);
+
+        int st;
+        if (!mtBtnState.TryGetValue(b, out st)) st = 0;
+        bool primary = b == btnSubmitAll;
+        RectangleF r = new RectangleF(0.5f, st == 2 ? 1.5f : 0.5f, b.Width - 2, b.Height - 3);
+
+        Color fg;
+        string icon, text;
+        if (primary)
+        {
+            Color top = Color.FromArgb(251, 166, 60), bot = Color.FromArgb(234, 124, 10);
+            if (st == 1) { top = MtMix(top, Color.White, 0.12f); bot = MtMix(bot, Color.White, 0.08f); }
+            if (st == 2) { top = MtMix(top, Color.Black, 0.10f); bot = MtMix(bot, Color.Black, 0.12f); }
+            if (st != 2) MtFill(g, new RectangleF(r.X, r.Y + 2, r.Width, r.Height), 8, Color.FromArgb(60, 194, 100, 8), Color.Empty);
+            using (GraphicsPath p = MtRound(r, 8))
+            using (LinearGradientBrush lb = new LinearGradientBrush(r, top, bot, LinearGradientMode.Vertical))
+            {
+                g.FillPath(lb, p);
+                using (Pen pen = new Pen(Color.FromArgb(214, 110, 6))) g.DrawPath(pen, p);
+            }
+            fg = Color.White; icon = "playall"; text = "Open All Tickets";
+        }
+        else
+        {
+            Color fill = st == 2 ? Color.FromArgb(254, 226, 226) : st == 1 ? Color.FromArgb(254, 242, 242) : Color.White;
+            MtFill(g, r, 8, fill, st == 0 ? Color.FromArgb(252, 165, 165) : Color.FromArgb(239, 68, 68));
+            fg = Color.FromArgb(220, 38, 38); icon = "trash"; text = "Delete All";
+        }
+
+        Size ts = TextRenderer.MeasureText(g, text, mtFBtn, Size.Empty, TextFormatFlags.NoPadding);
+        int gw = 14 + 8 + ts.Width;
+        int x = (int)(r.X + (r.Width - gw) / 2);
+        int cy = (int)(r.Y + r.Height / 2);
+        MtIcon(g, icon, new Rectangle(x, cy - 7, 14, 14), fg);
+        TextRenderer.DrawText(g, text, mtFBtn, new Rectangle(x + 22, cy - ts.Height / 2 - 1, ts.Width + 4, ts.Height + 2), fg,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+    }
+
+    private void MtGridPaint(object sender, PaintEventArgs e)
+    {
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+
+        // one "ACTIONS" caption over the four button columns
+        if (grdUsers.ColumnCount > 13 && grdUsers.ColumnHeadersVisible)
+        {
+            Rectangle a = grdUsers.GetColumnDisplayRectangle(10, false);
+            Rectangle b = grdUsers.GetColumnDisplayRectangle(13, false);
+            if (a.Width > 0 && b.Width > 0)
+            {
+                Rectangle hr = new Rectangle(a.X, 0, b.Right - a.X, grdUsers.ColumnHeadersHeight - 2);
+                TextRenderer.DrawText(g, "ACTIONS", mtFHead, hr, Color.FromArgb(51, 65, 85),
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+            }
+        }
+
+        if (grdUsers.Rows.Count == 0)
+        {
+            int top = grdUsers.ColumnHeadersHeight;
+            Rectangle body = new Rectangle(0, top, grdUsers.Width, Math.Max(10, grdUsers.Height - top));
+            Rectangle ic = new Rectangle(body.X + body.Width / 2 - 16, body.Y + body.Height / 2 - 34, 32, 26);
+            MtIcon(g, "ticket", ic, Color.FromArgb(148, 163, 184));
+            TextRenderer.DrawText(g, "No saved tickets", mtFBold,
+                new Rectangle(body.X, ic.Bottom + 8, body.Width, 20), MT_TEXT,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding);
+            TextRenderer.DrawText(g, "Saved tickets will appear here", mtFSub,
+                new Rectangle(body.X, ic.Bottom + 28, body.Width, 18), MT_MUTED,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding);
+        }
+    }
+
+    private void MtCellPaint(object sender, DataGridViewCellPaintingEventArgs e)
+    {
+        if (e.ColumnIndex < 0) return;
+        Graphics g = e.Graphics;
+        Rectangle cb = e.CellBounds;
+        if (cb.Width < 2 || cb.Height < 2) return;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        int col = e.ColumnIndex, row = e.RowIndex;
+        const TextFormatFlags BASE = TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis |
+                                     TextFormatFlags.NoPadding | TextFormatFlags.SingleLine;
+
+        // ---- column header ----
+        if (row < 0)
+        {
+            using (LinearGradientBrush bg = new LinearGradientBrush(cb, Color.FromArgb(247, 250, 255),
+                Color.FromArgb(233, 240, 251), LinearGradientMode.Vertical))
+                g.FillRectangle(bg, cb);
+            using (SolidBrush o = new SolidBrush(MT_ORANGE))
+                g.FillRectangle(o, cb.X, cb.Bottom - 2, cb.Width, 2);
+            if (col < MT_HEADS.Length)
+            {
+                Rectangle tr = col == 1
+                    ? new Rectangle(cb.X + 10, cb.Y, cb.Width - 12, cb.Height - 2)
+                    : new Rectangle(cb.X, cb.Y, cb.Width, cb.Height - 2);
+                TextRenderer.DrawText(g, MT_HEADS[col], mtFHead, tr, Color.FromArgb(51, 65, 85),
+                    BASE | (col == 1 ? TextFormatFlags.Left : TextFormatFlags.HorizontalCenter));
+            }
+            e.Handled = true;
+            return;
+        }
+        if (row >= grdUsers.RowCount) return;
+
+        // ---- row background ----
+        bool cur = grdUsers.CurrentCell != null && grdUsers.CurrentCell.RowIndex == row;
+        bool hot = row == mtHotRow;
+        Color bgc = cur ? Color.FromArgb(255, 247, 237)
+                  : hot ? Color.FromArgb(240, 246, 255)
+                  : (row % 2 == 1 ? Color.FromArgb(249, 251, 255) : Color.White);
+        using (SolidBrush b = new SolidBrush(bgc)) g.FillRectangle(b, cb);
+        using (Pen ln = new Pen(MT_LINE)) g.DrawLine(ln, cb.X, cb.Bottom - 1, cb.Right, cb.Bottom - 1);
+        if (cur && col == 0)
+            using (SolidBrush o = new SolidBrush(MT_ORANGE)) g.FillRectangle(o, cb.X, cb.Y, 3, cb.Height - 1);
+
+        string v = Convert.ToString(e.FormattedValue);
+        int midY = cb.Y + cb.Height / 2;
+
+        switch (col)
+        {
+            case 0: // serial number badge
+            {
+                Rectangle c = new Rectangle(cb.X + (cb.Width - 24) / 2, midY - 12, 24, 24);
+                using (SolidBrush b = new SolidBrush(cur ? MT_ORANGE : Color.FromArgb(224, 234, 252)))
+                    g.FillEllipse(b, c);
+                TextRenderer.DrawText(g, v, mtFPill, c, cur ? Color.White : Color.FromArgb(29, 78, 216),
+                    BASE | TextFormatFlags.HorizontalCenter);
+                break;
+            }
+            case 1: // ticket name
+                TextRenderer.DrawText(g, v, mtFBold, new Rectangle(cb.X + 10, cb.Y, cb.Width - 14, cb.Height), MT_TEXT,
+                    BASE | TextFormatFlags.Left);
+                break;
+            case 2:
+            case 3: // stations
+                TextRenderer.DrawText(g, v, mtFSemi, new Rectangle(cb.X + 4, cb.Y, cb.Width - 12, cb.Height),
+                    Color.FromArgb(30, 64, 175), BASE | TextFormatFlags.HorizontalCenter);
+                if (col == 2) MtIcon(g, "arrow", new Rectangle(cb.Right - 10, midY - 4, 8, 8), Color.FromArgb(148, 163, 184));
+                break;
+            case 4: // journey date
+                MtIcon(g, "calendar", new Rectangle(cb.X + 6, midY - 6, 12, 12), MT_ORANGE);
+                TextRenderer.DrawText(g, v, mtFCell, new Rectangle(cb.X + 21, cb.Y, cb.Width - 22, cb.Height), MT_TEXT,
+                    BASE | TextFormatFlags.Left);
+                break;
+            case 5: // quota
+            case 6: // class
+            {
+                Color pf, pt;
+                string q = v.Trim().ToUpperInvariant();
+                if (col == 6) { pf = Color.FromArgb(224, 231, 255); pt = Color.FromArgb(55, 48, 163); }
+                else if (q == "TQ" || q == "PT" || q.Contains("TATKAL")) { pf = Color.FromArgb(255, 237, 213); pt = Color.FromArgb(194, 65, 12); }
+                else if (q == "GN" || q.Contains("GENERAL")) { pf = Color.FromArgb(219, 234, 254); pt = Color.FromArgb(29, 78, 216); }
+                else { pf = Color.FromArgb(226, 232, 240); pt = Color.FromArgb(51, 65, 85); }
+                if (v.Length == 0) break;
+                Size ts = TextRenderer.MeasureText(g, v, mtFPill, Size.Empty, TextFormatFlags.NoPadding);
+                int w = Math.Min(cb.Width - 8, ts.Width + 16);
+                Rectangle pr = new Rectangle(cb.X + (cb.Width - w) / 2, midY - 11, w, 22);
+                MtFill(g, pr, 11, pf, Color.Empty);
+                TextRenderer.DrawText(g, v, mtFPill, pr, pt, BASE | TextFormatFlags.HorizontalCenter);
+                break;
+            }
+            case 7:
+            case 8:
+            case 9: // slot / web / app pickers
+            {
+                bool hc = hot && mtHotCol == col;
+                Rectangle br = new Rectangle(cb.X + 4, midY - 13, cb.Width - 9, 26);
+                MtFill(g, br, 6, Color.White, hc ? MT_BLUE : MT_BORDER);
+                int tx = br.X + 8;
+                if (col != 7)
+                {
+                    MtIcon(g, col == 8 ? "globe" : "phone", new Rectangle(br.X + 6, midY - 5, 10, 10),
+                        col == 8 ? MT_BLUE : MT_ORANGE);
+                    tx = br.X + 20;
+                }
+                Color tc = col == 7 ? Color.FromArgb(29, 78, 216) : (v == "0" ? Color.FromArgb(148, 163, 184) : MT_TEXT);
+                TextRenderer.DrawText(g, v, col == 7 ? mtFSemi : mtFBold,
+                    new Rectangle(tx, br.Y, Math.Max(4, br.Right - 14 - tx), br.Height), tc, BASE | TextFormatFlags.Left);
+                MtIcon(g, "chevron", new Rectangle(br.Right - 12, midY - 3, 8, 6), hc ? MT_BLUE : MT_MUTED);
+                break;
+            }
+            default: // action buttons
+                if (col >= 10 && col <= 13) MtActionPaint(g, cb, row, col);
+                break;
+        }
+        e.Handled = true;
+    }
+
+    private void MtActionPaint(Graphics g, Rectangle cb, int row, int col)
+    {
+        bool hot = row == mtHotRow && col == mtHotCol;
+        bool down = row == mtDownRow && col == mtDownCol;
+        string text, icon;
+        Color fill, border, fg;
+        switch (col)
+        {
+            case 10:
+                text = "Open"; icon = "play"; fg = Color.White;
+                fill = MT_BLUE; border = Color.FromArgb(29, 78, 216);
+                break;
+            case 11:
+                text = "Login"; icon = "login"; fg = Color.White;
+                fill = MT_ORANGE; border = Color.FromArgb(221, 120, 8);
+                break;
+            case 12:
+                text = "Edit"; icon = "edit"; fg = Color.FromArgb(29, 78, 216);
+                fill = Color.White; border = Color.FromArgb(147, 197, 253);
+                break;
+            default:
+                text = "Delete"; icon = "trash"; fg = Color.FromArgb(220, 38, 38);
+                fill = Color.FromArgb(254, 242, 242); border = Color.FromArgb(252, 165, 165);
+                break;
+        }
+        bool solid = col <= 11;
+        if (down) { fill = solid ? MtMix(fill, Color.Black, 0.15f) : MtMix(fill, border, 0.45f); }
+        else if (hot) { fill = solid ? MtMix(fill, Color.White, 0.14f) : MtMix(fill, border, 0.22f); border = solid ? border : fg; }
+
+        RectangleF r = new RectangleF(cb.X + 4, cb.Y + 7 + (down ? 1 : 0), cb.Width - 9, cb.Height - 15);
+        MtFill(g, r, 7, fill, border);
+
+        Size ts = TextRenderer.MeasureText(g, text, mtFPill, Size.Empty, TextFormatFlags.NoPadding);
+        int gw = 11 + 5 + ts.Width;
+        bool withIcon = gw <= r.Width - 6;
+        if (!withIcon) gw = ts.Width;
+        int x = (int)(r.X + (r.Width - gw) / 2);
+        int cy = (int)(r.Y + r.Height / 2);
+        if (withIcon)
+        {
+            MtIcon(g, icon, new Rectangle(x, cy - 5, 11, 11), fg);
+            x += 16;
+        }
+        TextRenderer.DrawText(g, text, mtFPill, new Rectangle(x, cy - ts.Height / 2 - 1, ts.Width + 4, ts.Height + 2), fg,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+    }
+
+    private static void MtIcon(Graphics g, string kind, Rectangle r, Color c)
+    {
+        SmoothingMode old = g.SmoothingMode;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        float x = r.X, y = r.Y, w = r.Width, h = r.Height;
+        using (Pen p = new Pen(c, 1.6F))
+        using (SolidBrush b = new SolidBrush(c))
         {
             p.StartCap = LineCap.Round;
             p.EndCap = LineCap.Round;
-            e.Graphics.DrawLine(p, 7, 6, c.Width - 7, c.Height - 6);
-            e.Graphics.DrawLine(p, c.Width - 7, 6, 7, c.Height - 6);
+            p.LineJoin = LineJoin.Round;
+            switch (kind)
+            {
+                case "play":
+                    g.FillPolygon(b, new[] { new PointF(x + w * 0.2f, y), new PointF(x + w, y + h / 2), new PointF(x + w * 0.2f, y + h) });
+                    break;
+                case "playall":
+                    g.FillPolygon(b, new[] { new PointF(x, y + 1), new PointF(x + w * 0.55f, y + h / 2), new PointF(x, y + h - 1) });
+                    g.FillPolygon(b, new[] { new PointF(x + w * 0.45f, y + 1), new PointF(x + w, y + h / 2), new PointF(x + w * 0.45f, y + h - 1) });
+                    break;
+                case "login":
+                    g.DrawLines(p, new[] { new PointF(x + w * 0.55f, y), new PointF(x + w, y), new PointF(x + w, y + h), new PointF(x + w * 0.55f, y + h) });
+                    g.DrawLine(p, x, y + h / 2, x + w * 0.68f, y + h / 2);
+                    g.DrawLines(p, new[] { new PointF(x + w * 0.42f, y + h * 0.24f), new PointF(x + w * 0.68f, y + h / 2), new PointF(x + w * 0.42f, y + h * 0.76f) });
+                    break;
+                case "edit":
+                    using (Pen t = new Pen(c, 2.4F))
+                        g.DrawLine(t, x + w * 0.22f, y + h * 0.78f, x + w * 0.9f, y + h * 0.1f);
+                    g.FillPolygon(b, new[] { new PointF(x + w * 0.05f, y + h * 0.95f), new PointF(x + w * 0.12f, y + h * 0.62f), new PointF(x + w * 0.38f, y + h * 0.88f) });
+                    break;
+                case "trash":
+                    g.DrawLine(p, x, y + h * 0.2f, x + w, y + h * 0.2f);
+                    g.DrawLine(p, x + w * 0.35f, y, x + w * 0.65f, y);
+                    g.DrawPolygon(p, new[] { new PointF(x + w * 0.14f, y + h * 0.3f), new PointF(x + w * 0.86f, y + h * 0.3f), new PointF(x + w * 0.76f, y + h), new PointF(x + w * 0.24f, y + h) });
+                    using (Pen t = new Pen(c, 1.1F))
+                    {
+                        g.DrawLine(t, x + w * 0.42f, y + h * 0.45f, x + w * 0.42f, y + h * 0.85f);
+                        g.DrawLine(t, x + w * 0.58f, y + h * 0.45f, x + w * 0.58f, y + h * 0.85f);
+                    }
+                    break;
+                case "ticket":
+                {
+                    using (GraphicsPath tp = MtRound(new RectangleF(x, y, w, h), 3))
+                    using (Pen t = new Pen(c, 1.8F))
+                        g.DrawPath(t, tp);
+                    float nr = h * 0.18f;
+                    g.DrawArc(p, x - nr, y + h / 2 - nr, nr * 2, nr * 2, -90, 180);
+                    g.DrawArc(p, x + w - nr, y + h / 2 - nr, nr * 2, nr * 2, 90, 180);
+                    using (Pen d = new Pen(c, 1.2F))
+                    {
+                        d.DashStyle = DashStyle.Dash;
+                        g.DrawLine(d, x + w * 0.66f, y + 2, x + w * 0.66f, y + h - 2);
+                    }
+                    g.DrawLine(p, x + w * 0.2f, y + h * 0.38f, x + w * 0.5f, y + h * 0.38f);
+                    g.DrawLine(p, x + w * 0.2f, y + h * 0.64f, x + w * 0.42f, y + h * 0.64f);
+                    break;
+                }
+                case "calendar":
+                    using (GraphicsPath cp = MtRound(new RectangleF(x, y + 1.5f, w, h - 1.5f), 2))
+                        g.DrawPath(p, cp);
+                    g.DrawLine(p, x, y + h * 0.42f, x + w, y + h * 0.42f);
+                    g.DrawLine(p, x + w * 0.3f, y, x + w * 0.3f, y + 3);
+                    g.DrawLine(p, x + w * 0.7f, y, x + w * 0.7f, y + 3);
+                    break;
+                case "globe":
+                    using (Pen t = new Pen(c, 1.2F))
+                    {
+                        g.DrawEllipse(t, x, y, w, h);
+                        g.DrawEllipse(t, x + w * 0.28f, y, w * 0.44f, h);
+                        g.DrawLine(t, x, y + h / 2, x + w, y + h / 2);
+                    }
+                    break;
+                case "phone":
+                    using (Pen t = new Pen(c, 1.3F))
+                    using (GraphicsPath pp = MtRound(new RectangleF(x + w * 0.2f, y, w * 0.6f, h), 1.5f))
+                        g.DrawPath(t, pp);
+                    g.FillEllipse(b, x + w / 2 - 1, y + h - 3, 2, 2);
+                    break;
+                case "arrow":
+                    g.DrawLines(p, new[] { new PointF(x + w * 0.3f, y), new PointF(x + w * 0.8f, y + h / 2), new PointF(x + w * 0.3f, y + h) });
+                    break;
+                case "chevron":
+                    g.DrawLines(p, new[] { new PointF(x, y), new PointF(x + w / 2, y + h), new PointF(x + w, y) });
+                    break;
+                case "info":
+                    g.FillEllipse(b, x, y, w, h);
+                    using (Pen t = new Pen(Color.White, 1.8F))
+                    {
+                        t.StartCap = LineCap.Round; t.EndCap = LineCap.Round;
+                        g.DrawLine(t, x + w / 2, y + h * 0.45f, x + w / 2, y + h * 0.75f);
+                    }
+                    using (SolidBrush wb = new SolidBrush(Color.White))
+                        g.FillEllipse(wb, x + w / 2 - 1.1f, y + h * 0.2f, 2.2f, 2.2f);
+                    break;
+            }
         }
+        g.SmoothingMode = old;
+    }
+
+    // ---------------- hover / press ----------------
+
+    private void MtInvRow(int r)
+    {
+        if (grdUsers == null || grdUsers.IsDisposed) return;
+        if (r >= 0 && r < grdUsers.RowCount) grdUsers.InvalidateRow(r);
+    }
+
+    private void MtCellHotEnter(object sender, DataGridViewCellEventArgs e)
+    {
+        int old = mtHotRow;
+        mtHotRow = e.RowIndex;
+        mtHotCol = e.ColumnIndex;
+        if (old != mtHotRow) MtInvRow(old);
+        MtInvRow(mtHotRow);
+        grdUsers.Cursor = (e.RowIndex >= 0 && e.ColumnIndex >= 7) ? Cursors.Hand : Cursors.Default;
+    }
+
+    private void MtCellHotLeave(object sender, DataGridViewCellEventArgs e)
+    {
+        int old = mtHotRow;
+        mtHotRow = mtHotCol = -1;
+        mtDownRow = mtDownCol = -1;
+        MtInvRow(old);
+    }
+
+    private void MtCellDown(object sender, DataGridViewCellMouseEventArgs e)
+    {
+        if (e.Button != MouseButtons.Left || e.RowIndex < 0 || e.ColumnIndex < 10 || e.ColumnIndex > 13) return;
+        mtDownRow = e.RowIndex;
+        mtDownCol = e.ColumnIndex;
+        MtInvRow(mtDownRow);
+    }
+
+    private void MtCellUp(object sender, DataGridViewCellMouseEventArgs e)
+    {
+        int old = mtDownRow;
+        mtDownRow = mtDownCol = -1;
+        MtInvRow(old);
+    }
+
+    private void MtEditingShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+    {
+        ComboBox cb = e.Control as ComboBox;
+        if (cb == null) return;
+        cb.FlatStyle = FlatStyle.Flat;
+        cb.BackColor = Color.White;
+        cb.ForeColor = MT_TEXT;
+        cb.Font = mtFCell;
     }
 
     private void InitializeComponent()
