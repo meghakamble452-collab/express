@@ -212,135 +212,106 @@ internal class Class30
 					sQLiteCommand.CommandText = commandText;
 					object obj = sQLiteCommand.ExecuteScalar();
 					if (obj != null && !(obj is DBNull))
-					{
-						string commandText2 = "SELECT UserId FROM tbl_RegUser LIMIT 1";
-						sQLiteCommand.CommandText = commandText2;
-						object obj2 = sQLiteCommand.ExecuteScalar();
-						if (obj2 == null || obj2 is DBNull)
-						{
-							string[] array = new string[9];
-							string text = "INSERT INTO tbl_RegUser(UserId, strPwd, strMachine, strMachinePwd) VALUES('";
-							array[0] = text;
-							array[1] = Program.clientID;
-							string text2 = "', '";
-							array[2] = text2;
-							array[3] = Program.string_00;
-							string text3 = "', '";
-							array[4] = text3;
-							array[5] = Program.mac;
-							string text4 = "', '";
-							array[6] = text4;
-							array[7] = Program.string_01;
-							string text5 = "')";
-							array[8] = text5;
-							sQLiteCommand.CommandText = string.Concat(array);
-							sQLiteCommand.ExecuteNonQuery();
-							break;
-						}
-						string commandText3 = "SELECT strPwd FROM tbl_RegUser LIMIT 1";
-						sQLiteCommand.CommandText = commandText3;
-						object obj3 = sQLiteCommand.ExecuteScalar();
-						if ((obj2.ToString().ToUpper() != Program.clientID.ToUpper()) & (obj3.ToString().ToUpper() != Program.string_00.ToUpper()))
-						{
-							string text6 = "This product is Registered with different user!\r\n\r\nIf you was to Register new user, Old data will be lost!\r\n\r\nClick 'YES' to Proceed with new user, Otherwise click 'NO'";
-							string caption = "New User Found";
-							if (MessageBox.Show(text6, caption, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-							{
-								string[] array2 = new string[9];
-								string text7 = "DELETE FROM TBL_BANK;DELETE FROM TBL_PAX;DELETE FROM TBL_TKT;DELETE FROM TBL_USER;DELETE FROM tbl_RegUser;INSERT INTO tbl_RegUser(UserId, strPwd, strMachine, strMachinePwd) VALUES('";
-								array2[0] = text7;
-								array2[1] = Program.clientID;
-								string text8 = "', '";
-								array2[2] = text8;
-								array2[3] = Program.string_00;
-								string text9 = "', '";
-								array2[4] = text9;
-								array2[5] = Program.mac;
-								string text10 = "', '";
-								array2[6] = text10;
-								array2[7] = Program.string_01;
-								string text11 = "');";
-								array2[8] = text11;
-								sQLiteCommand.CommandText = string.Concat(array2);
-								sQLiteCommand.ExecuteNonQuery();
-								Program.dictionary_0.Clear();
-								Class28.smethod_15(clearPwd: true, 0);
-								string text12 = "Product successfully Registered with new User.";
-								string caption2 = "Registration";
-								MessageBox.Show(text12, caption2, MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-							}
-							else
-							{
-								Application.Exit();
-								Process.GetCurrentProcess().Kill();
-							}
-						}
-						break;
-					}
-					StartSQLforDatabase();
-				}
-				catch (Exception ex)
-				{
-					string text13 = ex.Message.ToString();
-					string value = "file is encrypted or is not a database";
-					text13.Contains(value);
-					string text14 = ex.Message.ToString();
-					string value2 = "no such table";
-					text14.Contains(value2);
-					break;
-				}
-				finally
-				{
-					sQLiteCommand.Dispose();
-				}
-			}
-			if (sQLiteConnection.State == ConnectionState.Open)
-			{
-				sQLiteConnection.Close();
-			}
-		}
-		catch (Exception ex2)
-		{
-			string message = ex2.Message;
-			string caption3 = "SQL Lite Error";
-			MessageBox.Show(message, caption3);
-		}
-	}
+        {
+        string commandText2 = "SELECT UserId FROM tbl_RegUser LIMIT 1";
+        sQLiteCommand.CommandText = commandText2;
+        object obj2 = sQLiteCommand.ExecuteScalar();
+        if (obj2 == null || obj2 is DBNull)
+        {
+        string[] array = new string[9];
+        string text = "INSERT INTO tbl_RegUser(UserId, strPwd, strMachine, strMachinePwd) VALUES('";
+        array[0] = text;
+        array[1] = Program.clientID;
+        string text2 = "', '";
+        array[2] = text2;
+        array[3] = Program.string_00;
+        string text3 = "', '";
+        array[4] = text3;
+        array[5] = Program.mac;
+        string text4 = "', '";
+        array[6] = text4;
+        array[7] = Program.string_01;
+        string text5 = "')";
+        array[8] = text5;
+        sQLiteCommand.CommandText = string.Concat(array);
+        sQLiteCommand.ExecuteNonQuery();
+        break;
+        }
+        string commandText3 = "SELECT strPwd FROM tbl_RegUser LIMIT 1";
+        sQLiteCommand.CommandText = commandText3;
+        object obj3 = sQLiteCommand.ExecuteScalar();
+        if ((obj2.ToString().ToUpper() != Program.clientID.ToUpper()) & (obj3.ToString().ToUpper() != Program.string_00.ToUpper()))
+        {
+        sQLiteCommand.CommandText = "UPDATE tbl_RegUser SET UserId='" + Program.clientID + "', strPwd='" + Program.string_00 + "', strMachine='" + Program.mac + "', strMachinePwd='" + Program.string_01 + "'";
+        sQLiteCommand.ExecuteNonQuery();
+        Class28.smethod_15(clearPwd: true, 0);
+        }
+        break;
+        }
+        StartSQLforDatabase();
+        }
+        catch (Exception ex)
+        {
+        string text13 = ex.Message.ToString();
+        string value = "file is encrypted or is not a database";
+        text13.Contains(value);
+        string text14 = ex.Message.ToString();
+        string value2 = "no such table";
+        text14.Contains(value2);
+        break;
+        }
+        finally
+        {
+        sQLiteCommand.Dispose();
+        }
+        }
+        if (sQLiteConnection.State == ConnectionState.Open)
+        {
+        sQLiteConnection.Close();
+        }
+        }
+        catch (Exception ex2)
+        {
+        string message = ex2.Message;
+        string caption3 = "SQL Lite Error";
+        MessageBox.Show(message, caption3);
+        }
+        }
 
-	private static void updatePWD(string pwd)
-	{
-		try
-		{
-			using SQLiteConnection sQLiteConnection = new SQLiteConnection(Class34.string_Database);
-			sQLiteConnection.Open();
-			string text = "PRAGMA rekey='";
-			string text2 = "'";
-			using (SQLiteCommand sQLiteCommand = new SQLiteCommand(text + pwd + text2, sQLiteConnection))
-			{
-				sQLiteCommand.ExecuteNonQuery();
-			}
-			sQLiteConnection.Close();
-		}
-		catch (Exception)
-		{
-		}
-	}
+        private static void updatePWD(string pwd)
+        {
+        try
+        {
+        using SQLiteConnection sQLiteConnection = new SQLiteConnection(Class34.string_Database);
+        sQLiteConnection.Open();
+        string text = "PRAGMA rekey='";
+        string text2 = "'";
+        using (SQLiteCommand sQLiteCommand = new SQLiteCommand(text + pwd + text2, sQLiteConnection))
+        {
+        sQLiteCommand.ExecuteNonQuery();
+        }
+        sQLiteConnection.Close();
+        }
+        catch (Exception)
+        {
+        }
+        }
 
-	public static void CleanFiles()
-	{
-		if (!Directory.Exists(Program.StartupPath))
-		{
-			return;
-		}
-		FileInfo[] files = new DirectoryInfo(Program.StartupPath).GetFiles();
-		FileInfo[] array = files;
-		foreach (FileInfo fileInfo in array)
-		{
-			string name = fileInfo.Name;
-			string text = "Database.db";
-			if (name == text && !IsFileLocked(fileInfo))
+        public static void CleanFiles()
+        {
+        if (!Directory.Exists(Program.StartupPath))
+        {
+        return;
+        }
+        FileInfo[] files = new DirectoryInfo(Program.StartupPath).GetFiles();
+        FileInfo[] array = files;
+        foreach (FileInfo fileInfo in array)
+        {
+        string name = fileInfo.Name;
+        string text = "Database.db";
+        if (name == text && !IsFileLocked(fileInfo))
 			{
-				fileInfo.Delete();
+				// fileInfo.Delete();
 			}
 		}
 	}
@@ -423,58 +394,35 @@ internal class Class30
         }
         catch (Exception ex)
         {
-        string text12 = ex.Message.ToString();
-        string value = "file is encrypted or is not a database";
-        if (text12.Contains(value))
-        {
-        string path5 = "Database.db";
-        if (File.Exists(path5))
-        {
-        string path6 = "Database.db";
-        File.Delete(path6);
-        }
-        Environment.Exit(0);
-        return;
-        }
-        string text13 = ex.Message.ToString();
-        string value2 = "is not a database";
-        if (!text13.Contains(value2))
-        {
-        Form owner = new Form
-        {
-        TopMost = true
-        };
-        string text14 = "There is Issue With SQL Lite, So Please Install Latest Version of .Net 4.6 Or Visual C++ Redistributable";
-        string text15 = ex.Message.ToString();
-        string text16 = ",\n\nContact With Seller For Do it Press Ok, \nOtherwise Contact Adminstrator For Solve Your Issue it.";
-        string text17 = text14 + text15 + text16;
-        string caption = "SQL Lite Error";
-        if (MessageBox.Show(owner, text17, caption, MessageBoxButtons.OKCancel) == DialogResult.OK)
-        {
-        string string_ = "Database.db";
-        string string_2 = "DELETE";
-        Class28.smethod_29(string_, string_2);
-        string path7 = "Database.db";
-        if (File.Exists(path7))
-        {
-        string path8 = "Database.db";
-        File.Delete(path8);
-        }
-        }
-        Environment.Exit(0);
-        return;
-        }
+        // 1) backup — DB kabhi na mare
+        try { if (File.Exists("Database.db")) File.Copy("Database.db", "Database.db.bak", true); } catch { }
+
+        // 2) purani key se rekey karke chalne ki koshish
+        bool rekeyed = false;
         try
         {
         updatePWD(Program.DBPASS);
         Program.string_1A = Program.DBPASS;
         File.WriteAllText("IRLOG//pwd", Program.DBPASS);
+        rekeyed = true;
         }
-        catch
+        catch { rekeyed = false; }
+
+        if (rekeyed)
         {
-        try { if (File.Exists("Database.db")) File.Delete("Database.db"); } catch { }
-        try { if (File.Exists("IRLOG//pwd")) File.Delete("IRLOG//pwd"); } catch { }
+        try { System.Diagnostics.Process.Start(Application.ExecutablePath); } catch { }
+        Environment.Exit(0);
+        return;
         }
+
+        // 3) ab bhi fail — delete NAHI, sirf side me rename
+        try
+        {
+        if (File.Exists("Database.db"))
+        File.Move("Database.db", "Database_old_" + DateTime.Now.ToString("ddMMyyyyHHmmss") + ".db");
+        if (File.Exists("IRLOG//pwd")) File.Delete("IRLOG//pwd");
+        }
+        catch { }
 
         try { System.Diagnostics.Process.Start(Application.ExecutablePath); } catch { }
         Environment.Exit(0);

@@ -191,7 +191,7 @@ internal class Class28
 				if (text.Contains(value))
 				{
 					string path3 = "Database.db";
-					File.Delete(path3);
+					// File.Delete(path3);
 				}
 				string path4 = "Tasks.ini";
 				File.Delete(path4);

@@ -563,7 +563,7 @@ public static class Program
                 }
                 else
                 {
-                try { if (File.Exists("Database.db")) File.Delete("Database.db"); } catch { }
+                // try { if (File.Exists("Database.db")) File.Delete("Database.db"); } catch { }
                 }
                 IL_08a5:
                 string_00 = Class28.smethod_15(clearPwd: false, 1);

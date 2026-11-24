@@ -1361,6 +1361,15 @@ internal class frmSerch_Train : Form
             pnlMain.ControlAdded += NovaMainControlAdded;
             pnlMain.MouseLeave += delegate { NovaSetHot(null); };
 
+            // ---- scrolling ----
+            // RunWorkerCompleted suspends pnlMain's layout while adding the rows and never
+            // resumes it, so the scroll range was never recalculated. Runs after that handler.
+            backgroundWorker_0.RunWorkerCompleted -= NovaRowsDone;
+            backgroundWorker_0.RunWorkerCompleted += NovaRowsDone;
+            // wheel goes to the form (a Panel cannot take focus) - scroll the list from there
+            MouseWheel -= NovaWheel;
+            MouseWheel += NovaWheel;
+
             if (pnlloader != null)
             {
                 pnlloader.BackColor = NV_Card;
@@ -1466,7 +1475,9 @@ internal class frmSerch_Train : Form
             // list body sits inside the table card, under the header band
             int bodyY = NV_TBL_Y + NV_HEAD_H;
             pnlMain.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-            pnlMain.SetBounds(NV_M + 1, bodyY, cardW - 2, H - bodyY - NV_M - 6);
+            // use the size the form really got (Windows may clamp it) so the list never runs off the bottom
+            int realH = ClientSize.Height;
+            pnlMain.SetBounds(NV_M + 1, bodyY, cardW - 2, Math.Max(80, realH - bodyY - NV_M - 6));
             if (pnlloader != null)
                 pnlloader.Location = new Point((pnlMain.ClientSize.Width - pnlloader.Width) / 2, 120);
         }
@@ -1475,6 +1486,30 @@ internal class frmSerch_Train : Form
             ResumeLayout(false);
         }
         Invalidate(true);
+    }
+
+    // ---------------- scrolling ----------------
+
+    private void NovaRowsDone(object sender, RunWorkerCompletedEventArgs e)
+    {
+        // undo the SuspendLayout() calls that RunWorkerCompleted leaves open
+        // (ResumeLayout does nothing when layout is not suspended)
+        pnlMain.ResumeLayout(true);
+        ResumeLayout(true);
+
+        int rows = 0;
+        foreach (int r in novaRows.Keys) rows = Math.Max(rows, r + 1);
+        pnlMain.AutoScrollMinSize = new Size(0, rows * NV_ROW_H + 4);
+        pnlMain.PerformLayout();
+        pnlMain.Invalidate();
+    }
+
+    private void NovaWheel(object sender, MouseEventArgs e)
+    {
+        if (pnlMain == null || !pnlMain.VerticalScroll.Visible) return;
+        int y = -pnlMain.AutoScrollPosition.Y - e.Delta / 120 * NV_ROW_H * 3;   // 3 rows per notch
+        int max = Math.Max(0, pnlMain.DisplayRectangle.Height - pnlMain.ClientSize.Height);
+        pnlMain.AutoScrollPosition = new Point(0, Math.Max(0, Math.Min(max, y)));
     }
 
     // ---------------- cells ----------------
