@@ -4433,290 +4433,626 @@ internal class frmAddTkt : Form
 
 
     // -----------------------------------------------------------------
-    // ByteNova / Nova visual layer only.
-    // No booking, validation, database, fare or event logic is changed.
-    // -----------------------------------------------------------------
+    // =================================================================
+    //  Nova visual layer  -  New Ticket popup (full redesign)
+    //  Visual + layout only. No booking / validation / fare / DB change.
+    // =================================================================
+
+    private readonly List<Control> novaFields = new List<Control>();
+    private Control novaFocusField;
+    private bool novaLayoutBusy;
+
+    private static readonly Color NV_Page = Color.FromArgb(233, 241, 252);
+    private static readonly Color NV_Card = Color.White;
+    private static readonly Color NV_CardLine = Color.FromArgb(206, 222, 244);
+    private static readonly Color NV_FieldLine = Color.FromArgb(198, 214, 238);
+    private static readonly Color NV_Focus = Color.FromArgb(245, 146, 28);
+    private static readonly Color NV_Text = Color.FromArgb(24, 44, 78);
+    private static readonly Color NV_Label = Color.FromArgb(72, 94, 128);
+    private static readonly Color NV_Head = Color.FromArgb(108, 130, 164);
+    private static readonly Color NV_Blue = Color.FromArgb(18, 76, 196);
+    private static readonly Color NV_Blue2 = Color.FromArgb(48, 140, 244);
+    private static readonly Color NV_Orange = Color.FromArgb(245, 146, 28);
+
+    private static readonly string[] NovaSnoLabels =
+        { "label8", "label21", "label20", "label19", "label18", "label17", "label23", "label22" };
+
+    private static readonly string[] NovaHeadLabels =
+        { "label7", "label29", "label15", "label14", "label13", "label40", "label3",
+          "label41", "label33", "label36", "B7AAA", "C7AA0", "label24", "BCAAA", "CCAA0" };
+
+    private static readonly string[] NovaValueLabels = { "BA0AA", "setf" };
+
+    private static GraphicsPath NovaPath(Rectangle r, int radius)
+    {
+        GraphicsPath p = new GraphicsPath();
+        int d = Math.Max(2, radius * 2);
+        if (d > r.Width) d = r.Width;
+        if (d > r.Height) d = r.Height;
+        p.AddArc(r.X, r.Y, d, d, 180, 90);
+        p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+        p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+        p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+        p.CloseFigure();
+        return p;
+    }
+
+    private static Region NovaRegion(Rectangle r, int radius)
+    {
+        using (GraphicsPath p = NovaPath(r, radius))
+            return new Region(p);
+    }
+
+    private static void NovaRound(Control c, int radius)
+    {
+        if (c == null) return;
+        Action apply = delegate
+        {
+            if (c.Width > 2 && c.Height > 2)
+                c.Region = NovaRegion(new Rectangle(0, 0, c.Width, c.Height), radius);
+        };
+        c.Resize += delegate { apply(); };
+        apply();
+    }
+
+    private static void Loc(Control c, int x, int y)
+    {
+        if (c != null) c.Location = new Point(x, y);
+    }
+
+    private static void Set(Control c, int x, int y, int w, int h)
+    {
+        if (c != null) c.SetBounds(x, y, w, h);
+    }
+
     private void ApplyByteNovaNovaStyle()
     {
         SuspendLayout();
+        novaFields.Clear();
 
-        BackColor = Color.FromArgb(2, 12, 25);
-        ForeColor = Color.FromArgb(238, 248, 255);
+        BackColor = NV_Page;
+        ForeColor = NV_Text;
         FormBorderStyle = FormBorderStyle.None;
         DoubleBuffered = true;
+        ClientSize = new Size(800, 724);
+        StartPosition = FormStartPosition.CenterScreen;
+        Font = new Font("Segoe UI", 8.5F, FontStyle.Regular);
 
-        // Canonical compact ByteNova header.
-        if (pnlHeader != null)
-        {
-            pnlHeader.BackColor = Color.FromArgb(3, 29, 59);
-            pnlHeader.Paint -= ByteNovaNovaHeaderPaint;
-            pnlHeader.Paint += ByteNovaNovaHeaderPaint;
-        }
+        if (bunifuElipse_0 != null) bunifuElipse_0.ElipseRadius = 16;
 
-        if (label50 != null)
-        {
-            label50.Text = "NEW TICKET";
-            label50.ForeColor = Color.White;
-            label50.BackColor = Color.Transparent;
-            label50.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
-        }
+        // ---- header ----
+        pnlHeader.BackColor = NV_Blue;
+        pnlHeader.Paint -= NovaHeaderPaint;
+        pnlHeader.Paint += NovaHeaderPaint;
 
-        if (btnClose != null)
-        {
-            btnClose.BackColor = Color.FromArgb(5, 43, 77);
-            btnClose.Zoom = 0;
-            btnClose.SizeMode = PictureBoxSizeMode.Zoom;
-        }
+        label50.Text = "NEW TICKET";
+        label50.AutoSize = false;
+        label50.Font = new Font("Segoe UI Semibold", 11F, FontStyle.Bold);
+        label50.ForeColor = Color.White;
+        label50.BackColor = Color.Transparent;
+        label50.TextAlign = ContentAlignment.MiddleLeft;
 
-        ByteNovaStyleChildren(this);
-        ByteNovaKeepInputTextBlack(this);
+        btnClose.BackColor = Color.FromArgb(228, 62, 56);
+        btnClose.SizeMode = PictureBoxSizeMode.Zoom;
+        btnClose.Zoom = 0;
+        btnClose.Cursor = Cursors.Hand;
+        NovaRound(btnClose, 8);
+        btnClose.MouseEnter += delegate { btnClose.BackColor = Color.FromArgb(198, 42, 38); };
+        btnClose.MouseLeave += delegate { btnClose.BackColor = Color.FromArgb(228, 62, 56); };
 
-        // Important action buttons get stronger Nova cards.
-        ByteNovaStyleActionButton(btnOk, Color.FromArgb(0, 115, 180), Color.FromArgb(198, 244, 50));
-        ByteNovaStyleActionButton(btnFindTrain, Color.FromArgb(44, 72, 155), Color.FromArgb(90, 155, 255));
-        ByteNovaStyleActionButton(btnArrow, Color.FromArgb(92, 58, 155), Color.FromArgb(170, 120, 255));
-        ByteNovaStyleActionButton(button2, Color.FromArgb(0, 125, 125), Color.FromArgb(55, 235, 220));
+        CGAA0.Text = "PASSENGER DETAILS";
+        grpPay.Text = "PAYMENT DETAILS";
 
-        Paint -= ByteNovaNovaFormPaint;
-        Paint += ByteNovaNovaFormPaint;
+        if (chkInsurance.Parent != grpPay) grpPay.Controls.Add(chkInsurance);
+        if (setf.Parent != panel4) panel4.Controls.Add(setf);
+        if (label28.Parent != panel4) panel4.Controls.Add(label28);
+
+        NovaStyleChildren(this);
+        NovaStyleInputs(this);
+
+        // field rings draw on the card surface, before the children paint
+        Panel1.Paint -= NovaFieldRingPaint; Panel1.Paint += NovaFieldRingPaint;
+        CGAA0.Paint -= NovaFieldRingPaint; CGAA0.Paint += NovaFieldRingPaint;
+        panel4.Paint -= NovaFieldRingPaint; panel4.Paint += NovaFieldRingPaint;
+        grpPay.Paint -= NovaFieldRingPaint; grpPay.Paint += NovaFieldRingPaint;
+        BFAAA.Paint -= NovaFieldRingPaint; BFAAA.Paint += NovaFieldRingPaint;
+
+        Paint -= NovaFormPaint;
+        Paint += NovaFormPaint;
 
         ResumeLayout(false);
-        PerformLayout();
-        Invalidate();
+        NovaLayout();
+        Invalidate(true);
     }
 
-    private void ByteNovaStyleChildren(Control parent)
+    protected override void OnSizeChanged(EventArgs e)
+    {
+        base.OnSizeChanged(e);
+        if (novaLayoutBusy || IsDisposed) return;
+        NovaLayout();
+    }
+
+    private int NovaPlaceCard(Control c, int x, int y, int w, int h)
+    {
+        if (c == null) return y;
+        c.SetBounds(x, y, w, h);
+        return c.Visible ? y + h + 10 : y;
+    }
+
+    private void NovaLayout()
+    {
+        if (novaLayoutBusy) return;
+        novaLayoutBusy = true;
+        SuspendLayout();
+
+        int w = Math.Max(700, ClientSize.Width);
+        int m = 18;
+        int cw = w - m * 2;
+
+        pnlHeader.Height = 46;
+        label50.SetBounds(20, 12, 320, 22);
+        btnClose.SetBounds(w - 40, 12, 26, 26);
+
+        int y = 58;
+        y = NovaPlaceCard(Panel1, m, y, cw, 104);
+        y = NovaPlaceCard(CGAA0, m, y, cw, 302);
+        y = NovaPlaceCard(panel4, m, y, cw, 58);
+        y = NovaPlaceCard(grpPay, m, y, cw, 160);
+
+        // ---------------- journey card ----------------
+        Loc(C6AA0, 16, 22); Set(txtFrom, 70, 20, 168, 22);
+        Set(btnArrow, 244, 20, 26, 22);
+        Loc(label5, 276, 22); Set(txtTo, 306, 20, 168, 22);
+        Loc(label4, 486, 22); Set(dtDate, 534, 20, 124, 22);
+        Loc(label9, 16, 52); Set(txtBrd, 70, 50, 132, 22);
+        Set(picBrd, 206, 51, 18, 18);
+        Loc(label10, 232, 52); Set(txtTrainNo, 300, 50, 110, 22);
+        Set(btnFindTrain, 416, 50, 66, 22);
+        Loc(label39, 490, 52); Set(cboType, 568, 50, 168, 22);
+        Loc(B6AAA, 16, 82); Set(cboClass, 70, 80, 180, 22);
+        Loc(lblAvailability, 258, 82);
+
+        Set(panel11, 380, 78, 378, 26);
+        Loc(label6, 6, 4);
+        Loc(rdGeneral, 56, 3);
+        Loc(rdLadies, 130, 3);
+        Loc(rdTatkal, 200, 3);
+        Loc(rdPtTatkal, 262, 3);
+
+        // ---------------- passenger card ----------------
+        Loc(label7, 10, 31); Loc(label15, 40, 31); Loc(label14, 230, 31);
+        Loc(label13, 272, 31); Loc(B7AAA, 320, 31); Loc(label40, 400, 31);
+        Loc(label3, 450, 31); Loc(label41, 530, 31); Loc(label33, 630, 31);
+        Loc(C7AA0, 668, 31); Loc(label36, 712, 31);
+
+        int[] rowY = { 46, 71, 96, 121, 146, 171 };
+        Label[] sn = { label8, label21, label20, label19, label18, label17 };
+        TextBox[] nm = { txtName1, txtName2, txtName3, txtName4, txtName5, txtName6 };
+        TextBox[] ag = { txtAge1, txtAge2, txtAge3, txtAge4, txtAge5, txtAge6 };
+        ComboBox[] sx = { cboSex1, cboSex2, cboSex3, cboSex4, cboSex5, cboSex6 };
+        ComboBox[] bt = { cboBerth1, cboBerth2, cboBerth3, cboBerth4, cboBerth5, cboBerth6 };
+        ComboBox[] fd = { cboFood1, cboFood2, cboFood3, cboFood4, cboFood5, cboFood6 };
+        ComboBox[] id = { cboID1, cboID2, cboID3, cboID4, cboID5, cboID6 };
+        TextBox[] idt = { txtID1, txtID2, txtID3, txtID4, txtID5, CFAA0 };
+        CheckBox[] ch = { chkCH1, chkCH2, chkCH3, chkCH4, chkCH5, chkCH6 };
+        CheckBox[] sr = { chk1, chk2, chk3, chk4, chk5, chk6 };
+        CheckBox[] bd = { chkBd1, chkBd2, chkBd3, chkBd4, chkBd5, chkBd6 };
+
+        for (int i = 0; i < 6; i++)
+        {
+            int ry = rowY[i];
+            Loc(sn[i], 10, ry + 3);
+            Set(nm[i], 40, ry, 170, 22);
+            Set(ag[i], 230, ry, 40, 22);
+            Set(sx[i], 272, ry, 44, 22);
+            Set(bt[i], 320, ry, 90, 22);
+            Set(fd[i], 400, ry, 52, 22);
+            Set(id[i], 450, ry, 70, 22);
+            Set(idt[i], 530, ry, 90, 22);
+            Set(ch[i], 634, ry + 4, 15, 14);
+            Set(sr[i], 672, ry + 4, 15, 14);
+            Set(bd[i], 710, ry + 4, 15, 14);
+        }
+
+        // child passenger sub-card
+        Set(BFAAA, 10, 200, cw - 20, 88);
+        Loc(label16, 12, 4);
+        Set(panel3, 10, 18, cw - 40, 2);
+        Loc(label29, 14, 24); Loc(label24, 56, 24);
+        Loc(BCAAA, 280, 24); Loc(CCAA0, 430, 24);
+        Loc(label23, 14, 44); Loc(label22, 14, 66);
+        Set(txtChName1, 56, 40, 200, 20); Set(cboAge1, 280, 40, 140, 20); Set(cboChSex1, 430, 40, 60, 20);
+        Set(txtChName2, 56, 62, 200, 20); Set(cboAge2, 280, 62, 140, 20); Set(cboChSex2, 430, 62, 60, 20);
+
+        // ---------------- contact / fare strip ----------------
+        Loc(label27, 14, 11); Set(txtMobNo, 104, 8, 120, 22);
+        Loc(CA0A0, 240, 11); Loc(BA0AA, 282, 11);
+        Set(button2, 330, 6, 86, 24);
+        Loc(CDAA0, 426, 11);
+        Set(panel5, 530, 6, 220, 24);
+        Loc(label37, 6, 5);
+        Set(textBox1, 90, 2, 60, 20);
+        Set(comboBox1, 90, 1, 60, 22);
+        Loc(label28, 14, 34); Loc(setf, 66, 34);
+
+        // ---------------- payment card ----------------
+        Loc(C20A0, 16, 34); Set(cboSlotId, 120, 32, 150, 22);
+        Loc(label35, 16, 62); Set(txtTicketName, 120, 60, 190, 22);
+        Loc(label30, 330, 34); Set(cboPayment, 430, 32, 180, 22);
+        Loc(label34, 330, 62); Set(cboGateway, 430, 60, 180, 22);
+        Loc(label32, 330, 90); Set(cboGateway_Alt, 430, 88, 180, 22);
+        Set(cboIrctcId, 240, 88, 120, 22);
+        Set(btnOk, 640, 32, 110, 74);
+
+        Loc(chkAutoUpgrade, 16, 116); Loc(checkBox1, 210, 116);
+        Loc(checkBox_0, 410, 116); Set(textBox_0, 536, 114, 60, 22);
+        Loc(chkConfirmOnly, 16, 138); Loc(chkBedroll, 215, 138);
+        Loc(chkInsurance, 450, 138);
+
+        int need = y + 12;
+        ResumeLayout(false);
+        PerformLayout();
+        if (ClientSize.Height != need) ClientSize = new Size(w, need);
+        Invalidate(true);
+        novaLayoutBusy = false;
+    }
+
+    private void NovaStyleChildren(Control parent)
     {
         foreach (Control c in parent.Controls)
         {
-            if (c == pnlHeader || c == btnClose || c == label50)
-            {
-                if (c.HasChildren) ByteNovaStyleChildren(c);
-                continue;
-            }
+            if (c == pnlHeader || c == label50 || c == btnClose) continue;
 
-            Panel p = c as Panel;
-            GroupBox g = c as GroupBox;
-            TextBox tb = c as TextBox;
-            ComboBox cb = c as ComboBox;
-            DateTimePicker dp = c as DateTimePicker;
-            Button b = c as Button;
+            GroupBox gb = c as GroupBox;
+            Panel pn = c as Panel;
+            Label lbl = c as Label;
+            LinkLabel lnk = c as LinkLabel;
+            Button btn = c as Button;
             CheckBox chk = c as CheckBox;
             RadioButton rb = c as RadioButton;
-            Label lbl = c as Label;
-            LinkLabel link = c as LinkLabel;
 
-            if (p != null)
+            if (c == panel2 || c == panel3)
             {
-                p.BackColor = Color.FromArgb(6, 27, 47);
-                p.Paint -= ByteNovaNovaPanelPaint;
-                p.Paint += ByteNovaNovaPanelPaint;
+                c.BackColor = NV_CardLine;
             }
-            else if (g != null)
+            else if (c == panel11)
             {
-                g.BackColor = Color.FromArgb(5, 24, 43);
-                g.ForeColor = Color.FromArgb(90, 220, 255);
-                g.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
-                g.Paint -= ByteNovaNovaGroupPaint;
-                g.Paint += ByteNovaNovaGroupPaint;
+                c.BackColor = Color.FromArgb(232, 240, 252);
+                c.Paint -= NovaStripPaint; c.Paint += NovaStripPaint;
             }
-            else if (tb != null)
+            else if (gb != null)
             {
-                tb.BackColor = Color.White;
-                tb.ForeColor = Color.Black;
-                tb.BorderStyle = BorderStyle.FixedSingle;
-                tb.Font = new Font("Segoe UI", 8.5F, FontStyle.Regular);
+                gb.BackColor = NV_Card;
+                gb.ForeColor = NV_Blue;
+                gb.FlatStyle = FlatStyle.Flat;
+                gb.Paint -= NovaGroupPaint; gb.Paint += NovaGroupPaint;
             }
-            else if (cb != null)
+            else if (pn != null)
             {
-                cb.BackColor = Color.White;
-                cb.ForeColor = Color.Black;
-                cb.FlatStyle = FlatStyle.Flat;
-                cb.Font = new Font("Segoe UI", 8.3F, FontStyle.Regular);
+                pn.BackColor = NV_Card;
+                pn.Paint -= NovaCardPaint; pn.Paint += NovaCardPaint;
             }
-            else if (dp != null)
+            else if (btn != null)
             {
-                dp.CalendarMonthBackground = Color.White;
-                dp.CalendarForeColor = Color.Black;
-                dp.Font = new Font("Segoe UI", 8.3F, FontStyle.Regular);
-            }
-            else if (b != null)
-            {
-                b.FlatStyle = FlatStyle.Flat;
-                b.FlatAppearance.BorderSize = 1;
-                b.FlatAppearance.BorderColor = Color.FromArgb(0, 175, 225);
-                b.BackColor = Color.FromArgb(8, 48, 78);
-                b.ForeColor = Color.White;
-                b.Font = new Font("Segoe UI Semibold", 8.3F, FontStyle.Bold);
-                b.UseVisualStyleBackColor = false;
+                NovaStyleButton(btn);
             }
             else if (chk != null)
             {
-                // Keep the original checkbox control, but use the native Windows glyph
-                // so Checked / Unchecked state is always clearly visible.
-                chk.Appearance = Appearance.Normal;
-                chk.AutoCheck = true;
-                chk.ThreeState = false;
                 chk.FlatStyle = FlatStyle.Standard;
-                chk.UseVisualStyleBackColor = true;
-                chk.BackColor = Color.Transparent;
-                chk.ForeColor = Color.FromArgb(225, 242, 252);
-                chk.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Bold);
-                chk.CheckedChanged -= ByteNovaCheckBoxVisibleTick_CheckedChanged;
-                chk.CheckedChanged += ByteNovaCheckBoxVisibleTick_CheckedChanged;
+                chk.Appearance = Appearance.Normal;
+                chk.BackColor = NV_Card;
+                chk.ForeColor = NV_Text;
+                chk.Font = new Font("Segoe UI", 8F, FontStyle.Regular);
+                chk.Cursor = Cursors.Hand;
             }
             else if (rb != null)
             {
-                // Keep the original RadioButton and make the selected dot clearly visible.
-                rb.Appearance = Appearance.Normal;
-                rb.AutoCheck = true;
-                rb.BackColor = Color.Transparent;
-                rb.ForeColor = Color.FromArgb(230, 246, 255);
                 rb.FlatStyle = FlatStyle.Standard;
-                rb.UseVisualStyleBackColor = true;
+                rb.Appearance = Appearance.Normal;
+                rb.BackColor = Color.FromArgb(232, 240, 252);
+                rb.ForeColor = NV_Text;
                 rb.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Bold);
-                rb.CheckedChanged -= ByteNovaRadioVisibleTick_CheckedChanged;
-                rb.CheckedChanged += ByteNovaRadioVisibleTick_CheckedChanged;
+                rb.Cursor = Cursors.Hand;
             }
-            else if (link != null)
+            else if (lnk != null)
             {
-                link.BackColor = Color.Transparent;
-                link.LinkColor = Color.FromArgb(0, 215, 255);
-                link.ActiveLinkColor = Color.FromArgb(255, 200, 55);
-                link.VisitedLinkColor = Color.FromArgb(105, 185, 255);
+                lnk.BackColor = Color.Transparent;
+                lnk.LinkColor = NV_Blue;
+                lnk.ActiveLinkColor = NV_Orange;
+                lnk.VisitedLinkColor = NV_Blue;
+                lnk.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Bold | FontStyle.Underline);
             }
             else if (lbl != null)
             {
-                lbl.BackColor = Color.Transparent;
-                lbl.ForeColor = Color.FromArgb(220, 240, 250);
-                if (lbl.Font.Size <= 9.5F)
-                    lbl.Font = new Font("Segoe UI", lbl.Font.Size, lbl.Font.Style);
+                NovaStyleLabel(lbl);
             }
 
-            if (c.HasChildren)
-                ByteNovaStyleChildren(c);
+            if (c.HasChildren) NovaStyleChildren(c);
         }
     }
 
-    private void ByteNovaRadioVisibleTick_CheckedChanged(object sender, EventArgs e)
+    private void NovaStyleLabel(Label l)
     {
-        RadioButton rb = sender as RadioButton;
-        if (rb == null) return;
+        l.BackColor = Color.Transparent;
+        l.AutoSize = true;
+        l.ForeColor = NV_Label;
+        l.Font = new Font("Segoe UI", 7.5F, FontStyle.Regular);
 
-        // Force the native radio glyph to repaint immediately when selected/unselected.
-        rb.Invalidate();
-        rb.Update();
+        if (Array.IndexOf(NovaSnoLabels, l.Name) >= 0)
+        {
+            l.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
+            l.ForeColor = NV_Blue;
+        }
+        else if (Array.IndexOf(NovaHeadLabels, l.Name) >= 0)
+        {
+            l.Font = new Font("Segoe UI Semibold", 7F, FontStyle.Bold);
+            l.ForeColor = NV_Head;
+        }
+        else if (Array.IndexOf(NovaValueLabels, l.Name) >= 0)
+        {
+            l.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
+            l.ForeColor = NV_Text;
+        }
+        else if (l == label16)
+        {
+            l.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Bold | FontStyle.Underline);
+            l.ForeColor = NV_Blue;
+        }
     }
 
-    private void ByteNovaKeepInputTextBlack(Control parent)
+    private void NovaStyleButton(Button b)
+    {
+        if (b == btnOk)
+        {
+            b.FlatStyle = FlatStyle.Flat;
+            b.FlatAppearance.BorderSize = 0;
+            b.BackColor = NV_Orange;
+            b.ForeColor = Color.White;
+            b.Font = new Font("Segoe UI Semibold", 10.5F, FontStyle.Bold);
+            b.Text = "SAVE TICKET";
+            b.Cursor = Cursors.Hand;
+            b.UseVisualStyleBackColor = false;
+            NovaRound(b, 10);
+            b.MouseEnter += delegate { b.BackColor = Color.FromArgb(222, 126, 16); };
+            b.MouseLeave += delegate { b.BackColor = NV_Orange; };
+            return;
+        }
+
+        if (b == btnArrow)
+        {
+            b.Text = "\u21C4";
+            b.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
+            b.ForeColor = NV_Blue;
+            b.BackColor = NV_Card;
+            b.FlatStyle = FlatStyle.Flat;
+            b.FlatAppearance.BorderSize = 1;
+            b.FlatAppearance.BorderColor = NV_CardLine;
+            b.TextAlign = ContentAlignment.MiddleCenter;
+            b.Cursor = Cursors.Hand;
+            b.UseVisualStyleBackColor = false;
+            NovaRound(b, 6);
+            return;
+        }
+
+        bool orange = (b == button2);
+        b.FlatStyle = FlatStyle.Flat;
+        b.FlatAppearance.BorderSize = 1;
+        b.FlatAppearance.BorderColor = orange ? NV_Orange : NV_Blue;
+        b.BackColor = NV_Card;
+        b.ForeColor = orange ? Color.FromArgb(214, 122, 12) : NV_Blue;
+        b.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Bold);
+        b.Cursor = Cursors.Hand;
+        b.UseVisualStyleBackColor = false;
+        NovaRound(b, 6);
+        b.MouseEnter += delegate { b.BackColor = orange ? Color.FromArgb(255, 246, 234) : Color.FromArgb(240, 246, 255); };
+        b.MouseLeave += delegate { b.BackColor = NV_Card; };
+    }
+
+    private void NovaStyleInputs(Control parent)
     {
         foreach (Control c in parent.Controls)
         {
             TextBox tb = c as TextBox;
             ComboBox cb = c as ComboBox;
+            DateTimePicker dp = c as DateTimePicker;
 
             if (tb != null)
             {
-                tb.ForeColor = Color.Black;
-                tb.BackColor = Color.White;
-                tb.Enter -= ByteNovaInputColorGuard;
-                tb.Enter += ByteNovaInputColorGuard;
-                tb.Leave -= ByteNovaInputColorGuard;
-                tb.Leave += ByteNovaInputColorGuard;
-                tb.TextChanged -= ByteNovaInputColorGuard;
-                tb.TextChanged += ByteNovaInputColorGuard;
+                tb.BorderStyle = BorderStyle.FixedSingle;
+                tb.BackColor = NV_Card;
+                tb.ForeColor = NV_Text;
+                tb.Font = new Font("Segoe UI", 8.5F, FontStyle.Regular);
+                NovaRegisterField(tb);
             }
             else if (cb != null)
             {
-                cb.ForeColor = Color.Black;
-                cb.BackColor = Color.White;
-                cb.Enter -= ByteNovaInputColorGuard;
-                cb.Enter += ByteNovaInputColorGuard;
-                cb.Leave -= ByteNovaInputColorGuard;
-                cb.Leave += ByteNovaInputColorGuard;
-                cb.SelectedIndexChanged -= ByteNovaInputColorGuard;
-                cb.SelectedIndexChanged += ByteNovaInputColorGuard;
+                cb.FlatStyle = FlatStyle.Flat;
+                cb.DrawMode = DrawMode.OwnerDrawFixed;
+                cb.ItemHeight = 17;
+                cb.BackColor = NV_Card;
+                cb.ForeColor = NV_Text;
+                cb.Font = new Font("Segoe UI", 8.3F, FontStyle.Regular);
+                cb.DrawItem -= NovaComboDraw;
+                cb.DrawItem += NovaComboDraw;
+                NovaRegisterField(cb);
+            }
+            else if (dp != null)
+            {
+                dp.Font = new Font("Segoe UI", 8.3F, FontStyle.Regular);
+                dp.CalendarMonthBackground = NV_Card;
+                dp.CalendarForeColor = NV_Text;
+                NovaRegisterField(dp);
             }
 
-            if (c.HasChildren)
-                ByteNovaKeepInputTextBlack(c);
+            if (c.HasChildren) NovaStyleInputs(c);
         }
     }
 
-    private void ByteNovaInputColorGuard(object sender, EventArgs e)
+    private void NovaRegisterField(Control f)
+    {
+        if (f == null || novaFields.Contains(f)) return;
+        novaFields.Add(f);
+        f.Enter -= NovaFieldEnter; f.Enter += NovaFieldEnter;
+        f.Leave -= NovaFieldLeave; f.Leave += NovaFieldLeave;
+        f.Move -= NovaFieldMoved; f.Move += NovaFieldMoved;
+        f.Resize -= NovaFieldMoved; f.Resize += NovaFieldMoved;
+    }
+
+    private void NovaFieldEnter(object sender, EventArgs e)
     {
         Control c = sender as Control;
         if (c == null) return;
-        c.ForeColor = Color.Black;
-        c.BackColor = Color.White;
+        novaFocusField = c;
+        c.BackColor = Color.FromArgb(255, 250, 242);
+        if (c.Parent != null) c.Parent.Invalidate();
     }
 
-    private void ByteNovaCheckBoxVisibleTick_CheckedChanged(object sender, EventArgs e)
-    {
-        CheckBox chk = sender as CheckBox;
-        if (chk == null) return;
-
-        // Force an immediate native-glyph repaint after every state change.
-        chk.Invalidate();
-        chk.Update();
-    }
-
-    private void ByteNovaStyleActionButton(Button button, Color back, Color border)
-    {
-        if (button == null) return;
-        button.BackColor = back;
-        button.ForeColor = Color.White;
-        button.FlatStyle = FlatStyle.Flat;
-        button.FlatAppearance.BorderSize = 1;
-        button.FlatAppearance.BorderColor = border;
-        button.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
-        button.UseVisualStyleBackColor = false;
-    }
-
-    private void ByteNovaNovaHeaderPaint(object sender, PaintEventArgs e)
+    private void NovaFieldLeave(object sender, EventArgs e)
     {
         Control c = sender as Control;
-        if (c == null || c.Width < 2 || c.Height < 2) return;
+        if (c == null) return;
+        if (novaFocusField == c) novaFocusField = null;
+        c.BackColor = NV_Card;
+        if (c.Parent != null) c.Parent.Invalidate();
+    }
 
+    private void NovaFieldMoved(object sender, EventArgs e)
+    {
+        Control c = sender as Control;
+        if (c != null && c.Parent != null) c.Parent.Invalidate();
+    }
+
+    private void NovaFieldRingPaint(object sender, PaintEventArgs e)
+    {
+        if (novaFields.Count == 0) return;
+        foreach (Control f in novaFields)
+        {
+            if (f == null || f.Parent != sender || !f.Visible) continue;
+            bool focus = (f == novaFocusField);
+            Rectangle r = new Rectangle(f.Left - 2, f.Top - 2, f.Width + 4, f.Height + 4);
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            using (GraphicsPath p = NovaPath(r, 6))
+            using (Pen pen = new Pen(focus ? NV_Focus : NV_FieldLine, focus ? 2f : 1f))
+                e.Graphics.DrawPath(pen, p);
+        }
+    }
+
+    private void NovaComboDraw(object sender, DrawItemEventArgs e)
+    {
+        ComboBox cb = sender as ComboBox;
+        if (cb == null) return;
+
+        Graphics g = e.Graphics;
+        bool edit = (e.State & DrawItemState.ComboBoxEdit) == DrawItemState.ComboBoxEdit;
+
+        if (edit)
+        {
+            g.FillRectangle(new SolidBrush(cb.Enabled ? NV_Card : Color.FromArgb(243, 247, 253)),
+                new Rectangle(0, 0, cb.Width, cb.Height));
+
+            TextRenderer.DrawText(g, cb.Text, cb.Font,
+                new Rectangle(6, 0, Math.Max(8, cb.Width - 24), cb.Height),
+                cb.Enabled ? NV_Text : Color.FromArgb(150, 164, 186),
+                TextFormatFlags.VerticalCenter | TextFormatFlags.Left |
+                TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+
+            int cx = cb.Width - 13;
+            int cy = cb.Height / 2;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            using (Pen p = new Pen(cb.Enabled ? NV_Blue : Color.FromArgb(170, 184, 204), 1.6f))
+            {
+                g.DrawLine(p, cx - 4, cy - 2, cx, cy + 2);
+                g.DrawLine(p, cx, cy + 2, cx + 4, cy - 2);
+            }
+            return;
+        }
+
+        Rectangle r = e.Bounds;
+        if (r.Width <= 0) r = new Rectangle(0, 0, cb.Width, cb.ItemHeight);
+
+        bool sel = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+        using (Brush b = new SolidBrush(sel ? Color.FromArgb(255, 240, 224) : NV_Card))
+            g.FillRectangle(b, r);
+
+        if (sel)
+            using (Pen p = new Pen(NV_Orange, 1f))
+                g.DrawRectangle(p, r.X, r.Y, r.Width - 1, r.Height - 1);
+
+        if (e.Index >= 0 && e.Index < cb.Items.Count)
+            TextRenderer.DrawText(g, cb.Items[e.Index].ToString(), cb.Font,
+                new Rectangle(r.X + 5, r.Y, Math.Max(8, r.Width - 8), r.Height), NV_Text,
+                TextFormatFlags.VerticalCenter | TextFormatFlags.Left |
+                TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+    }
+
+    private void NovaCardPaint(object sender, PaintEventArgs e)
+    {
+        Control c = sender as Control;
+        if (c == null || c.Width < 4 || c.Height < 4) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        using (SolidBrush page = new SolidBrush(NV_Page))
+            g.FillRectangle(page, new Rectangle(0, 0, c.Width, c.Height));
+        Rectangle r = new Rectangle(0, 0, c.Width - 1, c.Height - 1);
+        using (GraphicsPath p = NovaPath(r, 8))
+        {
+            using (SolidBrush fill = new SolidBrush(NV_Card)) g.FillPath(fill, p);
+            using (Pen pen = new Pen(NV_CardLine, 1f)) g.DrawPath(pen, p);
+        }
+    }
+
+    private void NovaGroupPaint(object sender, PaintEventArgs e)
+    {
+        GroupBox gb = sender as GroupBox;
+        if (gb == null) return;
+        NovaCardPaint(sender, e);
+
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        Rectangle band = new Rectangle(1, 1, gb.Width - 2, 25);
+        using (GraphicsPath p = NovaPath(band, 8))
+        using (SolidBrush b = new SolidBrush(Color.FromArgb(240, 246, 255)))
+        {
+            g.FillPath(b, p);
+            g.FillRectangle(b, 1, 14, gb.Width - 2, 12);
+        }
+        using (Pen p = new Pen(NV_CardLine, 1f))
+            g.DrawLine(p, 1, 26, gb.Width - 2, 26);
+        using (SolidBrush b = new SolidBrush(NV_Blue))
+        using (Font f = new Font("Segoe UI Semibold", 8F, FontStyle.Bold))
+            g.DrawString(gb.Text, f, b, 16, 7);
+    }
+
+    private void NovaStripPaint(object sender, PaintEventArgs e)
+    {
+        Control c = sender as Control;
+        if (c == null || c.Width < 4 || c.Height < 4) return;
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        Rectangle r = new Rectangle(0, 0, c.Width - 1, c.Height - 1);
+        using (GraphicsPath p = NovaPath(r, 8))
+        {
+            using (SolidBrush b = new SolidBrush(Color.FromArgb(232, 240, 252))) e.Graphics.FillPath(b, p);
+            using (Pen pen = new Pen(NV_CardLine, 1f)) e.Graphics.DrawPath(pen, p);
+        }
+    }
+
+    private void NovaHeaderPaint(object sender, PaintEventArgs e)
+    {
+        Control c = sender as Control;
+        if (c == null || c.Width < 2 || c.Height < 4) return;
         Rectangle r = c.ClientRectangle;
         using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, Color.FromArgb(2, 23, 52), Color.FromArgb(5, 53, 91),
-            LinearGradientMode.Horizontal))
+            new Rectangle(0, 0, Math.Max(2, r.Width), Math.Max(2, r.Height)),
+            NV_Blue, NV_Blue2, LinearGradientMode.Horizontal))
             e.Graphics.FillRectangle(bg, r);
-
-        using (Pen cyan = new Pen(Color.FromArgb(198, 244, 50), 1.5F))
-            e.Graphics.DrawLine(cyan, 0, r.Height - 1, r.Width, r.Height - 1);
+        using (SolidBrush b = new SolidBrush(NV_Orange))
+            e.Graphics.FillRectangle(b, 0, r.Height - 3, r.Width, 3);
     }
 
-    private void ByteNovaNovaPanelPaint(object sender, PaintEventArgs e)
-    {
-        Control c = sender as Control;
-        if (c == null || c.Width < 2 || c.Height < 2) return;
-        using (Pen p = new Pen(Color.FromArgb(0, 105, 155), 1F))
-            e.Graphics.DrawRectangle(p, 0, 0, c.Width - 1, c.Height - 1);
-    }
-
-    private void ByteNovaNovaGroupPaint(object sender, PaintEventArgs e)
-    {
-        GroupBox g = sender as GroupBox;
-        if (g == null || g.Width < 2 || g.Height < 2) return;
-
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        Rectangle r = new Rectangle(0, 7, g.Width - 1, g.Height - 8);
-        using (Pen p = new Pen(Color.FromArgb(0, 150, 205), 1F))
-            e.Graphics.DrawRectangle(p, r);
-
-        SizeF sz = e.Graphics.MeasureString(g.Text, g.Font);
-        using (Brush bg = new SolidBrush(g.BackColor))
-            e.Graphics.FillRectangle(bg, 9, 0, sz.Width + 8, g.Font.Height + 2);
-        using (Brush fg = new SolidBrush(Color.FromArgb(80, 220, 255)))
-            e.Graphics.DrawString(g.Text, g.Font, fg, 13, 0);
-    }
-
-    private void ByteNovaNovaFormPaint(object sender, PaintEventArgs e)
+    private void NovaFormPaint(object sender, PaintEventArgs e)
     {
         Rectangle r = new Rectangle(0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
-        using (Pen p = new Pen(Color.FromArgb(198, 244, 50), 1F))
+        using (Pen p = new Pen(NV_CardLine, 1f))
             e.Graphics.DrawRectangle(p, r);
     }
 
