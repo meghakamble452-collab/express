@@ -7,6 +7,9 @@
     <TargetFramework>net48</TargetFramework>
   </PropertyGroup>
   <PropertyGroup>
+  <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+</PropertyGroup>
+  <PropertyGroup>
     <LangVersion>11.0</LangVersion>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -16,6 +19,7 @@
     <RootNamespace />
   </PropertyGroup>
   <ItemGroup>
+  <PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
     <None Remove="NEXUS.Extention.irctc.p12" />
     <None Remove="NEXUS.Booking.IPayBinResolver.txt" />
     <None Remove="NEXUS.Extention.Beta.dll" />
