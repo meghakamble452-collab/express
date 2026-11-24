@@ -8,6 +8,8 @@
   </PropertyGroup>
   <PropertyGroup>
   <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+  <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
 </PropertyGroup>
   <PropertyGroup>
     <LangVersion>11.0</LangVersion>
