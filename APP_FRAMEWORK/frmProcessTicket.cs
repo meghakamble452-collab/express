@@ -2348,14 +2348,20 @@ internal class frmProcessTicket : Form
             g.FillRectangle(shine, 0, 0, c.Width, Math.Max(0, (ph - 3) / 2 - c.Top));
 
         RectangleF r = new RectangleF(0.5f, xhCloseDown ? 1.5f : 0.5f, c.Width - 2, c.Height - 2);
-        Color fill = xhCloseDown ? Color.FromArgb(185, 28, 28)
-                   : xhCloseHot ? Color.FromArgb(232, 67, 67)
-                   : Color.FromArgb(40, 255, 255, 255);
-        Color line = xhCloseHot || xhCloseDown ? Color.FromArgb(254, 202, 202) : Color.FromArgb(95, 255, 255, 255);
+        // Default: solid red with a white X. Hover: white with a red X and red border. Pressed: dark red.
+        Color fill = xhCloseDown ? Color.FromArgb(153, 27, 27)
+                   : xhCloseHot ? Color.White
+                   : Color.FromArgb(220, 38, 38);
+        Color line = xhCloseDown ? Color.FromArgb(127, 29, 29)
+                   : xhCloseHot ? Color.FromArgb(220, 38, 38)
+                   : Color.FromArgb(185, 28, 28);
+        Color glyph = xhCloseHot && !xhCloseDown ? Color.FromArgb(220, 38, 38) : Color.White;
+        if (!xhCloseDown)
+            XtArt.Fill(g, new RectangleF(r.X, r.Y + 1.5f, r.Width, r.Height), 7, Color.FromArgb(60, 0, 0, 0), Color.Empty);
         XtArt.Fill(g, r, 7, fill, line);
 
         float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f;
-        using (Pen x = new Pen(Color.White, 2.2F))
+        using (Pen x = new Pen(glyph, 2.2F))
         {
             x.StartCap = LineCap.Round;
             x.EndCap = LineCap.Round;

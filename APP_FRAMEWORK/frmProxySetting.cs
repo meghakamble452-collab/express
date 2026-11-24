@@ -130,139 +130,667 @@ public class frmProxySetting : Form
     }
 
 
+    // =====================================================================
+    // Express theme (light + bhagwa) - visual layer only.
+    // Proxy save / check / delete / limit logic below is untouched.
+    // =====================================================================
+    private static readonly Color PX_BG = Color.FromArgb(236, 242, 251);
+    private static readonly Color PX_ORANGE = Color.FromArgb(245, 146, 28);
+    private static readonly Color PX_BLUE = Color.FromArgb(37, 99, 235);
+    private static readonly Color PX_NAVY = Color.FromArgb(15, 42, 92);
+    private static readonly Color PX_TEXT = Color.FromArgb(30, 41, 59);
+    private static readonly Color PX_MUTED = Color.FromArgb(100, 116, 139);
+    private static readonly Color PX_RED = Color.FromArgb(220, 38, 38);
+    private static readonly Color PX_CARD_LINE = Color.FromArgb(220, 228, 241);
+    private static readonly Color PX_FIELD_LINE = Color.FromArgb(203, 213, 225);
+    private static readonly Color PX_FRAME = Color.FromArgb(178, 196, 226);
+    private static readonly Color PX_HEAD_L = Color.FromArgb(214, 96, 4);
+    private static readonly Color PX_HEAD_R = Color.FromArgb(248, 158, 44);
+
+    private const int PX_W = 380, PX_HEAD = 42, PX_FIELD_H = 32, PX_ARROW_W = 22;
+
+    private readonly Font pxFTitle = new Font("Segoe UI Semibold", 11F);
+    private readonly Font pxFCard = new Font("Segoe UI", 9F, FontStyle.Bold);
+    private readonly Font pxFCaption = new Font("Segoe UI Semibold", 8.25F);
+    private readonly Font pxFField = new Font("Segoe UI", 9.75F);
+    private readonly Font pxFFieldBold = new Font("Segoe UI Semibold", 9.75F);
+    private readonly Font pxFBtn = new Font("Segoe UI Semibold", 9.25F);
+    private readonly Font pxFLabel = new Font("Segoe UI Semibold", 9.75F);
+
+    private readonly Dictionary<Control, int> pxState = new Dictionary<Control, int>();   // 0 normal, 1 hover, 2 pressed
+    private readonly Dictionary<GroupBox, string[]> pxCards = new Dictionary<GroupBox, string[]>();
+    private Control pxHotField;
+    private bool pxCloseHot, pxCloseDown;
+
+    [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, string lParam);
+
     private void ApplyByteNovaLatestTheme()
     {
-        // ByteNova visual layer only. Existing proxy/check/save/delete logic remains untouched.
         SuspendLayout();
 
-        BackColor = Color.FromArgb(3, 13, 29);
-        ForeColor = Color.White;
+        BackColor = PX_BG;
+        ForeColor = PX_TEXT;
         TransparencyKey = Color.Empty;
         FormBorderStyle = FormBorderStyle.None;
-        ClientSize = new Size(295, 282);
+        DoubleBuffered = true;
 
-        pnlHeader.BackColor = Color.FromArgb(3, 29, 59);
+        // ---------- header ribbon ----------
+        pnlHeader.Dock = DockStyle.Top;
+        pnlHeader.Height = PX_HEAD;
+        pnlHeader.BackColor = PX_HEAD_L;
         pnlHeader.BorderStyle = BorderStyle.None;
-        pnlHeader.SetBounds(0, 0, ClientSize.Width, 23);
+        PxBuffer(pnlHeader);
         pnlHeader.Paint -= ByteNovaProxyHeaderPaint;
         pnlHeader.Paint += ByteNovaProxyHeaderPaint;
 
         formName.Enabled = true;
         formName.AutoSize = false;
-        formName.SetBounds(9, 1, 235, 21);
-        formName.Text = "PROXY SETTING  _  EXPRESS";
+        formName.Text = "Proxy Setting";
         formName.ForeColor = Color.White;
         formName.BackColor = Color.Transparent;
-        formName.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
+        formName.Font = pxFTitle;
+        formName.UseCompatibleTextRendering = false;
         formName.TextAlign = ContentAlignment.MiddleLeft;
+        formName.SetBounds(50, 0, 220, PX_HEAD - 3);
 
-        btnClose.SetBounds(Math.Max(0, ClientSize.Width - 24), 1, 21, 21);
         btnClose.BackColor = Color.Transparent;
         btnClose.BackgroundImage = null;
-        btnClose.BackgroundImageLayout = ImageLayout.Zoom;
-        btnClose.SizeMode = PictureBoxSizeMode.Zoom;
         btnClose.Zoom = 0;
-        btnClose.BringToFront();
+        btnClose.Cursor = Cursors.Hand;
+        btnClose.Size = new Size(32, 26);
+        btnClose.Paint -= PxClosePaint;
+        btnClose.Paint += PxClosePaint;
+        btnClose.MouseEnter += delegate { pxCloseHot = true; btnClose.Invalidate(); };
+        btnClose.MouseLeave += delegate { pxCloseHot = false; pxCloseDown = false; btnClose.Invalidate(); };
+        btnClose.MouseDown += delegate { pxCloseDown = true; btnClose.Invalidate(); };
+        btnClose.MouseUp += delegate { pxCloseDown = false; if (!btnClose.IsDisposed) btnClose.Invalidate(); };
 
-        StyleBNGroup(groupBox3);
-        StyleBNGroup(groupBox5);
-        StyleBNGroup(groupBox6);
-        StyleBNGroup(groupBox1);
-        StyleBNGroup(groupBox2);
-        StyleBNGroup(groupBox4);
+        // ---------- cards (the existing group boxes) ----------
+        int x = 12, w = PX_W - 24, y = PX_HEAD + 12;
 
-        groupBox3.SetBounds(4, 34, 287, 91);
-        groupBox5.SetBounds(4, 128, 287, 53);
-        panel1.SetBounds(5, 185, 285, 2);
-        panel1.BackColor = Color.FromArgb(0, 190, 235);
-        groupBox6.SetBounds(4, 191, 287, 57);
+        // PRIVATE IP : IP + Port / Username + Password / Save
+        PxCard(groupBox3, "PRIVATE IP", "Add your own proxy server", "server");
+        groupBox3.SetBounds(x, y, w, 196);
+        int inL = 16, inR = w - 16, gap = 10;
+        int col2 = inR - 96;                                   // Port column
+        PxCaption(label5, "IP Address", inL, 44);
+        PxField(txt_ip, inL, 62, col2 - gap - inL, "e.g. 103.21.244.10");
+        PxCaption(label6, "Port", col2, 44);
+        PxField(txt_port, col2, 62, inR - col2, "8080");
+        int half = (inR - inL - gap) / 2;
+        PxCaption(label7, "Username", inL, 100);
+        PxField(txt_ipUser, inL, 118, half, "Proxy username");
+        PxCaption(label8, "Password", inL + half + gap, 100);
+        PxField(txt_ipPass, inL + half + gap, 118, inR - (inL + half + gap), "Proxy password");
+        PxButton(btn_save, inR - 150, 152, 150, 34);
+        y += 196 + 12;
 
-        StyleBNText(txt_ip);
-        StyleBNText(txt_port);
-        StyleBNText(txt_ipUser);
-        StyleBNText(txt_ipPass);
-        StyleBNText(text_limit);
-        StyleBNText(txt_AcTime);
-        StyleBNText(txt_SLTime);
+        // PROXY IP : select + check + delete
+        PxCard(groupBox5, "PROXY IP", "Saved proxies", "globe");
+        groupBox5.SetBounds(x, y, w, 96);
+        PxButton(btn_delete, inR - 84, 48, 84, 34);
+        PxButton(btn_check, inR - 84 - 8 - 88, 48, 88, 34);
+        PxCombo(comboIP, inL, 48, (inR - 84 - 8 - 88 - 10) - inL);
+        y += 96 + 12;
 
-        comboIP.BackColor = Color.FromArgb(9, 39, 65);
-        comboIP.ForeColor = Color.White;
-        comboIP.FlatStyle = FlatStyle.Flat;
-        comboIP.Font = new Font("Segoe UI", 8.5F);
+        // divider panel is only decoration in the old skin
+        panel1.Visible = false;
 
-        StyleBNButton(btn_save, Color.FromArgb(0, 132, 105));
-        StyleBNButton(btn_check, Color.FromArgb(0, 115, 180));
-        StyleBNButton(btn_delete, Color.FromArgb(175, 45, 60));
-        StyleBNButton(button2, Color.FromArgb(155, 105, 8));
-        StyleBNButton(button1, Color.FromArgb(0, 115, 180));
+        // PROXY LIMIT : label + value + save
+        PxCard(groupBox6, "PROXY LIMIT", "Pairs allowed on one proxy", "gauge");
+        groupBox6.SetBounds(x, y, w, 96);
+        label16.AutoSize = false;
+        label16.BackColor = Color.Transparent;
+        label16.ForeColor = PX_TEXT;
+        label16.Font = pxFLabel;
+        label16.UseCompatibleTextRendering = false;
+        label16.TextAlign = ContentAlignment.MiddleLeft;
+        label16.SetBounds(inL, 48, 150, PX_FIELD_H);
+        PxButton(button2, inR - 96, 48, 96, 34);
+        PxField(text_limit, inR - 96 - 10 - 76, 49, 76, "1");
+        text_limit.TextAlign = HorizontalAlignment.Center;
+        y += 96 + 14;
 
-        Label[] labels = { label1, label2, label3, label4, label5, label6, label7, label8,
-            label9, label10, label11, label12, label13, label14, label15, label16 };
-        foreach (Label l in labels)
-        {
-            if (l == null) continue;
-            l.BackColor = Color.Transparent;
-            l.ForeColor = Color.FromArgb(225, 240, 250);
-        }
-        label10.ForeColor = Color.FromArgb(255, 202, 62);
-        label12.ForeColor = Color.FromArgb(198, 244, 50);
-        label16.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
+        ClientSize = new Size(PX_W, y);
 
-        // Keep legacy/off-form controls untouched functionally.
-        groupBox1.BackColor = Color.FromArgb(7, 29, 50);
-        groupBox2.BackColor = Color.FromArgb(7, 29, 50);
-        groupBox4.BackColor = Color.FromArgb(7, 29, 50);
+        // Off-form legacy groups / labels: keep them where the designer put them (outside the card area).
+        foreach (Control c in new Control[] { groupBox1, groupBox2, groupBox4, label10, label12, label14, checkPrivate })
+            if (c != null && c.Left < PX_W + 20) c.Left = PX_W + 200 + c.Left;
+
+        Paint -= PxFormPaint;
+        Paint += PxFormPaint;
 
         ResumeLayout(false);
         PerformLayout();
-        Invalidate();
+        PxPlaceClose();
+        pnlHeader.Resize += delegate { PxPlaceClose(); };
+        Invalidate(true);
+    }
+
+    // ---------------- building blocks ----------------
+
+    private static void PxBuffer(Control c)
+    {
+        try
+        {
+            typeof(Control).GetProperty("DoubleBuffered",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .SetValue(c, true, null);
+        }
+        catch { }
+    }
+
+    private void PxPlaceClose()
+    {
+        if (btnClose == null || btnClose.IsDisposed) return;
+        btnClose.Location = new Point(Math.Max(0, pnlHeader.Width - btnClose.Width - 10),
+            Math.Max(0, (pnlHeader.Height - 3 - btnClose.Height) / 2));
+        btnClose.BringToFront();
+    }
+
+    private void PxCard(GroupBox g, string title, string sub, string icon)
+    {
+        if (g == null) return;
+        g.FlatStyle = FlatStyle.Standard;
+        g.BackColor = PX_BG;
+        g.ForeColor = PX_TEXT;
+        g.Font = pxFCard;
+        PxBuffer(g);
+        pxCards[g] = new[] { title, sub, icon };
+        g.Paint -= PxCardPaint;
+        g.Paint += PxCardPaint;
+        g.MouseDown -= PxCardMouseDown;
+        g.MouseDown += PxCardMouseDown;
+        g.MouseMove -= PxCardMouseMove;
+        g.MouseMove += PxCardMouseMove;
+        g.MouseLeave -= PxCardMouseLeave;
+        g.MouseLeave += PxCardMouseLeave;
+    }
+
+    private void PxCaption(Label l, string text, int x, int y)
+    {
+        if (l == null) return;
+        l.AutoSize = false;
+        l.Text = text;
+        l.BackColor = Color.Transparent;
+        l.ForeColor = PX_MUTED;
+        l.Font = pxFCaption;
+        l.UseCompatibleTextRendering = false;
+        l.TextAlign = ContentAlignment.MiddleLeft;
+        l.SetBounds(x, y, 140, 16);
+    }
+
+    // TextBox without border, sitting inside a rounded box painted by the card.
+    private void PxField(TextBox t, int x, int y, int w, string cue)
+    {
+        if (t == null) return;
+        t.BorderStyle = BorderStyle.None;
+        t.BackColor = Color.White;
+        t.ForeColor = PX_TEXT;
+        t.Font = pxFField;
+        int th = t.PreferredHeight;
+        t.SetBounds(x + 10, y + (PX_FIELD_H - th) / 2, Math.Max(10, w - 20), th);
+        t.Tag = new Rectangle(x, y, w, PX_FIELD_H);
+        if (!pxState.ContainsKey(t))
+        {
+            pxState[t] = 0;
+            t.GotFocus += delegate { PxInvField(t); };
+            t.LostFocus += delegate { PxInvField(t); };
+            t.MouseEnter += delegate { pxHotField = t; PxInvField(t); };
+            t.MouseLeave += delegate { if (pxHotField == t) { pxHotField = null; PxInvField(t); } };
+            t.HandleCreated += delegate { PxCue(t, cue); };
+            // a parent BackColor change must not turn the field grey
+            t.BackColorChanged += delegate { if (t.BackColor != Color.White) t.BackColor = Color.White; };
+        }
+        if (t.IsHandleCreated) PxCue(t, cue);
+    }
+
+    private static void PxCue(TextBox t, string cue)
+    {
+        try { SendMessage(t.Handle, 0x1501 /* EM_SETCUEBANNER */, (IntPtr)1, cue); } catch { }
+    }
+
+    private void PxInvField(Control c)
+    {
+        if (c == null || c.Parent == null || c.Parent.IsDisposed || !(c.Tag is Rectangle)) return;
+        c.Parent.Invalidate(Rectangle.Inflate((Rectangle)c.Tag, 3, 3));
+    }
+
+    private void PxCombo(ComboBox c, int x, int y, int w)
+    {
+        if (c == null) return;
+        c.FlatStyle = FlatStyle.Flat;
+        c.BackColor = Color.White;
+        c.ForeColor = PX_TEXT;
+        c.Font = pxFField;
+        c.DrawMode = DrawMode.OwnerDrawVariable;
+        c.ItemHeight = 18;
+        c.MaxDropDownItems = 10;
+        c.Cursor = Cursors.Hand;
+        int ch = c.Height;
+        c.SetBounds(x + 4, y + (PX_FIELD_H - ch) / 2, w - 6, ch);
+        c.Tag = new Rectangle(x, y, w, PX_FIELD_H);
+        PxComboRegion(c);
+        if (!pxState.ContainsKey(c))
+        {
+            pxState[c] = 0;
+            c.DrawItem += PxComboDrawItem;
+            c.MeasureItem += delegate (object s, MeasureItemEventArgs e) { e.ItemHeight = 26; };
+            c.SizeChanged += delegate { PxComboRegion(c); };
+            c.GotFocus += delegate { PxInvField(c); };
+            c.LostFocus += delegate { PxInvField(c); };
+            c.MouseEnter += delegate { pxHotField = c; PxInvField(c); };
+            c.MouseLeave += delegate { if (pxHotField == c) { pxHotField = null; PxInvField(c); } };
+            c.DropDown += delegate { PxFitDropDown(c); PxInvField(c); };
+            c.DropDownClosed += delegate { PxInvField(c); };
+            c.SelectedIndexChanged += delegate { PxInvField(c); };
+        }
+    }
+
+    private void PxComboRegion(ComboBox c)
+    {
+        if (c.Width > PX_ARROW_W + 6 && c.Height > 4)
+            c.Region = new Region(new Rectangle(1, 1, c.Width - PX_ARROW_W - 1, c.Height - 2));
+    }
+
+    private void PxFitDropDown(ComboBox c)
+    {
+        int widest = 0;
+        try
+        {
+            foreach (object it in c.Items)
+                widest = Math.Max(widest, TextRenderer.MeasureText(c.GetItemText(it), pxFFieldBold).Width);
+        }
+        catch { }
+        Rectangle box = c.Tag is Rectangle ? (Rectangle)c.Tag : c.Bounds;
+        int want = widest + 16 + 30 + SystemInformation.VerticalScrollBarWidth;
+        c.DropDownWidth = Math.Min(480, Math.Max(box.Width, want));
+    }
+
+    private void PxButton(Button b, int x, int y, int w, int h)
+    {
+        if (b == null) return;
+        b.UseVisualStyleBackColor = false;
+        b.FlatStyle = FlatStyle.Flat;
+        b.FlatAppearance.BorderSize = 0;
+        b.FlatAppearance.MouseOverBackColor = Color.White;
+        b.FlatAppearance.MouseDownBackColor = Color.White;
+        b.BackColor = Color.White;
+        b.Font = pxFBtn;
+        b.Cursor = Cursors.Hand;
+        b.Region = null;
+        b.SetBounds(x, y, w, h);
+        if (!pxState.ContainsKey(b))
+        {
+            pxState[b] = 0;
+            b.MouseEnter += delegate { pxState[b] = 1; b.Invalidate(); };
+            b.MouseLeave += delegate { pxState[b] = 0; b.Invalidate(); };
+            b.MouseDown += delegate (object s, MouseEventArgs e) { if (e.Button == MouseButtons.Left) { pxState[b] = 2; b.Invalidate(); } };
+            b.MouseUp += delegate
+            {
+                if (b.IsDisposed) return;
+                pxState[b] = b.ClientRectangle.Contains(b.PointToClient(MousePosition)) ? 1 : 0;
+                b.Invalidate();
+            };
+            b.Paint += PxButtonPaint;
+        }
+    }
+
+    private int PxSt(Control c)
+    {
+        int s;
+        return c != null && pxState.TryGetValue(c, out s) ? s : 0;
+    }
+
+    // ---------------- painting ----------------
+
+    private static GraphicsPath PxRound(RectangleF r, float rad)
+    {
+        GraphicsPath p = new GraphicsPath();
+        float d = Math.Min(rad * 2, Math.Min(r.Width, r.Height));
+        if (d < 1) { p.AddRectangle(r); return p; }
+        p.AddArc(r.X, r.Y, d, d, 180, 90);
+        p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+        p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+        p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+        p.CloseFigure();
+        return p;
+    }
+
+    private static void PxFill(Graphics g, RectangleF r, float rad, Color fill, Color border)
+    {
+        if (r.Width < 1 || r.Height < 1) return;
+        using (GraphicsPath p = PxRound(r, rad))
+        {
+            using (SolidBrush b = new SolidBrush(fill)) g.FillPath(b, p);
+            if (border.A > 0) using (Pen pen = new Pen(border, 1F)) g.DrawPath(pen, p);
+        }
+    }
+
+    private static Color PxMix(Color a, Color b, float t)
+    {
+        return Color.FromArgb(a.A,
+            (int)(a.R + (b.R - a.R) * t), (int)(a.G + (b.G - a.G) * t), (int)(a.B + (b.B - a.B) * t));
+    }
+
+    private void PxFormPaint(object sender, PaintEventArgs e)
+    {
+        if (ClientSize.Width < 4 || ClientSize.Height < 4) return;
+        e.Graphics.Clear(PX_BG);
+        using (Pen p = new Pen(PX_FRAME))
+            e.Graphics.DrawRectangle(p, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
     }
 
     private void ByteNovaProxyHeaderPaint(object sender, PaintEventArgs e)
     {
         Rectangle r = pnlHeader.ClientRectangle;
-        if (r.Width < 2 || r.Height < 2) return;
+        if (r.Width < 2 || r.Height < 4) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
 
-        using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, Color.FromArgb(2, 23, 52), Color.FromArgb(5, 53, 91),
-            LinearGradientMode.Horizontal))
-            e.Graphics.FillRectangle(bg, r);
+        using (LinearGradientBrush bg = new LinearGradientBrush(r, PX_HEAD_L, PX_HEAD_R, LinearGradientMode.Horizontal))
+            g.FillRectangle(bg, r);
+        using (SolidBrush shine = new SolidBrush(Color.FromArgb(20, 255, 255, 255)))
+            g.FillRectangle(shine, 0, 0, r.Width, (r.Height - 3) / 2);
+        using (SolidBrush navy = new SolidBrush(PX_NAVY))
+            g.FillRectangle(navy, 0, r.Height - 3, r.Width, 3);
 
-        using (Pen cyan = new Pen(Color.FromArgb(198, 244, 50), 1.5F))
-            e.Graphics.DrawLine(cyan, 0, r.Height - 1, r.Width, r.Height - 1);
+        // icon badge
+        int h = r.Height - 3;
+        Rectangle badge = new Rectangle(12, (h - 28) / 2, 28, 28);
+        using (SolidBrush sh = new SolidBrush(Color.FromArgb(50, 0, 0, 0)))
+            g.FillEllipse(sh, badge.X, badge.Y + 1, badge.Width, badge.Height);
+        using (SolidBrush wb = new SolidBrush(Color.White))
+            g.FillEllipse(wb, badge);
+        PxIcon(g, "shield", new RectangleF(badge.X + 7, badge.Y + 6, 14, 16), PX_HEAD_L);
     }
 
-    private void StyleBNGroup(GroupBox box)
+    private void PxClosePaint(object sender, PaintEventArgs e)
     {
-        if (box == null) return;
-        box.BackColor = Color.FromArgb(7, 29, 50);
-        box.ForeColor = Color.FromArgb(0, 215, 255);
-        box.Font = new Font("Segoe UI Semibold", 8.3F, FontStyle.Bold);
+        Control c = sender as Control;
+        if (c == null) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+
+        // repaint the ribbon underneath so the old image never shows
+        Control p = c.Parent;
+        int pw = p != null ? Math.Max(1, p.Width) : c.Width;
+        int ph = p != null ? Math.Max(1, p.Height) : c.Height;
+        using (LinearGradientBrush bg = new LinearGradientBrush(new Rectangle(-c.Left, -c.Top, pw, ph), PX_HEAD_L, PX_HEAD_R, LinearGradientMode.Horizontal))
+            g.FillRectangle(bg, 0, 0, c.Width, c.Height);
+
+        // default: red with white X / hover: white with red X + red border / pressed: dark red
+        RectangleF r = new RectangleF(0.5f, pxCloseDown ? 1.5f : 0.5f, c.Width - 2, c.Height - 2);
+        Color fill = pxCloseDown ? Color.FromArgb(153, 27, 27) : pxCloseHot ? Color.White : PX_RED;
+        Color line = pxCloseDown ? Color.FromArgb(127, 29, 29) : pxCloseHot ? PX_RED : Color.FromArgb(185, 28, 28);
+        Color xc = pxCloseHot && !pxCloseDown ? PX_RED : Color.White;
+        if (!pxCloseDown)
+            PxFill(g, new RectangleF(r.X, r.Y + 1.5f, r.Width, r.Height), 7, Color.FromArgb(60, 120, 30, 0), Color.Empty);
+        PxFill(g, r, 7, fill, line);
+
+        float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f;
+        using (Pen x = new Pen(xc, 2.2F))
+        {
+            x.StartCap = LineCap.Round;
+            x.EndCap = LineCap.Round;
+            g.DrawLine(x, cx - 5.5f, cy - 5.5f, cx + 5.5f, cy + 5.5f);
+            g.DrawLine(x, cx + 5.5f, cy - 5.5f, cx - 5.5f, cy + 5.5f);
+        }
     }
 
-    private void StyleBNText(TextBox box)
+    private void PxCardPaint(object sender, PaintEventArgs e)
     {
-        if (box == null) return;
-        box.BackColor = Color.FromArgb(9, 39, 65);
-        box.ForeColor = Color.White;
-        box.BorderStyle = BorderStyle.FixedSingle;
-        box.Font = new Font("Segoe UI", 8.5F);
+        GroupBox gb = sender as GroupBox;
+        if (gb == null || gb.Width < 10 || gb.Height < 10) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.Clear(PX_BG);   // hides the native group-box frame + caption
+
+        RectangleF card = new RectangleF(0.5f, 0.5f, gb.Width - 2, gb.Height - 3);
+        PxFill(g, new RectangleF(card.X, card.Y + 2, card.Width, card.Height), 10, Color.FromArgb(214, 225, 242), Color.Empty);
+        PxFill(g, card, 10, Color.White, PX_CARD_LINE);
+        PxFill(g, new RectangleF(1, 12, 3.5f, 22), 1.5f, PX_ORANGE, Color.Empty);
+
+        string[] info;
+        if (pxCards.TryGetValue(gb, out info))
+        {
+            Rectangle ib = new Rectangle(14, 10, 26, 26);
+            PxFill(g, ib, 7, Color.FromArgb(255, 237, 213), Color.Empty);
+            PxIcon(g, info[2], new RectangleF(ib.X + 6, ib.Y + 6, 14, 14), Color.FromArgb(214, 96, 4));
+            TextRenderer.DrawText(g, info[0], pxFCard, new Point(ib.Right + 8, 9), PX_NAVY, TextFormatFlags.NoPadding);
+            TextRenderer.DrawText(g, info[1], pxFCaption, new Point(ib.Right + 8, 25), PX_MUTED, TextFormatFlags.NoPadding);
+        }
+
+        // field + dropdown boxes for the children that carry a box rectangle in Tag
+        foreach (Control c in gb.Controls)
+        {
+            if (!c.Visible || !(c.Tag is Rectangle)) continue;
+            Rectangle b = (Rectangle)c.Tag;
+            bool focus = c.Focused || (c is ComboBox && ((ComboBox)c).DroppedDown);
+            bool hot = c == pxHotField;
+            Color line = focus ? PX_BLUE : hot ? PX_ORANGE : PX_FIELD_LINE;
+            if (focus)
+                PxFill(g, new RectangleF(b.X - 2.5f, b.Y - 2.5f, b.Width + 4, b.Height + 4), 9, Color.FromArgb(40, PX_BLUE), Color.Empty);
+            PxFill(g, new RectangleF(b.X, b.Y, b.Width - 1, b.Height - 1), 7, c.Enabled ? Color.White : Color.FromArgb(241, 245, 249), line);
+
+            ComboBox cb = c as ComboBox;
+            if (cb != null)
+            {
+                int zx = b.Right - PX_ARROW_W - 2;
+                using (Pen sep = new Pen(Color.FromArgb(232, 237, 245)))
+                    g.DrawLine(sep, zx, b.Y + 7, zx, b.Bottom - 8);
+                float ax = zx + PX_ARROW_W / 2f + 1, ay = b.Y + b.Height / 2f;
+                bool open = cb.DroppedDown;
+                using (Pen p = new Pen(focus ? PX_BLUE : hot ? PX_ORANGE : PX_MUTED, 1.8F))
+                {
+                    p.StartCap = LineCap.Round; p.EndCap = LineCap.Round; p.LineJoin = LineJoin.Round;
+                    if (open) g.DrawLines(p, new[] { new PointF(ax - 4, ay + 2), new PointF(ax, ay - 2), new PointF(ax + 4, ay + 2) });
+                    else g.DrawLines(p, new[] { new PointF(ax - 4, ay - 2), new PointF(ax, ay + 2), new PointF(ax + 4, ay - 2) });
+                }
+            }
+        }
     }
 
-    private void StyleBNButton(Button button, Color accent)
+    private Control PxFieldAt(GroupBox gb, Point p)
     {
-        if (button == null) return;
-        button.UseVisualStyleBackColor = false;
-        button.FlatStyle = FlatStyle.Flat;
-        button.BackColor = accent;
-        button.ForeColor = Color.White;
-        button.FlatAppearance.BorderSize = 1;
-        button.FlatAppearance.BorderColor = Color.FromArgb(
-            Math.Min(255, accent.R + 45),
-            Math.Min(255, accent.G + 45),
-            Math.Min(255, accent.B + 45));
-        button.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Bold);
+        foreach (Control c in gb.Controls)
+            if (c.Visible && c.Enabled && c.Tag is Rectangle && ((Rectangle)c.Tag).Contains(p)) return c;
+        return null;
     }
+
+    private void PxCardMouseDown(object sender, MouseEventArgs e)
+    {
+        GroupBox gb = sender as GroupBox;
+        if (gb == null || e.Button != MouseButtons.Left) return;
+        Control c = PxFieldAt(gb, e.Location);
+        if (c == null) return;
+        c.Focus();
+        ComboBox cb = c as ComboBox;
+        if (cb != null) cb.DroppedDown = true;
+    }
+
+    private void PxCardMouseMove(object sender, MouseEventArgs e)
+    {
+        GroupBox gb = sender as GroupBox;
+        if (gb == null) return;
+        Control c = PxFieldAt(gb, e.Location);
+        if (c != pxHotField)
+        {
+            Control old = pxHotField;
+            pxHotField = c;
+            PxInvField(old);
+            PxInvField(c);
+        }
+        gb.Cursor = c is ComboBox ? Cursors.Hand : c != null ? Cursors.IBeam : Cursors.Default;
+    }
+
+    private void PxCardMouseLeave(object sender, EventArgs e)
+    {
+        GroupBox gb = sender as GroupBox;
+        if (pxHotField == null || gb == null || pxHotField.Parent != gb) return;
+        if (pxHotField.ClientRectangle.Contains(pxHotField.PointToClient(MousePosition))) return;
+        Control old = pxHotField;
+        pxHotField = null;
+        PxInvField(old);
+    }
+
+    private void PxComboDrawItem(object sender, DrawItemEventArgs e)
+    {
+        ComboBox c = sender as ComboBox;
+        if (c == null || e.Index < 0) return;
+        Graphics g = e.Graphics;
+        bool edit = (e.State & DrawItemState.ComboBoxEdit) != 0;
+        bool sel = !edit && (e.State & DrawItemState.Selected) != 0;
+        bool current = !edit && e.Index == c.SelectedIndex;
+        string text = c.GetItemText(c.Items[e.Index]);
+        bool placeholder = e.Index == 0 && text.StartsWith("Select", StringComparison.OrdinalIgnoreCase);
+
+        using (SolidBrush b = new SolidBrush(Color.White)) g.FillRectangle(b, e.Bounds);
+
+        if (edit)
+        {
+            TextRenderer.DrawText(g, text, placeholder ? pxFField : pxFFieldBold,
+                new Rectangle(e.Bounds.X + 6, e.Bounds.Y, e.Bounds.Width - 8, e.Bounds.Height),
+                placeholder ? Color.FromArgb(148, 163, 184) : PX_TEXT,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine |
+                TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
+            return;
+        }
+
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        if (sel)
+        {
+            PxFill(g, new RectangleF(e.Bounds.X + 3, e.Bounds.Y + 2, e.Bounds.Width - 7, e.Bounds.Height - 4), 6, Color.FromArgb(255, 237, 213), Color.Empty);
+            PxFill(g, new RectangleF(e.Bounds.X + 3, e.Bounds.Y + 6, 3, e.Bounds.Height - 12), 1.5f, PX_ORANGE, Color.Empty);
+        }
+        Color tc = placeholder ? Color.FromArgb(148, 163, 184) : sel ? Color.FromArgb(154, 52, 18) : current ? PX_BLUE : PX_TEXT;
+        TextRenderer.DrawText(g, text, sel || current ? pxFFieldBold : pxFField,
+            new Rectangle(e.Bounds.X + 14, e.Bounds.Y, e.Bounds.Width - 34, e.Bounds.Height), tc,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine |
+            TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
+        if (current && !placeholder)
+            using (Pen t = new Pen(sel ? PX_ORANGE : PX_BLUE, 1.8F))
+            {
+                t.StartCap = LineCap.Round; t.EndCap = LineCap.Round;
+                float cx = e.Bounds.Right - 15, cy = e.Bounds.Y + e.Bounds.Height / 2f;
+                g.DrawLines(t, new[] { new PointF(cx - 4, cy), new PointF(cx - 1, cy + 3), new PointF(cx + 4, cy - 3) });
+            }
+    }
+
+    private void PxButtonPaint(object sender, PaintEventArgs e)
+    {
+        Button b = sender as Button;
+        if (b == null) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.Clear(Color.White);    // buttons sit on white cards
+
+        string label, icon;
+        int kind;   // 0 = bhagwa primary, 1 = blue, 2 = red outline
+        if (b == btn_check) { label = "Check"; icon = "check"; kind = 1; }
+        else if (b == btn_delete) { label = "Delete"; icon = "trash"; kind = 2; }
+        else if (b == btn_save) { label = "Save Proxy"; icon = "save"; kind = 0; }
+        else { label = "Save"; icon = "save"; kind = 0; }
+
+        int st = PxSt(b);
+        bool on = b.Enabled;
+        RectangleF r = new RectangleF(0.5f, st == 2 ? 1.5f : 0.5f, b.Width - 2, b.Height - 3);
+        Color fg;
+        if (kind == 2)
+        {
+            Color fill = st == 2 ? Color.FromArgb(254, 202, 202) : st == 1 ? Color.FromArgb(254, 226, 226) : Color.FromArgb(254, 242, 242);
+            PxFill(g, r, 8, fill, st == 0 ? Color.FromArgb(252, 165, 165) : PX_RED);
+            fg = on ? Color.FromArgb(200, 30, 30) : Color.FromArgb(248, 180, 180);
+        }
+        else
+        {
+            Color top = kind == 0 ? Color.FromArgb(252, 170, 66) : Color.FromArgb(72, 130, 245);
+            Color bot = kind == 0 ? Color.FromArgb(236, 122, 8) : Color.FromArgb(29, 78, 216);
+            if (st == 1) { top = PxMix(top, Color.White, 0.15f); bot = PxMix(bot, Color.White, 0.10f); }
+            if (st == 2) { top = PxMix(top, Color.Black, 0.12f); bot = PxMix(bot, Color.Black, 0.15f); }
+            if (!on) { top = PxMix(top, Color.White, 0.55f); bot = PxMix(bot, Color.White, 0.55f); }
+            if (st != 2 && on)
+                PxFill(g, new RectangleF(r.X, r.Y + 1.5f, r.Width, r.Height), 8, Color.FromArgb(st == 1 ? 80 : 45, bot), Color.Empty);
+            using (GraphicsPath p = PxRound(r, 8))
+            using (LinearGradientBrush lb = new LinearGradientBrush(r, top, bot, LinearGradientMode.Vertical))
+                g.FillPath(lb, p);
+            fg = Color.White;
+        }
+
+        Size ts = TextRenderer.MeasureText(g, label, pxFBtn, Size.Empty, TextFormatFlags.NoPadding);
+        int gw = 14 + 7 + ts.Width;
+        bool withIcon = gw <= r.Width - 10;
+        if (!withIcon) gw = ts.Width;
+        int x = (int)(r.X + (r.Width - gw) / 2);
+        int cy = (int)(r.Y + r.Height / 2);
+        if (withIcon)
+        {
+            PxIcon(g, icon, new RectangleF(x, cy - 7, 14, 14), fg);
+            x += 21;
+        }
+        TextRenderer.DrawText(g, label, pxFBtn, new Rectangle(x, cy - ts.Height / 2 - 1, ts.Width + 4, ts.Height + 2), fg,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+    }
+
+    private static void PxIcon(Graphics g, string kind, RectangleF r, Color c)
+    {
+        SmoothingMode old = g.SmoothingMode;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        float x = r.X, y = r.Y, w = r.Width, h = r.Height;
+        using (Pen p = new Pen(c, 1.6F))
+        using (SolidBrush b = new SolidBrush(c))
+        {
+            p.StartCap = LineCap.Round; p.EndCap = LineCap.Round; p.LineJoin = LineJoin.Round;
+            switch (kind)
+            {
+                case "shield":
+                    g.FillPolygon(b, new[]
+                    {
+                        new PointF(x + w / 2, y), new PointF(x + w, y + h * 0.18f), new PointF(x + w * 0.9f, y + h * 0.62f),
+                        new PointF(x + w / 2, y + h), new PointF(x + w * 0.1f, y + h * 0.62f), new PointF(x, y + h * 0.18f)
+                    });
+                    using (Pen t = new Pen(Color.White, 1.6F))
+                    {
+                        t.StartCap = LineCap.Round; t.EndCap = LineCap.Round;
+                        g.DrawLines(t, new[] { new PointF(x + w * 0.3f, y + h * 0.5f), new PointF(x + w * 0.46f, y + h * 0.65f), new PointF(x + w * 0.72f, y + h * 0.36f) });
+                    }
+                    break;
+                case "server":
+                    using (GraphicsPath a = PxRound(new RectangleF(x, y, w, h * 0.42f), 2)) g.DrawPath(p, a);
+                    using (GraphicsPath a = PxRound(new RectangleF(x, y + h * 0.58f, w, h * 0.42f), 2)) g.DrawPath(p, a);
+                    g.FillEllipse(b, x + w * 0.72f, y + h * 0.15f, 2.4f, 2.4f);
+                    g.FillEllipse(b, x + w * 0.72f, y + h * 0.73f, 2.4f, 2.4f);
+                    break;
+                case "globe":
+                    g.DrawEllipse(p, x, y, w, h);
+                    g.DrawEllipse(p, x + w * 0.28f, y, w * 0.44f, h);
+                    g.DrawLine(p, x, y + h / 2, x + w, y + h / 2);
+                    break;
+                case "gauge":
+                    g.DrawArc(p, x, y + h * 0.1f, w, h * 1.2f, 180, 180);
+                    g.DrawLine(p, x + w / 2, y + h * 0.7f, x + w * 0.78f, y + h * 0.3f);
+                    g.FillEllipse(b, x + w / 2 - 2, y + h * 0.7f - 2, 4, 4);
+                    break;
+                case "check":
+                    g.DrawEllipse(p, x, y, w, h);
+                    g.DrawLines(p, new[] { new PointF(x + w * 0.28f, y + h * 0.52f), new PointF(x + w * 0.44f, y + h * 0.68f), new PointF(x + w * 0.74f, y + h * 0.36f) });
+                    break;
+                case "trash":
+                    g.DrawLine(p, x, y + h * 0.2f, x + w, y + h * 0.2f);
+                    g.DrawLine(p, x + w * 0.35f, y, x + w * 0.65f, y);
+                    g.DrawPolygon(p, new[] { new PointF(x + w * 0.14f, y + h * 0.3f), new PointF(x + w * 0.86f, y + h * 0.3f), new PointF(x + w * 0.76f, y + h), new PointF(x + w * 0.24f, y + h) });
+                    break;
+                case "save":
+                    using (GraphicsPath a = PxRound(new RectangleF(x, y, w, h), 2)) g.DrawPath(p, a);
+                    g.DrawRectangle(p, x + w * 0.25f, y, w * 0.5f, h * 0.32f);
+                    g.FillRectangle(b, x + w * 0.25f, y + h * 0.6f, w * 0.5f, h * 0.4f);
+                    break;
+            }
+        }
+        g.SmoothingMode = old;
+    }
+
 
     private void Button2_Click(object sender, EventArgs e)
     {

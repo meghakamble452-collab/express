@@ -1648,209 +1648,707 @@ public class Freecharge : Form
     }
 
 
+    // ===== Express theme (light + bhagwa) - visual layer only. Freecharge logic/events are untouched. =====
+    private static readonly Color FX_BG = Color.FromArgb(236, 242, 251);
+    private static readonly Color FX_ORANGE = Color.FromArgb(245, 146, 28);
+    private static readonly Color FX_HEAD_L = Color.FromArgb(214, 96, 4);
+    private static readonly Color FX_HEAD_R = Color.FromArgb(248, 158, 44);
+    private static readonly Color FX_NAVY = Color.FromArgb(15, 42, 92);
+    private static readonly Color FX_BLUE = Color.FromArgb(37, 99, 235);
+    private static readonly Color FX_TEXT = Color.FromArgb(30, 41, 59);
+    private static readonly Color FX_MUTED = Color.FromArgb(100, 116, 139);
+    private static readonly Color FX_LINE = Color.FromArgb(220, 228, 241);
+    private static readonly Color FX_FIELD = Color.FromArgb(203, 213, 225);
+    private static readonly Color FX_FRAME = Color.FromArgb(178, 196, 226);
+    private static readonly Color FX_RED = Color.FromArgb(220, 38, 38);
+
+    private const int FX_W = 720, FX_HEAD = 42, FX_M = 14;
+    private static readonly Rectangle FX_LEFT = new Rectangle(14, 56, 340, 220);
+    private static readonly Rectangle FX_RIGHT = new Rectangle(366, 56, 340, 220);
+    private static readonly Rectangle FX_MOBILE_BOX = new Rectangle(28, 166, 312, 38);
+    private static readonly Rectangle FX_LIST_BOX = new Rectangle(380, 92, 312, 118);
+    private Rectangle fxSmsCard = Rectangle.Empty, fxSmsBox = Rectangle.Empty, fxQrBox = Rectangle.Empty, fxErr = Rectangle.Empty;
+
+    private readonly Font fxFTitle = new Font("Segoe UI Semibold", 11F);
+    private readonly Font fxFCard = new Font("Segoe UI", 8.25F, FontStyle.Bold);
+    private readonly Font fxFCaption = new Font("Segoe UI Semibold", 8.75F);
+    private readonly Font fxFBody = new Font("Segoe UI", 9F);
+    private readonly Font fxFField = new Font("Segoe UI", 11F);
+    private readonly Font fxFBtn = new Font("Segoe UI Semibold", 9.75F);
+    private readonly Font fxFSmall = new Font("Segoe UI", 8F);
+
+    private readonly Dictionary<Control, int> fxState = new Dictionary<Control, int>();
+    private Label fxCue;
+    private int fxHotItem = -1;
+    private bool fxCloseHot, fxCloseDown, fxLayingOut;
+
     private void ApplyByteNovaLatestTheme()
     {
-        // ByteNova visual theme only - original Freecharge logic/events are untouched.
         SuspendLayout();
 
-        Color bg = Color.FromArgb(3, 13, 29);
-        Color panel = Color.FromArgb(6, 27, 50);
-        Color field = Color.FromArgb(9, 39, 65);
-        Color cyan = Color.FromArgb(198, 244, 50);
-        Color gold = Color.FromArgb(255, 202, 62);
-        Color white = Color.FromArgb(238, 247, 255);
-
-        BackColor = bg;
-        ForeColor = white;
+        BackColor = FX_BG;
+        ForeColor = FX_TEXT;
         FormBorderStyle = FormBorderStyle.None;
-        ClientSize = new Size(704, 512);
+        DoubleBuffered = true;
+        ClientSize = new Size(FX_W, 290);
 
+        // ---- header ribbon ----
         if (pnlHeader != null)
         {
             pnlHeader.Dock = DockStyle.Top;
-            pnlHeader.Height = 23;
-            pnlHeader.BackColor = Color.FromArgb(3, 29, 59);
-            pnlHeader.Padding = new Padding(9, 0, 26, 0);
+            pnlHeader.Height = FX_HEAD;
+            pnlHeader.BackColor = FX_HEAD_L;
+            pnlHeader.Padding = new Padding(48, 0, 48, 3);
+            FxBuffer(pnlHeader);
             pnlHeader.Paint -= ByteNovaFreechargeHeaderPaint;
             pnlHeader.Paint += ByteNovaFreechargeHeaderPaint;
+            pnlHeader.Resize -= FxPlaceClose;
+            pnlHeader.Resize += FxPlaceClose;
             pnlHeader.BringToFront();
         }
-
-        // Keep whatever header label this source uses.
-        foreach (Control c in pnlHeader.Controls)
+        if (label5 != null)
         {
-            Label h = c as Label;
-            if (h != null)
-            {
-                h.Enabled = true;
-                h.ForeColor = Color.White;
-                h.BackColor = Color.Transparent;
-                h.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
-                if (h == label5)
-                {
-                    h.Dock = DockStyle.Fill;
-                    h.AutoSize = false;
-                    h.Text = "FREECHARGE  _  UPI AUTOMATION";
-                    h.TextAlign = ContentAlignment.MiddleLeft;
-                    h.Padding = new Padding(0);
-                    h.BringToFront();
-                }
-            }
+            label5.Dock = DockStyle.Fill;
+            label5.AutoSize = false;
+            label5.Text = "Freecharge UPI Automation";
+            label5.TextAlign = ContentAlignment.MiddleLeft;
+            label5.ForeColor = Color.White;
+            label5.BackColor = Color.Transparent;
+            label5.Font = fxFTitle;
+            label5.Padding = new Padding(0);
+            label5.UseCompatibleTextRendering = false;
+            label5.BringToFront();
         }
 
-        // bunifuImageButton1 is the header Close button in this form.
-        // Apply the same compact image-based style used by frmMain.
+        // bunifuImageButton1 is the header Close button of this form.
         if (bunifuImageButton1 != null)
         {
-            bunifuImageButton1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            bunifuImageButton1.Parent = pnlHeader;
+            if (bunifuImageButton1.Parent != pnlHeader) bunifuImageButton1.Parent = pnlHeader;
+            bunifuImageButton1.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             bunifuImageButton1.Visible = true;
-            bunifuImageButton1.Size = new Size(22, 22);
-            bunifuImageButton1.Location = new Point(Math.Max(0, pnlHeader.Width - 25), 1);
+            bunifuImageButton1.Zoom = 0;
+            bunifuImageButton1.Size = new Size(32, 26);
             bunifuImageButton1.BackColor = Color.Transparent;
             bunifuImageButton1.BackgroundImage = null;
-            bunifuImageButton1.BackgroundImageLayout = ImageLayout.Zoom;
-            bunifuImageButton1.SizeMode = PictureBoxSizeMode.Zoom;
-            bunifuImageButton1.Zoom = 0;
-            bunifuImageButton1.BringToFront();
+            bunifuImageButton1.Cursor = Cursors.Hand;
+            bunifuImageButton1.Paint -= ByteNovaFreechargeClosePaint;
+            bunifuImageButton1.Paint += ByteNovaFreechargeClosePaint;
+            bunifuImageButton1.MouseEnter += delegate { fxCloseHot = true; bunifuImageButton1.Invalidate(); };
+            bunifuImageButton1.MouseLeave += delegate { fxCloseHot = false; fxCloseDown = false; bunifuImageButton1.Invalidate(); };
+            bunifuImageButton1.MouseDown += delegate { fxCloseDown = true; bunifuImageButton1.Invalidate(); };
+            bunifuImageButton1.MouseUp += delegate { fxCloseDown = false; if (!bunifuImageButton1.IsDisposed) bunifuImageButton1.Invalidate(); };
+            FxPlaceClose(null, EventArgs.Empty);
         }
+        // Second (form-level) close control stays hidden so only the header one shows.
+        if (btnClose != null) btnClose.Visible = false;
 
-        // Avoid showing the second Close control over the frmMain-style header button.
-        if (btnClose != null)
-            btnClose.Visible = false;
-
-        StyleByteNovaControlTree(this, panel, field, cyan, gold, white);
-
-
+        // ---- left card : registration ----
+        if (checkBox1 != null)
+        {
+            checkBox1.AutoSize = false;
+            checkBox1.SetBounds(FX_LEFT.X + 14, FX_LEFT.Y + 36, FX_LEFT.Width - 28, 40);
+            checkBox1.BackColor = Color.White;
+            checkBox1.ForeColor = FX_TEXT;
+            checkBox1.Font = fxFCaption;
+            checkBox1.Cursor = Cursors.Hand;
+            checkBox1.UseVisualStyleBackColor = false;
+            checkBox1.Paint -= FxTogglePaint;
+            checkBox1.Paint += FxTogglePaint;
+            FxHover(checkBox1);
+        }
+        if (label3 != null)
+        {
+            label3.AutoSize = false;
+            label3.SetBounds(FX_MOBILE_BOX.X, FX_MOBILE_BOX.Y - 24, FX_MOBILE_BOX.Width, 20);
+            label3.Text = "Enter Mobile Number";
+            label3.Font = fxFCaption;
+            label3.ForeColor = FX_MUTED;
+            label3.BackColor = Color.White;
+            label3.TextAlign = ContentAlignment.MiddleLeft;
+        }
         if (mobilenumber != null)
         {
-            mobilenumber.BackColor = field;
-            mobilenumber.ForeColor = Color.White;
-            mobilenumber.BorderStyle = BorderStyle.FixedSingle;
-            mobilenumber.Font = new Font("Segoe UI", 9.5F);
-        }
+            mobilenumber.BorderStyle = BorderStyle.None;
+            mobilenumber.BackColor = Color.White;
+            mobilenumber.ForeColor = FX_TEXT;
+            mobilenumber.Font = fxFField;
+            int th = mobilenumber.PreferredHeight;
+            mobilenumber.SetBounds(FX_MOBILE_BOX.X + 38, FX_MOBILE_BOX.Y + (FX_MOBILE_BOX.Height - th) / 2,
+                FX_MOBILE_BOX.Width - 50, th);
+            mobilenumber.GotFocus += delegate { Invalidate(Rectangle.Inflate(FX_MOBILE_BOX, 4, 4)); };
+            mobilenumber.LostFocus += delegate { Invalidate(Rectangle.Inflate(FX_MOBILE_BOX, 4, 4)); };
 
+            fxCue = new Label();
+            fxCue.AutoSize = false;
+            fxCue.BackColor = Color.White;
+            fxCue.ForeColor = Color.FromArgb(148, 163, 184);
+            fxCue.Font = fxFField;
+            fxCue.Text = "10-digit number, without 91";
+            fxCue.TextAlign = ContentAlignment.MiddleLeft;
+            fxCue.Bounds = mobilenumber.Bounds;
+            fxCue.Cursor = Cursors.IBeam;
+            fxCue.Click += delegate { mobilenumber.Focus(); };
+            Controls.Add(fxCue);
+            fxCue.BringToFront();
+            mobilenumber.TextChanged += delegate { FxSyncCue(); };
+            mobilenumber.GotFocus += delegate { FxSyncCue(); };
+            mobilenumber.LostFocus += delegate { FxSyncCue(); };
+            FxSyncCue();
+        }
+        FxButton(button1, new Rectangle(FX_LEFT.X + 14, FX_LEFT.Bottom - 54, FX_LEFT.Width - 28, 40));
+
+        // ---- right card : bypassed UPI ----
+        if (label4 != null) label4.Visible = false;          // caption is painted on the card
         if (listBox1 != null)
         {
-            listBox1.BackColor = Color.FromArgb(7, 32, 55);
-            listBox1.ForeColor = Color.White;
-            listBox1.BorderStyle = BorderStyle.FixedSingle;
-            listBox1.Font = new Font("Segoe UI", 9F);
+            listBox1.BorderStyle = BorderStyle.None;
+            listBox1.BackColor = Color.White;
+            listBox1.ForeColor = FX_TEXT;
+            listBox1.Font = fxFBody;
+            listBox1.DrawMode = DrawMode.OwnerDrawFixed;
+            listBox1.ItemHeight = 28;
+            listBox1.IntegralHeight = false;
+            listBox1.SetBounds(FX_LIST_BOX.X + 2, FX_LIST_BOX.Y + 2, FX_LIST_BOX.Width - 4, FX_LIST_BOX.Height - 4);
+            listBox1.DrawItem -= FxListDraw;
+            listBox1.DrawItem += FxListDraw;
+            listBox1.MouseMove += FxListMove;
+            listBox1.MouseLeave += delegate { int o = fxHotItem; fxHotItem = -1; FxInvItem(o); };
+            listBox1.SelectedIndexChanged += delegate { listBox1.Invalidate(); };
+            listBox1.Cursor = Cursors.Hand;
         }
+        FxButton(button2, new Rectangle(FX_RIGHT.X + 14, FX_RIGHT.Bottom - 54, 190, 40));
+        FxButton(button3, new Rectangle(FX_RIGHT.X + 14 + 190 + 10, FX_RIGHT.Bottom - 54, FX_RIGHT.Width - 28 - 200, 40));
 
-        StyleByteNovaAction(button1, Color.FromArgb(0, 132, 105));
-        StyleByteNovaAction(btnNext, Color.FromArgb(78, 55, 185));
-        StyleByteNovaAction(btnCopy, Color.FromArgb(0, 112, 185));
-        StyleByteNovaAction(button2, Color.FromArgb(0, 112, 185));
-        StyleByteNovaAction(button3, Color.FromArgb(180, 43, 58));
-
+        // ---- SMS step (shown by the logic after Start) ----
         if (txtSms != null)
         {
-            txtSms.BackColor = field;
-            txtSms.ForeColor = Color.White;
-            txtSms.BorderStyle = BorderStyle.FixedSingle;
+            txtSms.BorderStyle = BorderStyle.None;
+            txtSms.BackColor = Color.White;
+            txtSms.ForeColor = FX_TEXT;
+            txtSms.Font = fxFBody;
+            txtSms.VisibleChanged += delegate { FxLayout(); };
         }
+        FxButton(btnCopy, Rectangle.Empty);
+        FxButton(btnNext, Rectangle.Empty);
+        if (pictureBox1 != null)
+        {
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox1.BackColor = Color.White;
+            pictureBox1.VisibleChanged += delegate { FxLayout(); };
+        }
+        if (label1 != null)
+        {
+            label1.AutoSize = false;
+            label1.Font = fxFBody;
+            label1.ForeColor = FX_TEXT;
+            label1.BackColor = Color.White;
+            label1.TextAlign = ContentAlignment.TopLeft;
+            label1.UseCompatibleTextRendering = false;
+        }
+        if (label2 != null)
+        {
+            label2.AutoSize = false;
+            label2.Font = fxFCaption;
+            label2.ForeColor = Color.FromArgb(185, 28, 28);
+            label2.BackColor = Color.FromArgb(254, 242, 242);
+            label2.TextAlign = ContentAlignment.MiddleLeft;
+            label2.AutoEllipsis = true;
+            label2.VisibleChanged += delegate { FxLayout(); };
+            label2.TextChanged += delegate { FxLayout(); };
+        }
+        if (pictureBox2 != null) pictureBox2.Visible = false;   // empty placeholder, never used by the logic
 
-        if (label4 != null) label4.ForeColor = gold;
-        if (label2 != null) { label2.ForeColor = Color.FromArgb(255, 90, 105); label2.BackColor = Color.Transparent; }
+        Paint -= FxFormPaint;
+        Paint += FxFormPaint;
 
         ResumeLayout(false);
-        PerformLayout();
-        Invalidate();
+        FxLayout();
+        Invalidate(true);
+    }
+
+    // Lays out the optional SMS step and the error banner below the two cards and fits the form height.
+    private void FxLayout()
+    {
+        if (fxLayingOut || IsDisposed) return;
+        fxLayingOut = true;
+        try
+        {
+            int y = FX_LEFT.Bottom + 12;
+            bool sms = FxWants(txtSms) || FxWants(pictureBox1);
+            if (sms)
+            {
+                fxSmsCard = new Rectangle(FX_M, y, FX_W - FX_M * 2, 236);
+                int top = fxSmsCard.Y + 36;
+                fxSmsBox = new Rectangle(fxSmsCard.X + 14, top, 300, 132);
+                if (txtSms != null) txtSms.SetBounds(fxSmsBox.X + 8, fxSmsBox.Y + 6, fxSmsBox.Width - 12, fxSmsBox.Height - 12);
+                if (btnCopy != null) btnCopy.SetBounds(fxSmsBox.X, fxSmsBox.Bottom + 12, 145, 40);
+                if (btnNext != null) btnNext.SetBounds(fxSmsBox.Right - 145, fxSmsBox.Bottom + 12, 145, 40);
+                fxQrBox = new Rectangle(fxSmsBox.Right + 16, top, 184, 184);
+                if (pictureBox1 != null) pictureBox1.SetBounds(fxQrBox.X + 6, fxQrBox.Y + 6, fxQrBox.Width - 12, fxQrBox.Height - 12);
+                if (label1 != null)
+                    label1.SetBounds(fxQrBox.Right + 16, top, fxSmsCard.Right - 14 - (fxQrBox.Right + 16), 184);
+                y = fxSmsCard.Bottom + 12;
+            }
+            else
+            {
+                fxSmsCard = fxSmsBox = fxQrBox = Rectangle.Empty;
+            }
+
+            bool err = FxWants(label2) && label2 != null && !string.IsNullOrEmpty(label2.Text);
+            if (err)
+            {
+                fxErr = new Rectangle(FX_M, y, FX_W - FX_M * 2, 36);
+                label2.SetBounds(fxErr.X + 36, fxErr.Y + 4, fxErr.Width - 46, fxErr.Height - 8);
+                y = fxErr.Bottom + 12;
+            }
+            else
+            {
+                fxErr = Rectangle.Empty;
+                if (label2 != null) label2.SetBounds(FX_M + 36, -200, 10, 10);   // parked while hidden
+            }
+
+            int h = Math.Max(y + 2, FX_LEFT.Bottom + 14);
+            if (ClientSize.Height != h || ClientSize.Width != FX_W) ClientSize = new Size(FX_W, h);
+            Invalidate();
+        }
+        finally { fxLayingOut = false; }
+    }
+
+    // A child's own Visible flag, readable before the form itself is shown.
+    private static bool FxWants(Control c)
+    {
+        if (c == null) return false;
+        try
+        {
+            System.Reflection.MethodInfo m = typeof(Control).GetMethod("GetState",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            if (m != null) return (bool)m.Invoke(c, new object[] { 2 });
+        }
+        catch { }
+        return c.Visible;
+    }
+
+    private static void FxBuffer(Control c)
+    {
+        try
+        {
+            typeof(Control).GetProperty("DoubleBuffered",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .SetValue(c, true, null);
+        }
+        catch { }
+    }
+
+    private void FxSyncCue()
+    {
+        if (fxCue == null || mobilenumber == null) return;
+        fxCue.Bounds = mobilenumber.Bounds;
+        fxCue.Visible = mobilenumber.Visible && mobilenumber.TextLength == 0 && !mobilenumber.Focused;
+        if (fxCue.Visible) fxCue.BringToFront();
+    }
+
+    private void FxPlaceClose(object sender, EventArgs e)
+    {
+        if (bunifuImageButton1 == null || bunifuImageButton1.IsDisposed || pnlHeader == null) return;
+        bunifuImageButton1.Location = new Point(Math.Max(0, pnlHeader.Width - bunifuImageButton1.Width - 10),
+            Math.Max(0, (pnlHeader.Height - 3 - bunifuImageButton1.Height) / 2));
+        bunifuImageButton1.BringToFront();
+    }
+
+    private void FxHover(Control c)
+    {
+        if (c == null || fxState.ContainsKey(c)) return;
+        fxState[c] = 0;
+        c.MouseEnter += delegate { fxState[c] = 1; c.Invalidate(); };
+        c.MouseLeave += delegate { fxState[c] = 0; c.Invalidate(); };
+        c.MouseDown += delegate (object s, MouseEventArgs e) { if (e.Button == MouseButtons.Left) { fxState[c] = 2; c.Invalidate(); } };
+        c.MouseUp += delegate
+        {
+            if (c.IsDisposed) return;
+            fxState[c] = c.ClientRectangle.Contains(c.PointToClient(MousePosition)) ? 1 : 0;
+            c.Invalidate();
+        };
+        c.EnabledChanged += delegate { fxState[c] = 0; c.Invalidate(); };
+    }
+
+    private int FxSt(Control c)
+    {
+        int s;
+        return c != null && fxState.TryGetValue(c, out s) ? s : 0;
+    }
+
+    private void FxButton(Button b, Rectangle bounds)
+    {
+        if (b == null) return;
+        b.UseVisualStyleBackColor = false;
+        b.FlatStyle = FlatStyle.Flat;
+        b.FlatAppearance.BorderSize = 0;
+        b.FlatAppearance.MouseOverBackColor = Color.White;
+        b.FlatAppearance.MouseDownBackColor = Color.White;
+        b.BackColor = Color.White;
+        b.Font = fxFBtn;
+        b.Cursor = Cursors.Hand;
+        if (!bounds.IsEmpty) b.Bounds = bounds;
+        FxHover(b);
+        b.Paint -= FxButtonPaint;
+        b.Paint += FxButtonPaint;
+    }
+
+    // ---------------- painting ----------------
+
+    private static GraphicsPath FxRound(RectangleF r, float rad)
+    {
+        GraphicsPath p = new GraphicsPath();
+        float d = Math.Min(rad * 2, Math.Min(r.Width, r.Height));
+        if (d < 1) { p.AddRectangle(r); return p; }
+        p.AddArc(r.X, r.Y, d, d, 180, 90);
+        p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+        p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+        p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+        p.CloseFigure();
+        return p;
+    }
+
+    private static void FxFill(Graphics g, RectangleF r, float rad, Color fill, Color border)
+    {
+        if (r.Width < 1 || r.Height < 1) return;
+        using (GraphicsPath p = FxRound(r, rad))
+        {
+            using (SolidBrush b = new SolidBrush(fill)) g.FillPath(b, p);
+            if (border.A > 0) using (Pen pen = new Pen(border, 1F)) g.DrawPath(pen, p);
+        }
+    }
+
+    private static Color FxMix(Color a, Color b, float t)
+    {
+        return Color.FromArgb(a.A,
+            (int)(a.R + (b.R - a.R) * t),
+            (int)(a.G + (b.G - a.G) * t),
+            (int)(a.B + (b.B - a.B) * t));
+    }
+
+    private void FxCard(Graphics g, Rectangle r, string title, string icon, string badge)
+    {
+        FxFill(g, new RectangleF(r.X, r.Y + 2, r.Width - 1, r.Height - 1), 12, Color.FromArgb(214, 225, 242), Color.Empty);
+        FxFill(g, new RectangleF(r.X, r.Y, r.Width - 1, r.Height - 1), 12, Color.White, FX_LINE);
+        FxFill(g, new RectangleF(r.X + 1, r.Y + 12, 3.5f, 18), 1.7f, FX_ORANGE, Color.Empty);
+        FxIcon(g, icon, new Rectangle(r.X + 14, r.Y + 14, 14, 14), FX_ORANGE);
+        TextRenderer.DrawText(g, title, fxFCard, new Point(r.X + 34, r.Y + 13), FX_NAVY, TextFormatFlags.NoPadding);
+        if (!string.IsNullOrEmpty(badge))
+        {
+            Size ts = TextRenderer.MeasureText(g, title, fxFCard, Size.Empty, TextFormatFlags.NoPadding);
+            Size bs = TextRenderer.MeasureText(g, badge, fxFSmall, Size.Empty, TextFormatFlags.NoPadding);
+            Rectangle br = new Rectangle(r.X + 34 + ts.Width + 8, r.Y + 11, bs.Width + 14, 18);
+            FxFill(g, br, 9, Color.FromArgb(255, 237, 213), Color.Empty);
+            TextRenderer.DrawText(g, badge, fxFSmall, br, Color.FromArgb(194, 65, 12),
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+        }
+    }
+
+    private void FxFormPaint(object sender, PaintEventArgs e)
+    {
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.Clear(FX_BG);
+
+        // registration card
+        FxCard(g, FX_LEFT, "REGISTRATION", "user", null);
+        bool focus = mobilenumber != null && mobilenumber.Focused;
+        if (focus)
+            FxFill(g, RectangleF.Inflate(FX_MOBILE_BOX, 2, 2), 10, Color.FromArgb(46, FX_BLUE), Color.Empty);
+        FxFill(g, new RectangleF(FX_MOBILE_BOX.X, FX_MOBILE_BOX.Y, FX_MOBILE_BOX.Width - 1, FX_MOBILE_BOX.Height - 1), 8,
+            Color.White, focus ? FX_BLUE : FX_FIELD);
+        FxIcon(g, "phone", new Rectangle(FX_MOBILE_BOX.X + 13, FX_MOBILE_BOX.Y + 11, 12, 16), focus ? FX_BLUE : FX_ORANGE);
+        using (Pen sep = new Pen(Color.FromArgb(232, 237, 245)))
+            g.DrawLine(sep, FX_MOBILE_BOX.X + 32, FX_MOBILE_BOX.Y + 8, FX_MOBILE_BOX.X + 32, FX_MOBILE_BOX.Bottom - 9);
+
+        // bypassed UPI card
+        int count = listBox1 != null ? listBox1.Items.Count : 0;
+        FxCard(g, FX_RIGHT, "BYPASSED UPI", "upi", count + (count == 1 ? " ID" : " IDs"));
+        FxFill(g, new RectangleF(FX_LIST_BOX.X, FX_LIST_BOX.Y, FX_LIST_BOX.Width - 1, FX_LIST_BOX.Height - 1), 8, Color.White, FX_FIELD);
+        if (count == 0)
+            TextRenderer.DrawText(g, "No bypassed UPI yet", fxFBody, FX_LIST_BOX, FX_MUTED,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+
+        // SMS verification step
+        if (!fxSmsCard.IsEmpty)
+        {
+            FxCard(g, fxSmsCard, "SMS VERIFICATION", "sms", null);
+            FxFill(g, new RectangleF(fxSmsBox.X, fxSmsBox.Y, fxSmsBox.Width - 1, fxSmsBox.Height - 1), 8, Color.White, FX_FIELD);
+            FxFill(g, new RectangleF(fxQrBox.X, fxQrBox.Y, fxQrBox.Width - 1, fxQrBox.Height - 1), 8, Color.White, FX_FIELD);
+        }
+
+        // error banner (label2 shows the message)
+        if (!fxErr.IsEmpty)
+        {
+            FxFill(g, new RectangleF(fxErr.X, fxErr.Y, fxErr.Width - 1, fxErr.Height - 1), 8,
+                Color.FromArgb(254, 242, 242), Color.FromArgb(252, 165, 165));
+            FxIcon(g, "warn", new Rectangle(fxErr.X + 12, fxErr.Y + 10, 16, 16), FX_RED);
+        }
+
+        using (Pen p = new Pen(FX_FRAME))
+            g.DrawRectangle(p, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
     }
 
     private void ByteNovaFreechargeHeaderPaint(object sender, PaintEventArgs e)
     {
-        Rectangle r = pnlHeader.ClientRectangle;
-        if (r.Width < 2 || r.Height < 2) return;
+        Control c = sender as Control;
+        if (c == null || c.Width < 2 || c.Height < 2) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        Rectangle r = new Rectangle(0, 0, c.Width, c.Height);
 
-        using (LinearGradientBrush bg = new LinearGradientBrush(
-            r, Color.FromArgb(2, 23, 52), Color.FromArgb(5, 53, 91),
-            LinearGradientMode.Horizontal))
-            e.Graphics.FillRectangle(bg, r);
+        using (LinearGradientBrush bg = new LinearGradientBrush(r, FX_HEAD_L, FX_HEAD_R, LinearGradientMode.Horizontal))
+            g.FillRectangle(bg, r);
+        using (SolidBrush shine = new SolidBrush(Color.FromArgb(20, 255, 255, 255)))
+            g.FillRectangle(shine, 0, 0, c.Width, (c.Height - 3) / 2);
+        using (SolidBrush navy = new SolidBrush(FX_NAVY))
+            g.FillRectangle(navy, 0, c.Height - 3, c.Width, 3);
 
-        using (Pen cyanLine = new Pen(Color.FromArgb(198, 244, 50), 1.5F))
-            e.Graphics.DrawLine(cyanLine, 0, r.Height - 1, r.Width, r.Height - 1);
+        int h = c.Height - 3;
+        Rectangle badge = new Rectangle(12, (h - 28) / 2, 28, 28);
+        using (SolidBrush sh = new SolidBrush(Color.FromArgb(50, 0, 0, 0)))
+            g.FillEllipse(sh, badge.X, badge.Y + 1, badge.Width, badge.Height);
+        using (SolidBrush wb = new SolidBrush(Color.White))
+            g.FillEllipse(wb, badge);
+        FxIcon(g, "bolt", new Rectangle(badge.X + 8, badge.Y + 5, 12, 18), FX_ORANGE);
     }
 
     private void ByteNovaFreechargeClosePaint(object sender, PaintEventArgs e)
     {
         Control c = sender as Control;
         if (c == null) return;
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        Rectangle r = new Rectangle(1, 1, c.Width - 3, c.Height - 3);
-        using (LinearGradientBrush b = new LinearGradientBrush(r, Color.FromArgb(205, 32, 48), Color.FromArgb(105, 8, 24), LinearGradientMode.Vertical))
-            e.Graphics.FillRectangle(b, r);
-        using (Pen border = new Pen(Color.FromArgb(255, 92, 105), 1F)) e.Graphics.DrawRectangle(border, r);
-        int pad = 6;
-        using (Pen p = new Pen(Color.White, 1.8F))
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+
+        // repaint the ribbon underneath so the original image never shows through
+        Control p = c.Parent;
+        int pw = p != null ? Math.Max(1, p.Width) : c.Width;
+        int ph = p != null ? Math.Max(1, p.Height) : c.Height;
+        using (LinearGradientBrush bg = new LinearGradientBrush(new Rectangle(-c.Left, -c.Top, pw, ph), FX_HEAD_L, FX_HEAD_R, LinearGradientMode.Horizontal))
+            g.FillRectangle(bg, 0, 0, c.Width, c.Height);
+
+        // red by default, white + red X on hover, dark red when pressed
+        RectangleF r = new RectangleF(0.5f, fxCloseDown ? 1.5f : 0.5f, c.Width - 2, c.Height - 2);
+        Color fill = fxCloseDown ? Color.FromArgb(153, 27, 27) : fxCloseHot ? Color.White : FX_RED;
+        Color line = fxCloseDown ? Color.FromArgb(127, 29, 29) : fxCloseHot ? FX_RED : Color.FromArgb(185, 28, 28);
+        Color xc = fxCloseHot && !fxCloseDown ? FX_RED : Color.White;
+        FxFill(g, r, 7, fill, line);
+        float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f;
+        using (Pen x = new Pen(xc, 2.2F))
         {
-            p.StartCap = LineCap.Round; p.EndCap = LineCap.Round;
-            e.Graphics.DrawLine(p, pad, pad, c.Width - pad, c.Height - pad);
-            e.Graphics.DrawLine(p, c.Width - pad, pad, pad, c.Height - pad);
+            x.StartCap = LineCap.Round; x.EndCap = LineCap.Round;
+            g.DrawLine(x, cx - 5.5f, cy - 5.5f, cx + 5.5f, cy + 5.5f);
+            g.DrawLine(x, cx + 5.5f, cy - 5.5f, cx - 5.5f, cy + 5.5f);
         }
     }
 
-    private void StyleByteNovaControlTree(Control root, Color panel, Color field, Color cyan, Color gold, Color white)
+    private void FxButtonPaint(object sender, PaintEventArgs e)
     {
-        foreach (Control c in root.Controls)
-        {
-            TabControl tabs = c as TabControl;
-            if (tabs != null)
-            {
-                tabs.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
-                foreach (TabPage page in tabs.TabPages)
-                {
-                    page.UseVisualStyleBackColor = false;
-                    page.BackColor = panel;
-                    page.ForeColor = white;
-                }
-            }
-            else if (c is Panel && c != pnlHeader)
-            {
-                c.BackColor = panel;
-            }
-            else if (c is Label)
-            {
-                c.ForeColor = white;
-                c.BackColor = Color.Transparent;
-                c.Font = new Font("Segoe UI", 8.5F);
-            }
-            else if (c is CheckBox)
-            {
-                c.ForeColor = white;
-                c.BackColor = Color.Transparent;
-                c.Font = new Font("Segoe UI Semibold", 8F);
-            }
-            else if (c is TextBox)
-            {
-                c.BackColor = field;
-                c.ForeColor = Color.White;
-            }
-            else if (c is RichTextBox)
-            {
-                c.BackColor = field;
-                c.ForeColor = Color.White;
-            }
-
-            if (c.HasChildren)
-                StyleByteNovaControlTree(c, panel, field, cyan, gold, white);
-        }
-    }
-
-    private void StyleByteNovaAction(Button b, Color accent)
-    {
+        Button b = sender as Button;
         if (b == null) return;
-        b.UseVisualStyleBackColor = false;
-        b.FlatStyle = FlatStyle.Flat;
-        b.BackColor = accent;
-        b.ForeColor = Color.White;
-        b.FlatAppearance.BorderSize = 1;
-        b.FlatAppearance.BorderColor = Color.FromArgb(
-            Math.Min(255, accent.R + 45),
-            Math.Min(255, accent.G + 45),
-            Math.Min(255, accent.B + 45));
-        b.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.Clear(b.Parent != null ? (b.Parent == this ? Color.White : b.Parent.BackColor) : Color.White);
+
+        int st = FxSt(b);
+        bool on = b.Enabled;
+        string icon, text;
+        Color accent;
+        bool solid;
+        if (b == button1) { icon = "play"; text = "Start"; accent = FX_ORANGE; solid = true; }
+        else if (b == button2) { icon = "wallet"; text = "Check Balance"; accent = FX_BLUE; solid = true; }
+        else if (b == button3) { icon = "trash"; text = "Delete"; accent = FX_RED; solid = false; }
+        else if (b == btnCopy) { icon = "copy"; text = "Copy"; accent = FX_BLUE; solid = false; }
+        else if (b == btnNext) { icon = "next"; text = "Next"; accent = FX_ORANGE; solid = true; }
+        else { icon = ""; text = b.Text; accent = FX_BLUE; solid = true; }
+
+        RectangleF r = new RectangleF(0.5f, st == 2 ? 1.5f : 0.5f, b.Width - 2, b.Height - 3);
+        Color fg;
+        if (solid)
+        {
+            Color top = FxMix(accent, Color.White, 0.16f), bot = FxMix(accent, Color.Black, 0.08f);
+            if (st == 1) { top = FxMix(top, Color.White, 0.14f); bot = FxMix(bot, Color.White, 0.10f); }
+            if (st == 2) { top = FxMix(top, Color.Black, 0.12f); bot = FxMix(bot, Color.Black, 0.16f); }
+            if (!on) { top = FxMix(top, Color.White, 0.55f); bot = FxMix(bot, Color.White, 0.55f); }
+            if (st != 2 && on)
+                FxFill(g, new RectangleF(r.X, r.Y + 2, r.Width, r.Height), 9, Color.FromArgb(st == 1 ? 90 : 55, accent), Color.Empty);
+            using (GraphicsPath path = FxRound(r, 9))
+            using (LinearGradientBrush lb = new LinearGradientBrush(r, top, bot, LinearGradientMode.Vertical))
+                g.FillPath(lb, path);
+            fg = Color.White;
+        }
+        else
+        {
+            Color fill = st == 2 ? FxMix(accent, Color.White, 0.78f) : st == 1 ? FxMix(accent, Color.White, 0.90f) : Color.White;
+            FxFill(g, r, 9, fill, st == 0 ? FxMix(accent, Color.White, 0.55f) : accent);
+            fg = on ? FxMix(accent, Color.Black, 0.1f) : Color.FromArgb(148, 163, 184);
+        }
+
+        Size ts = TextRenderer.MeasureText(g, text, fxFBtn, Size.Empty, TextFormatFlags.NoPadding);
+        int iw = icon.Length > 0 ? 16 + 8 : 0;
+        int x = (int)(r.X + (r.Width - iw - ts.Width) / 2);
+        int cy = (int)(r.Y + r.Height / 2);
+        if (iw > 0) FxIcon(g, icon, new Rectangle(x, cy - 8, 16, 16), fg);
+        TextRenderer.DrawText(g, text, fxFBtn, new Rectangle(x + iw, cy - ts.Height / 2 - 1, ts.Width + 4, ts.Height + 2), fg,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+    }
+
+    // Checkbox drawn as a slider switch with a two-line label (the CheckBox Text itself is not changed).
+    private void FxTogglePaint(object sender, PaintEventArgs e)
+    {
+        CheckBox c = sender as CheckBox;
+        if (c == null) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.Clear(Color.White);
+
+        int st = FxSt(c);
+        bool on = c.Checked;
+        float th = 20, tw = 38, ty = (c.Height - th) / 2f;
+        RectangleF track = new RectangleF(1, ty, tw, th);
+        Color t = on ? FX_ORANGE : Color.FromArgb(203, 213, 225);
+        if (st == 1) t = on ? FxMix(t, Color.White, 0.12f) : Color.FromArgb(186, 198, 214);
+        if (st == 2) t = FxMix(t, Color.Black, 0.12f);
+        if (!c.Enabled) t = FxMix(t, Color.White, 0.5f);
+        if (on && st != 2) FxFill(g, RectangleF.Inflate(track, 2, 2), th / 2 + 2, Color.FromArgb(50, FX_ORANGE), Color.Empty);
+        FxFill(g, track, th / 2, t, Color.Empty);
+        float kd = th - 4, kx = on ? track.Right - kd - 2 : track.X + 2;
+        using (SolidBrush sh = new SolidBrush(Color.FromArgb(45, 0, 0, 0))) g.FillEllipse(sh, kx, ty + 3, kd, kd);
+        using (SolidBrush kb = new SolidBrush(Color.White)) g.FillEllipse(kb, kx, ty + 2, kd, kd);
+        if (on)
+            using (Pen tick = new Pen(FX_ORANGE, 1.6F))
+            {
+                tick.StartCap = LineCap.Round; tick.EndCap = LineCap.Round;
+                float cx = kx + kd / 2, cy = ty + 2 + kd / 2;
+                g.DrawLines(tick, new[] { new PointF(cx - 3.5f, cy), new PointF(cx - 1, cy + 3), new PointF(cx + 4, cy - 3) });
+            }
+
+        int tx = (int)tw + 12;
+        TextRenderer.DrawText(g, "Use IP for registration", fxFCaption, new Rectangle(tx, 2, c.Width - tx, c.Height / 2),
+            on ? Color.FromArgb(194, 65, 12) : FX_TEXT,
+            TextFormatFlags.Left | TextFormatFlags.Bottom | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
+        TextRenderer.DrawText(g, "Only for foreign VPS  -  asks IP:PORT:USER:PASS", fxFSmall,
+            new Rectangle(tx, c.Height / 2 + 2, c.Width - tx, c.Height / 2 - 2), FX_MUTED,
+            TextFormatFlags.Left | TextFormatFlags.Top | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
+    }
+
+    private void FxListDraw(object sender, DrawItemEventArgs e)
+    {
+        ListBox lb = sender as ListBox;
+        if (lb == null) return;
+        Graphics g = e.Graphics;
+        using (SolidBrush w = new SolidBrush(Color.White)) g.FillRectangle(w, e.Bounds);
+        if (e.Index < 0 || e.Index >= lb.Items.Count) return;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+
+        bool sel = (e.State & DrawItemState.Selected) != 0;
+        bool hot = e.Index == fxHotItem;
+        RectangleF row = new RectangleF(e.Bounds.X + 3, e.Bounds.Y + 2, e.Bounds.Width - 7, e.Bounds.Height - 4);
+        if (sel)
+        {
+            FxFill(g, row, 6, Color.FromArgb(255, 237, 213), Color.Empty);
+            FxFill(g, new RectangleF(row.X, row.Y + 5, 3, row.Height - 10), 1.5f, FX_ORANGE, Color.Empty);
+        }
+        else if (hot)
+        {
+            FxFill(g, row, 6, Color.FromArgb(239, 246, 255), Color.Empty);
+        }
+
+        Color ic = sel ? FX_ORANGE : FX_BLUE;
+        FxIcon(g, "upi", new Rectangle(e.Bounds.X + 12, e.Bounds.Y + (e.Bounds.Height - 14) / 2, 14, 14), ic);
+        string text = lb.GetItemText(lb.Items[e.Index]);
+        TextRenderer.DrawText(g, text, sel ? fxFCaption : fxFBody,
+            new Rectangle(e.Bounds.X + 34, e.Bounds.Y, e.Bounds.Width - 40, e.Bounds.Height),
+            sel ? Color.FromArgb(154, 52, 18) : FX_TEXT,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine |
+            TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
+    }
+
+    private void FxListMove(object sender, MouseEventArgs e)
+    {
+        int i = listBox1.IndexFromPoint(e.Location);
+        if (i == fxHotItem) return;
+        int o = fxHotItem;
+        fxHotItem = i;
+        FxInvItem(o);
+        FxInvItem(i);
+    }
+
+    private void FxInvItem(int i)
+    {
+        if (listBox1 == null || listBox1.IsDisposed || i < 0 || i >= listBox1.Items.Count) return;
+        listBox1.Invalidate(listBox1.GetItemRectangle(i));
+    }
+
+    private static void FxIcon(Graphics g, string kind, Rectangle r, Color c)
+    {
+        SmoothingMode old = g.SmoothingMode;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        float x = r.X, y = r.Y, w = r.Width, h = r.Height;
+        using (Pen p = new Pen(c, 1.6F))
+        using (SolidBrush b = new SolidBrush(c))
+        {
+            p.StartCap = LineCap.Round; p.EndCap = LineCap.Round; p.LineJoin = LineJoin.Round;
+            switch (kind)
+            {
+                case "play":
+                    g.FillPolygon(b, new[] { new PointF(x + w * 0.22f, y + h * 0.1f), new PointF(x + w * 0.9f, y + h / 2), new PointF(x + w * 0.22f, y + h * 0.9f) });
+                    break;
+                case "next":
+                    g.DrawLine(p, x + w * 0.1f, y + h / 2, x + w * 0.85f, y + h / 2);
+                    g.DrawLines(p, new[] { new PointF(x + w * 0.55f, y + h * 0.2f), new PointF(x + w * 0.88f, y + h / 2), new PointF(x + w * 0.55f, y + h * 0.8f) });
+                    break;
+                case "copy":
+                    using (GraphicsPath a = FxRound(new RectangleF(x + w * 0.3f, y + h * 0.05f, w * 0.62f, h * 0.65f), 2)) g.DrawPath(p, a);
+                    using (GraphicsPath a = FxRound(new RectangleF(x + w * 0.08f, y + h * 0.3f, w * 0.62f, h * 0.65f), 2)) g.DrawPath(p, a);
+                    break;
+                case "trash":
+                    g.DrawLine(p, x + w * 0.08f, y + h * 0.22f, x + w * 0.92f, y + h * 0.22f);
+                    g.DrawLine(p, x + w * 0.36f, y + h * 0.06f, x + w * 0.64f, y + h * 0.06f);
+                    g.DrawPolygon(p, new[] { new PointF(x + w * 0.2f, y + h * 0.32f), new PointF(x + w * 0.8f, y + h * 0.32f), new PointF(x + w * 0.72f, y + h * 0.95f), new PointF(x + w * 0.28f, y + h * 0.95f) });
+                    break;
+                case "wallet":
+                    using (GraphicsPath a = FxRound(new RectangleF(x + w * 0.06f, y + h * 0.22f, w * 0.88f, h * 0.66f), 2.5f)) g.DrawPath(p, a);
+                    g.DrawLine(p, x + w * 0.18f, y + h * 0.22f, x + w * 0.68f, y + h * 0.06f);
+                    g.FillEllipse(b, x + w * 0.66f, y + h * 0.48f, w * 0.14f, h * 0.14f);
+                    break;
+                case "phone":
+                    using (GraphicsPath a = FxRound(new RectangleF(x + w * 0.1f, y, w * 0.8f, h), 2.5f)) g.DrawPath(p, a);
+                    g.DrawLine(p, x + w * 0.4f, y + h * 0.86f, x + w * 0.6f, y + h * 0.86f);
+                    break;
+                case "user":
+                    g.DrawEllipse(p, x + w * 0.3f, y, w * 0.4f, h * 0.42f);
+                    g.DrawArc(p, x + w * 0.08f, y + h * 0.5f, w * 0.84f, h * 0.9f, 180, 180);
+                    break;
+                case "upi":
+                    g.DrawEllipse(p, x, y, w, h);
+                    using (Font f = new Font("Segoe UI", Math.Max(5f, h * 0.48f), FontStyle.Bold, GraphicsUnit.Pixel))
+                        TextRenderer.DrawText(g, "@", f, new Rectangle(r.X, r.Y - 1, r.Width + 1, r.Height + 1), c,
+                            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+                    break;
+                case "sms":
+                    using (GraphicsPath a = FxRound(new RectangleF(x, y + h * 0.08f, w, h * 0.68f), 3)) g.DrawPath(p, a);
+                    g.DrawLine(p, x + w * 0.3f, y + h * 0.76f, x + w * 0.22f, y + h);
+                    g.DrawLine(p, x + w * 0.25f, y + h * 0.42f, x + w * 0.75f, y + h * 0.42f);
+                    break;
+                case "bolt":
+                    g.FillPolygon(b, new[] { new PointF(x + w * 0.62f, y), new PointF(x, y + h * 0.58f), new PointF(x + w * 0.46f, y + h * 0.58f),
+                                             new PointF(x + w * 0.36f, y + h), new PointF(x + w, y + h * 0.4f), new PointF(x + w * 0.54f, y + h * 0.4f) });
+                    break;
+                case "warn":
+                    g.FillEllipse(b, x, y, w, h);
+                    using (Pen wp = new Pen(Color.White, 2F))
+                    {
+                        wp.StartCap = LineCap.Round; wp.EndCap = LineCap.Round;
+                        g.DrawLine(wp, x + w / 2, y + h * 0.25f, x + w / 2, y + h * 0.55f);
+                    }
+                    using (SolidBrush wb = new SolidBrush(Color.White))
+                        g.FillEllipse(wb, x + w / 2 - 1.2f, y + h * 0.68f, 2.4f, 2.4f);
+                    break;
+            }
+        }
+        g.SmoothingMode = old;
     }
 
     private void InitializeComponent()

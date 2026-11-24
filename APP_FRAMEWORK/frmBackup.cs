@@ -114,224 +114,695 @@ internal class frmBackup : Form
     }
 
 
+    // =====================================================================
+    // Express theme (light + bhagwa) visual layer.
+    // Only colours / layout / painting. Backup, restore, delete and import/export
+    // logic, control names, Checked/Enabled handling are untouched.
+    // =====================================================================
+    private static readonly Color XB_BG = Color.FromArgb(236, 242, 251);
+    private static readonly Color XB_ORANGE = Color.FromArgb(245, 146, 28);
+    private static readonly Color XB_ORANGE_D = Color.FromArgb(214, 96, 4);
+    private static readonly Color XB_ORANGE_L = Color.FromArgb(248, 158, 44);
+    private static readonly Color XB_NAVY = Color.FromArgb(15, 42, 92);
+    private static readonly Color XB_BLUE = Color.FromArgb(37, 99, 235);
+    private static readonly Color XB_TEXT = Color.FromArgb(30, 41, 59);
+    private static readonly Color XB_MUTED = Color.FromArgb(100, 116, 139);
+    private static readonly Color XB_LINE = Color.FromArgb(220, 228, 241);
+    private static readonly Color XB_FIELD = Color.FromArgb(203, 213, 225);
+    private static readonly Color XB_FRAME = Color.FromArgb(178, 196, 226);
+    private static readonly Color XB_RED = Color.FromArgb(220, 38, 38);
+
+    private const int XB_W = 560, XB_H = 332, XB_HEAD = 44;
+    private static readonly Rectangle XB_CARD = new Rectangle(12, 96, 536, 186);
+    private static readonly Rectangle XB_PAGE = new Rectangle(18, 102, 524, 174);
+    private static readonly Rectangle XB_NOTE = new Rectangle(12, 290, 536, 34);
+    private static readonly string[] XB_TABS = { "Backup", "Restore", "Delete" };
+    private static readonly string[] XB_TAB_ICONS = { "upload", "download", "trash" };
+
+    private readonly Font xbFTitle = new Font("Segoe UI Semibold", 11.5F);
+    private readonly Font xbFTab = new Font("Segoe UI Semibold", 9.5F);
+    private readonly Font xbFSection = new Font("Segoe UI Semibold", 10F);
+    private readonly Font xbFSub = new Font("Segoe UI", 8.25F);
+    private readonly Font xbFCaption = new Font("Segoe UI Semibold", 8.25F);
+    private readonly Font xbFChip = new Font("Segoe UI Semibold", 8.75F);
+    private readonly Font xbFField = new Font("Segoe UI", 9.75F);
+    private readonly Font xbFBtn = new Font("Segoe UI Semibold", 9.25F);
+    private readonly Font xbFNote = new Font("Segoe UI Semibold", 8.25F);
+
+    private readonly System.Collections.Generic.Dictionary<Control, int> xbHover =
+        new System.Collections.Generic.Dictionary<Control, int>();
+    private int xbHotTab = -1;
+    private bool xbCloseHot, xbCloseDown;
+
+    [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, string lParam);
+
     private void ApplyByteNovaLatestUI()
     {
-        // ByteNova latest visual layer only. Existing backup/restore/delete logic is untouched.
         SuspendLayout();
 
-        BackColor = Color.FromArgb(3, 13, 29);
-        ForeColor = Color.White;
+        BackColor = XB_BG;
+        ForeColor = XB_TEXT;
         FormBorderStyle = FormBorderStyle.None;
-        ClientSize = new Size(505, 270);
+        ClientSize = new Size(XB_W, XB_H);
+        DoubleBuffered = true;
 
-        // frmMain-style compact ByteNova header.
-        pnlHeader.Dock = DockStyle.None;
-        pnlHeader.SetBounds(5, 5, 495, 23);
-        pnlHeader.BackColor = Color.FromArgb(3, 29, 59);
-        pnlHeader.ForeColor = Color.White;
+        // ---- header ribbon ----
+        pnlHeader.Dock = DockStyle.Top;
+        pnlHeader.Height = XB_HEAD;
+        pnlHeader.BackColor = XB_ORANGE_D;
+        XbBuffer(pnlHeader);
         pnlHeader.Paint -= ByteNovaBackupHeaderPaint;
         pnlHeader.Paint += ByteNovaBackupHeaderPaint;
 
         B2AAA.AutoSize = false;
-        B2AAA.SetBounds(9, 1, 420, 21);
-        B2AAA.Text = "BACKUP & RESTORE  _  EXPRESS";
-        B2AAA.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
+        B2AAA.UseMnemonic = false;
+        B2AAA.Text = "Backup & Restore";
+        B2AAA.Font = xbFTitle;
         B2AAA.ForeColor = Color.White;
         B2AAA.BackColor = Color.Transparent;
         B2AAA.TextAlign = ContentAlignment.MiddleLeft;
+        B2AAA.SetBounds(52, 0, 360, XB_HEAD - 3);
 
-        // frmMain-style Close button.
-        btnClose.SetBounds(468, 1, 22, 21);
+        // close button: red by default, white/red on hover, dark red when pressed
+        btnClose.Zoom = 0;
         btnClose.BackColor = Color.Transparent;
         btnClose.BackgroundImage = null;
-        btnClose.BackgroundImageLayout = ImageLayout.Zoom;
-        btnClose.SizeMode = PictureBoxSizeMode.Zoom;
-        btnClose.Zoom = 0;
+        btnClose.Cursor = Cursors.Hand;
+        btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        btnClose.Size = new Size(32, 26);
+        btnClose.Location = new Point(XB_W - 12 - 32, (XB_HEAD - 3 - 26) / 2);
+        btnClose.Paint -= XbClosePaint;
+        btnClose.Paint += XbClosePaint;
+        btnClose.MouseEnter += delegate { xbCloseHot = true; btnClose.Invalidate(); };
+        btnClose.MouseLeave += delegate { xbCloseHot = false; xbCloseDown = false; btnClose.Invalidate(); };
+        btnClose.MouseDown += delegate { xbCloseDown = true; btnClose.Invalidate(); };
+        btnClose.MouseUp += delegate { xbCloseDown = false; if (!btnClose.IsDisposed) btnClose.Invalidate(); };
+        btnClose.BringToFront();
 
-        // Main tab card.
-        tabControl1.SetBounds(5, 43, 495, 202);
-        tabControl1.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
-        tabControl1.Appearance = TabAppearance.Normal;
-
+        // ---- tabs: native strip hidden, custom pill strip painted on the form ----
+        tabControl1.Appearance = TabAppearance.FlatButtons;
+        tabControl1.SizeMode = TabSizeMode.Fixed;
+        tabControl1.ItemSize = new Size(0, 1);
+        tabControl1.Font = xbFTab;
         TabPage[] pages = { tabPage1, tabPage2, tabPage3 };
         foreach (TabPage page in pages)
         {
-            page.BackColor = Color.FromArgb(7, 25, 45);
-            page.ForeColor = Color.White;
+            page.UseVisualStyleBackColor = false;
+            page.BackColor = Color.White;
+            page.ForeColor = XB_TEXT;
+            page.Padding = new Padding(0);
         }
+        tabControl1.SetBounds(XB_PAGE.X - 4, XB_PAGE.Y - 4, XB_PAGE.Width + 8, XB_PAGE.Height + 8);
+        tabControl1.HandleCreated += delegate { XbPlaceTabs(); };
+        tabControl1.SelectedIndexChanged += delegate { Invalidate(XbStripRect()); };
+        Load += delegate { XbPlaceTabs(); };
+        XbPlaceTabs();
 
-        StyleByteNovaGroup(groupBox1);
-        StyleByteNovaGroup(groupBox2);
-        StyleByteNovaGroup(B1AAA);
+        MouseMove += XbFormMouseMove;
+        MouseLeave += delegate { if (xbHotTab != -1) { xbHotTab = -1; Invalidate(XbStripRect()); Cursor = Cursors.Default; } };
+        MouseDown += XbFormMouseDown;
 
-        // Backup tab.
-        StyleByteNovaCheck(chkAll);
-        StyleByteNovaCheck(chkIRCTC);
-        StyleByteNovaCheck(chkBank);
-        StyleByteNovaCheck(chkTicket);
-        StyleByteNovaCheck(chkHistory);
-        StyleByteNovaLabel(label6);
-        StyleByteNovaLabel(label7);
-        StyleByteNovaTextBox(txtPwd);
-        StyleByteNovaTextBox(textBox_0);
-        StyleByteNovaButton(btnBackup, Color.FromArgb(0, 132, 190));
+        // ---- sections ----
+        XbSection(groupBox1);
+        XbSection(groupBox2);
+        XbSection(B1AAA);
 
-        // Restore tab.
-        StyleByteNovaLabel(C0AA0);
-        StyleByteNovaLabel(label5);
-        StyleByteNovaCheck(KeepExisting);
-        StyleByteNovaTextBox(txtFile);
-        StyleByteNovaTextBox(txtResPwd);
-        StyleByteNovaButton(btnBrowse, Color.FromArgb(72, 64, 180));
-        StyleByteNovaButton(btnRestore, Color.FromArgb(0, 132, 105));
+        // Backup tab
+        XbChipControl(chkAll, 14, 40, 146);
+        XbChipControl(chkIRCTC, 168, 40, 160);
+        XbChipControl(chkBank, 336, 40, 146);
+        XbChipControl(chkTicket, 14, 74, 146);
+        XbChipControl(chkHistory, 168, 74, 160);
+        XbCaption(label6, 14, 108, 170, "Backup Password");
+        XbCaption(label7, 198, 108, 170, "Confirm Password");
+        XbField(txtPwd, new Rectangle(14, 126, 172, 34), "Enter password");
+        XbField(textBox_0, new Rectangle(198, 126, 172, 34), "Re-enter password");
+        XbButton(btnBackup, new Rectangle(382, 126, 128, 34), "Backup", "upload", 1);
 
-        // Delete / import-export tab.
-        RadioButton[] radios = { radioButton1, radioButton2, radioButton3, radioButton4, C1AA0 };
-        foreach (RadioButton r in radios)
-            StyleByteNovaRadio(r);
-        StyleByteNovaButton(button2, Color.FromArgb(20, 100, 180));
-        StyleByteNovaButton(button3, Color.FromArgb(0, 132, 105));
-        StyleByteNovaButton(button1, Color.FromArgb(175, 48, 62));
+        // Restore tab
+        XbCaption(C0AA0, 14, 40, 200, "Backup File");
+        XbField(txtFile, new Rectangle(14, 58, 360, 34), "Choose a backup file...");
+        XbButton(btnBrowse, new Rectangle(384, 58, 126, 34), "Browse", "folder", 0);
+        XbCaption(label5, 14, 104, 200, "File Password");
+        XbField(txtResPwd, new Rectangle(14, 122, 178, 34), "Backup file password");
+        XbChipControl(KeepExisting, 202, 125, 172);
+        XbButton(btnRestore, new Rectangle(384, 122, 126, 34), "Restore", "download", 1);
 
-        // Security note at the bottom.
-        label4.SetBounds(10, 248, 485, 17);
-        label4.Font = new Font("Segoe UI Semibold", 7.8F, FontStyle.Bold);
-        label4.ForeColor = Color.FromArgb(255, 205, 80);
+        // Delete tab
+        XbChipControl(radioButton2, 14, 40, 150);
+        XbChipControl(radioButton3, 172, 40, 150);
+        XbChipControl(radioButton4, 330, 40, 150);
+        XbChipControl(C1AA0, 14, 74, 150);
+        XbChipControl(radioButton1, 172, 74, 150);
+        XbButton(button2, new Rectangle(14, 124, 150, 34), "Export Tickets", "export", 0);
+        XbButton(button3, new Rectangle(172, 124, 150, 34), "Import Tickets", "import", 0);
+        XbButton(button1, new Rectangle(330, 124, 180, 34), "Delete Data", "trash", 2);
+
+        // ---- security note: soft amber bar ----
+        label4.AutoSize = false;
+        label4.Bounds = new Rectangle(XB_NOTE.X + 34, XB_NOTE.Y + 1, XB_NOTE.Width - 42, XB_NOTE.Height - 2);
+        label4.Font = xbFNote;
+        label4.ForeColor = Color.FromArgb(154, 52, 18);
         label4.BackColor = Color.Transparent;
         label4.TextAlign = ContentAlignment.MiddleLeft;
 
+        Paint -= XbFormPaint;
+        Paint += XbFormPaint;
+
         ResumeLayout(false);
         PerformLayout();
+        Invalidate(true);
+    }
+
+    private static void XbBuffer(Control c)
+    {
+        try
+        {
+            typeof(Control).GetProperty("DoubleBuffered",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .SetValue(c, true, null);
+        }
+        catch { }
+    }
+
+    private void XbPlaceTabs()
+    {
+        if (tabControl1 == null || tabControl1.IsDisposed || !tabControl1.IsHandleCreated) return;
+        for (int i = 0; i < 2; i++)
+        {
+            Rectangle d = tabControl1.DisplayRectangle;
+            tabControl1.Bounds = new Rectangle(XB_PAGE.X - d.X, XB_PAGE.Y - d.Y,
+                XB_PAGE.Width + (tabControl1.Width - d.Width), XB_PAGE.Height + (tabControl1.Height - d.Height));
+        }
+        // show only the page area; the native tab buttons / border are clipped away
+        tabControl1.Region = new Region(tabControl1.DisplayRectangle);
+    }
+
+    // ---------- hover helpers ----------
+
+    private void XbHook(Control c)
+    {
+        if (c == null || xbHover.ContainsKey(c)) return;
+        xbHover[c] = 0;
+        c.MouseEnter += delegate { xbHover[c] = 1; c.Invalidate(); };
+        c.MouseLeave += delegate { xbHover[c] = 0; c.Invalidate(); };
+        c.MouseDown += delegate (object s, MouseEventArgs e) { if (e.Button == MouseButtons.Left) { xbHover[c] = 2; c.Invalidate(); } };
+        c.MouseUp += delegate
+        {
+            if (c.IsDisposed) return;
+            xbHover[c] = c.ClientRectangle.Contains(c.PointToClient(MousePosition)) ? 1 : 0;
+            c.Invalidate();
+        };
+        c.EnabledChanged += delegate { xbHover[c] = 0; c.Invalidate(); };
+    }
+
+    private int XbState(Control c)
+    {
+        int s;
+        return c != null && xbHover.TryGetValue(c, out s) ? s : 0;
+    }
+
+    // ---------- control set-up ----------
+
+    private void XbSection(GroupBox box)
+    {
+        if (box == null) return;
+        box.Dock = DockStyle.Fill;
+        box.BackColor = Color.White;
+        box.ForeColor = XB_TEXT;
+        XbBuffer(box);
+        box.Paint -= XbSectionPaint;
+        box.Paint += XbSectionPaint;
+    }
+
+    private void XbCaption(Label l, int x, int y, int w, string text)
+    {
+        if (l == null) return;
+        l.AutoSize = false;
+        l.UseMnemonic = false;
+        l.Text = text;
+        l.Font = xbFCaption;
+        l.ForeColor = XB_MUTED;
+        l.BackColor = Color.Transparent;
+        l.TextAlign = ContentAlignment.MiddleLeft;
+        l.SetBounds(x + 2, y, w, 16);
+    }
+
+    private void XbField(TextBox tb, Rectangle box, string cue)
+    {
+        if (tb == null) return;
+        tb.BorderStyle = BorderStyle.None;
+        tb.BackColor = Color.White;
+        tb.ForeColor = XB_TEXT;
+        tb.Font = xbFField;
+        tb.Tag = box;                         // painted field box (parent coords)
+        int h = tb.PreferredHeight;
+        tb.SetBounds(box.X + 30, box.Y + (box.Height - h) / 2, box.Width - 38, h);
+        tb.Enter += delegate { if (tb.Parent != null) tb.Parent.Invalidate(Rectangle.Inflate(box, 3, 3)); };
+        tb.Leave += delegate { if (tb.Parent != null) tb.Parent.Invalidate(Rectangle.Inflate(box, 3, 3)); };
+        tb.MouseEnter += delegate { xbHover[tb] = 1; if (tb.Parent != null) tb.Parent.Invalidate(Rectangle.Inflate(box, 3, 3)); };
+        tb.MouseLeave += delegate { xbHover[tb] = 0; if (tb.Parent != null) tb.Parent.Invalidate(Rectangle.Inflate(box, 3, 3)); };
+        EventHandler setCue = delegate
+        {
+            try { SendMessage(tb.Handle, 0x1501, (IntPtr)1, cue); } catch { }   // EM_SETCUEBANNER
+        };
+        if (tb.IsHandleCreated) setCue(tb, EventArgs.Empty);
+        tb.HandleCreated += setCue;
+    }
+
+    private void XbChipControl(ButtonBase c, int x, int y, int w)
+    {
+        if (c == null) return;
+        c.AutoSize = false;
+        c.SetBounds(x, y, w, 28);
+        c.FlatStyle = FlatStyle.Flat;
+        c.BackColor = Color.White;
+        c.ForeColor = XB_TEXT;
+        c.Font = xbFChip;
+        c.Cursor = Cursors.Hand;
+        XbBuffer(c);
+        XbHook(c);
+        c.Paint -= XbChipPaint;
+        c.Paint += XbChipPaint;
+        CheckBox cb = c as CheckBox;
+        if (cb != null) cb.CheckedChanged += delegate { cb.Invalidate(); };
+        RadioButton rb = c as RadioButton;
+        if (rb != null) rb.CheckedChanged += delegate { rb.Invalidate(); };
+    }
+
+    private void XbButton(Button b, Rectangle r, string caption, string icon, int kind)
+    {
+        if (b == null) return;
+        b.Bounds = r;
+        b.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        b.FlatStyle = FlatStyle.Flat;
+        b.FlatAppearance.BorderSize = 0;
+        b.FlatAppearance.MouseOverBackColor = Color.White;
+        b.FlatAppearance.MouseDownBackColor = Color.White;
+        b.BackColor = Color.White;
+        b.UseVisualStyleBackColor = false;
+        b.Image = null;
+        b.Cursor = Cursors.Hand;
+        b.AccessibleName = caption;
+        b.Tag = new object[] { caption, icon, kind };   // 0 = outline, 1 = bhagwa primary, 2 = danger
+        XbBuffer(b);
+        XbHook(b);
+        b.Paint -= XbButtonPaint;
+        b.Paint += XbButtonPaint;
+    }
+
+    // ---------- painting ----------
+
+    private static System.Drawing.Drawing2D.GraphicsPath XbRound(RectangleF r, float rad)
+    {
+        System.Drawing.Drawing2D.GraphicsPath p = new System.Drawing.Drawing2D.GraphicsPath();
+        float d = Math.Min(rad * 2, Math.Min(r.Width, r.Height));
+        if (d < 1) { p.AddRectangle(r); return p; }
+        p.AddArc(r.X, r.Y, d, d, 180, 90);
+        p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+        p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+        p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+        p.CloseFigure();
+        return p;
+    }
+
+    private static void XbFill(Graphics g, RectangleF r, float rad, Color fill, Color border)
+    {
+        if (r.Width < 1 || r.Height < 1) return;
+        using (System.Drawing.Drawing2D.GraphicsPath p = XbRound(r, rad))
+        {
+            using (SolidBrush b = new SolidBrush(fill)) g.FillPath(b, p);
+            if (border.A > 0) using (Pen pen = new Pen(border, 1F)) g.DrawPath(pen, p);
+        }
+    }
+
+    private static Color XbMix(Color a, Color b, float t)
+    {
+        return Color.FromArgb(a.A, (int)(a.R + (b.R - a.R) * t), (int)(a.G + (b.G - a.G) * t), (int)(a.B + (b.B - a.B) * t));
     }
 
     private void ByteNovaBackupHeaderPaint(object sender, PaintEventArgs e)
     {
         Rectangle r = pnlHeader.ClientRectangle;
         if (r.Width < 2 || r.Height < 2) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-        using (System.Drawing.Drawing2D.LinearGradientBrush bg =
-            new System.Drawing.Drawing2D.LinearGradientBrush(
-                r, Color.FromArgb(2, 23, 52), Color.FromArgb(5, 53, 91),
-                System.Drawing.Drawing2D.LinearGradientMode.Horizontal))
-            e.Graphics.FillRectangle(bg, r);
+        using (System.Drawing.Drawing2D.LinearGradientBrush bg = new System.Drawing.Drawing2D.LinearGradientBrush(
+            r, XB_ORANGE_D, XB_ORANGE_L, System.Drawing.Drawing2D.LinearGradientMode.Horizontal))
+            g.FillRectangle(bg, r);
+        using (SolidBrush shine = new SolidBrush(Color.FromArgb(20, 255, 255, 255)))
+            g.FillRectangle(shine, 0, 0, r.Width, (r.Height - 3) / 2);
+        using (SolidBrush navy = new SolidBrush(XB_NAVY))
+            g.FillRectangle(navy, 0, r.Height - 3, r.Width, 3);
 
-        using (Pen cyan = new Pen(Color.FromArgb(198, 244, 50), 1.5F))
-            e.Graphics.DrawLine(cyan, 0, r.Height - 1, r.Width, r.Height - 1);
+        // badge with a database / backup icon
+        int h = r.Height - 3;
+        Rectangle badge = new Rectangle(14, (h - 28) / 2, 28, 28);
+        using (SolidBrush sh = new SolidBrush(Color.FromArgb(45, 0, 0, 0)))
+            g.FillEllipse(sh, badge.X, badge.Y + 1, badge.Width, badge.Height);
+        using (SolidBrush wb = new SolidBrush(Color.White))
+            g.FillEllipse(wb, badge);
+        XbIcon(g, "database", new Rectangle(badge.X + 7, badge.Y + 6, 14, 16), XB_ORANGE_D);
     }
 
-    private void StyleByteNovaGroup(GroupBox box)
+    private void XbClosePaint(object sender, PaintEventArgs e)
     {
+        Control c = sender as Control;
+        if (c == null) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
+        // ribbon gradient underneath so the old image never shows
+        Control p = c.Parent;
+        int pw = p != null ? Math.Max(1, p.Width) : c.Width;
+        int ph = p != null ? Math.Max(1, p.Height) : c.Height;
+        using (System.Drawing.Drawing2D.LinearGradientBrush bg = new System.Drawing.Drawing2D.LinearGradientBrush(
+            new Rectangle(-c.Left, -c.Top, pw, ph), XB_ORANGE_D, XB_ORANGE_L, System.Drawing.Drawing2D.LinearGradientMode.Horizontal))
+            g.FillRectangle(bg, 0, 0, c.Width, c.Height);
+
+        RectangleF r = new RectangleF(0.5f, xbCloseDown ? 1.5f : 0.5f, c.Width - 2, c.Height - 2);
+        Color fill, line, x;
+        if (xbCloseDown) { fill = Color.FromArgb(153, 27, 27); line = Color.FromArgb(127, 29, 29); x = Color.White; }
+        else if (xbCloseHot) { fill = Color.White; line = XB_RED; x = XB_RED; }
+        else { fill = XB_RED; line = Color.FromArgb(185, 28, 28); x = Color.White; }
+        if (!xbCloseDown)
+            XbFill(g, new RectangleF(r.X, r.Y + 1.5f, r.Width, r.Height), 7, Color.FromArgb(60, 120, 20, 0), Color.Empty);
+        XbFill(g, r, 7, fill, line);
+
+        float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f;
+        using (Pen pen = new Pen(x, 2.2F))
+        {
+            pen.StartCap = System.Drawing.Drawing2D.LineCap.Round;
+            pen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+            g.DrawLine(pen, cx - 5.5f, cy - 5.5f, cx + 5.5f, cy + 5.5f);
+            g.DrawLine(pen, cx + 5.5f, cy - 5.5f, cx - 5.5f, cy + 5.5f);
+        }
+    }
+
+    private Rectangle XbTabRect(int i)
+    {
+        return new Rectangle(14 + i * 128, XB_HEAD + 12, 120, 32);
+    }
+
+    private Rectangle XbStripRect()
+    {
+        return new Rectangle(10, XB_HEAD + 8, XB_W - 20, 42);
+    }
+
+    private void XbFormMouseMove(object sender, MouseEventArgs e)
+    {
+        int hit = -1;
+        for (int i = 0; i < XB_TABS.Length; i++)
+            if (XbTabRect(i).Contains(e.Location)) { hit = i; break; }
+        if (hit != xbHotTab)
+        {
+            xbHotTab = hit;
+            Invalidate(XbStripRect());
+        }
+        Cursor = hit >= 0 ? Cursors.Hand : Cursors.Default;
+    }
+
+    private void XbFormMouseDown(object sender, MouseEventArgs e)
+    {
+        if (e.Button != MouseButtons.Left) return;
+        for (int i = 0; i < XB_TABS.Length; i++)
+        {
+            if (!XbTabRect(i).Contains(e.Location)) continue;
+            if (i < tabControl1.TabCount) tabControl1.SelectedIndex = i;
+            Invalidate(XbStripRect());
+            return;
+        }
+    }
+
+    private void XbFormPaint(object sender, PaintEventArgs e)
+    {
+        Graphics g = e.Graphics;
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        g.Clear(XB_BG);
+
+        // tab pills
+        for (int i = 0; i < XB_TABS.Length; i++)
+        {
+            Rectangle tr = XbTabRect(i);
+            bool active = tabControl1.SelectedIndex == i;
+            bool hot = xbHotTab == i && !active;
+            RectangleF rf = new RectangleF(tr.X, tr.Y, tr.Width - 1, tr.Height - 1);
+            Color tc;
+            if (active)
+            {
+                XbFill(g, new RectangleF(rf.X, rf.Y + 2, rf.Width, rf.Height), 9, Color.FromArgb(70, 214, 96, 4), Color.Empty);
+                using (System.Drawing.Drawing2D.GraphicsPath p = XbRound(rf, 9))
+                using (System.Drawing.Drawing2D.LinearGradientBrush lb = new System.Drawing.Drawing2D.LinearGradientBrush(
+                    tr, XB_ORANGE_L, XB_ORANGE_D, System.Drawing.Drawing2D.LinearGradientMode.Vertical))
+                    g.FillPath(lb, p);
+                tc = Color.White;
+            }
+            else
+            {
+                XbFill(g, rf, 9, hot ? Color.FromArgb(255, 243, 230) : Color.White, hot ? XB_ORANGE : XB_LINE);
+                tc = hot ? Color.FromArgb(154, 52, 18) : XB_MUTED;
+            }
+            Size ts = TextRenderer.MeasureText(g, XB_TABS[i], xbFTab, Size.Empty, TextFormatFlags.NoPadding);
+            int gw = 14 + 7 + ts.Width;
+            int x = tr.X + (tr.Width - gw) / 2, cy = tr.Y + tr.Height / 2;
+            XbIcon(g, XB_TAB_ICONS[i], new Rectangle(x, cy - 7, 14, 14), active ? Color.White : (hot ? XB_ORANGE_D : XB_ORANGE));
+            TextRenderer.DrawText(g, XB_TABS[i], xbFTab, new Rectangle(x + 21, cy - ts.Height / 2 - 1, ts.Width + 4, ts.Height + 2), tc,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+        }
+
+        // white content card behind the tab page
+        XbFill(g, new RectangleF(XB_CARD.X, XB_CARD.Y + 2, XB_CARD.Width - 1, XB_CARD.Height - 1), 12, Color.FromArgb(214, 225, 242), Color.Empty);
+        XbFill(g, new RectangleF(XB_CARD.X, XB_CARD.Y, XB_CARD.Width - 1, XB_CARD.Height - 1), 12, Color.White, XB_LINE);
+
+        // amber security note
+        XbFill(g, new RectangleF(XB_NOTE.X, XB_NOTE.Y, XB_NOTE.Width - 1, XB_NOTE.Height - 1), 9,
+            Color.FromArgb(255, 247, 230), Color.FromArgb(253, 186, 116));
+        XbIcon(g, "warning", new Rectangle(XB_NOTE.X + 11, XB_NOTE.Y + XB_NOTE.Height / 2 - 8, 16, 15), Color.FromArgb(234, 88, 12));
+
+        using (Pen frame = new Pen(XB_FRAME))
+            g.DrawRectangle(frame, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
+    }
+
+    private void XbSectionPaint(object sender, PaintEventArgs e)
+    {
+        GroupBox box = sender as GroupBox;
         if (box == null) return;
-        box.BackColor = Color.FromArgb(8, 32, 55);
-        box.ForeColor = Color.FromArgb(80, 220, 255);
-        box.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
+        Graphics g = e.Graphics;
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        g.Clear(Color.White);
+
+        string title, sub;
+        if (box == groupBox1) { title = "Create Backup"; sub = "Choose what to save and protect the file with a password"; }
+        else if (box == groupBox2) { title = "Restore Backup"; sub = "Pick a backup file and enter its password"; }
+        else { title = "Delete Data"; sub = "Choose what to remove, or export / import saved tickets"; }
+
+        XbFill(g, new RectangleF(14, 10, 4, 18), 2, XB_ORANGE, Color.Empty);
+        Size ts = TextRenderer.MeasureText(g, title, xbFSection, Size.Empty, TextFormatFlags.NoPadding);
+        TextRenderer.DrawText(g, title, xbFSection, new Point(24, 10), XB_TEXT, TextFormatFlags.NoPadding);
+        TextRenderer.DrawText(g, sub, xbFSub, new Rectangle(24 + ts.Width + 10, 10, box.Width - ts.Width - 44, ts.Height + 1),
+            XB_MUTED, TextFormatFlags.Left | TextFormatFlags.Bottom | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+
+        // field boxes for the borderless text boxes
+        foreach (Control c in box.Controls)
+        {
+            TextBox tb = c as TextBox;
+            if (tb == null || !tb.Visible || !(tb.Tag is Rectangle)) continue;
+            Rectangle fr = (Rectangle)tb.Tag;
+            bool focus = tb.Focused;
+            bool hot = XbState(tb) == 1;
+            if (focus)
+                XbFill(g, new RectangleF(fr.X - 2, fr.Y - 2, fr.Width + 3, fr.Height + 3), 9, Color.FromArgb(46, XB_BLUE), Color.Empty);
+            XbFill(g, new RectangleF(fr.X, fr.Y, fr.Width - 1, fr.Height - 1), 7,
+                tb.Enabled ? Color.White : Color.FromArgb(241, 245, 249),
+                focus ? XB_BLUE : hot ? XB_ORANGE : XB_FIELD);
+            bool pwd = tb.UseSystemPasswordChar || tb.PasswordChar != '\0';
+            XbIcon(g, pwd ? "lock" : "file", new Rectangle(fr.X + 10, fr.Y + fr.Height / 2 - 7, 13, 14),
+                focus ? XB_BLUE : XB_ORANGE);
+        }
     }
 
-    private void StyleByteNovaLabel(Label label)
+    private void XbChipPaint(object sender, PaintEventArgs e)
     {
-        if (label == null) return;
-        label.BackColor = Color.Transparent;
-        label.ForeColor = Color.FromArgb(225, 238, 250);
-        label.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
+        ButtonBase c = sender as ButtonBase;
+        if (c == null) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        g.Clear(c.Parent != null ? c.Parent.BackColor : Color.White);
+
+        CheckBox cb = c as CheckBox;
+        RadioButton rb = c as RadioButton;
+        bool on = cb != null ? cb.Checked : rb != null && rb.Checked;
+        bool radio = rb != null;
+        bool danger = c == radioButton1;     // "All Data" delete option
+        int st = XbState(c);
+        bool en = c.Enabled;
+
+        Color accent = danger ? XB_RED : XB_ORANGE;
+        Color fill = !en ? Color.FromArgb(241, 245, 249)
+                   : on ? (danger ? Color.FromArgb(254, 226, 226) : Color.FromArgb(255, 237, 213))
+                   : st == 2 ? Color.FromArgb(255, 237, 213)
+                   : st == 1 ? Color.FromArgb(255, 247, 237) : Color.White;
+        Color line = !en ? XB_LINE : on ? accent : st >= 1 ? XbMix(accent, Color.White, 0.3f) : XB_FIELD;
+        RectangleF r = new RectangleF(0.5f, 0.5f, c.Width - 2, c.Height - 2);
+        XbFill(g, r, r.Height / 2, fill, line);
+
+        // check box / radio dot
+        float s = 16, bx = 8, by = (c.Height - s) / 2f;
+        RectangleF mark = new RectangleF(bx, by, s, s);
+        Color mFill = on ? (en ? accent : Color.FromArgb(148, 163, 184)) : Color.White;
+        Color mLine = on ? mFill : (en ? Color.FromArgb(148, 163, 184) : XB_LINE);
+        if (radio)
+        {
+            using (SolidBrush b = new SolidBrush(Color.White)) g.FillEllipse(b, mark);
+            using (Pen p = new Pen(mLine, on ? 1.8F : 1.4F)) g.DrawEllipse(p, mark);
+            if (on) using (SolidBrush b = new SolidBrush(mFill)) g.FillEllipse(b, RectangleF.Inflate(mark, -4, -4));
+        }
+        else
+        {
+            XbFill(g, mark, 4, mFill, mLine);
+            if (on)
+                using (Pen t = new Pen(Color.White, 2F))
+                {
+                    t.StartCap = System.Drawing.Drawing2D.LineCap.Round;
+                    t.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+                    g.DrawLines(t, new[] { new PointF(bx + 4, by + 8.5f), new PointF(bx + 7, by + 11.5f), new PointF(bx + 12.5f, by + 5) });
+                }
+        }
+
+        Color tc = !en ? Color.FromArgb(148, 163, 184)
+                 : on ? (danger ? Color.FromArgb(153, 27, 27) : Color.FromArgb(154, 52, 18))
+                 : XB_TEXT;
+        TextRenderer.DrawText(g, c.Text.Trim(), xbFChip, new Rectangle((int)(bx + s + 7), 0, c.Width - (int)(bx + s + 7) - 8, c.Height), tc,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine |
+            TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
     }
 
-    private void StyleByteNovaCheck(CheckBox check)
+    private void XbButtonPaint(object sender, PaintEventArgs e)
     {
-        if (check == null) return;
+        Button b = sender as Button;
+        if (b == null || !(b.Tag is object[] data) || data.Length < 3) return;
+        string caption = Convert.ToString(data[0]);
+        string icon = Convert.ToString(data[1]);
+        int kind = (int)data[2];
 
-        // Original/native checkbox: keep the Windows tick glyph fully functional.
-        check.Appearance = Appearance.Normal;
-        check.AutoCheck = true;
-        check.ThreeState = false;
-        check.AutoSize = true;
-        check.FlatStyle = FlatStyle.Standard;
-        check.UseVisualStyleBackColor = true;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        g.Clear(b.Parent != null ? b.Parent.BackColor : Color.White);
 
-        // All checkbox text stays ByteNova gold in both states.
-        check.ForeColor = Color.FromArgb(255, 215, 0);
-        check.Font = new Font("Segoe UI Semibold", 8.3F, FontStyle.Bold);
-        check.Padding = new Padding(0);
+        int st = XbState(b);
+        bool en = b.Enabled;
+        RectangleF r = new RectangleF(0.5f, st == 2 ? 1.5f : 0.5f, b.Width - 2, b.Height - 3);
+        Color fg;
 
-        check.CheckedChanged -= ByteNovaCheckStateChanged;
-        check.CheckedChanged += ByteNovaCheckStateChanged;
-        ByteNovaCheckStateChanged(check, EventArgs.Empty);
+        if (kind == 0)
+        {
+            Color fill = st == 2 ? Color.FromArgb(255, 237, 213) : st == 1 ? Color.FromArgb(255, 247, 237) : Color.White;
+            if (st != 2 && en) XbFill(g, new RectangleF(r.X, r.Y + 1.5f, r.Width, r.Height), 8, Color.FromArgb(34, 30, 64, 120), Color.Empty);
+            XbFill(g, r, 8, fill, st == 0 ? XB_FIELD : XB_ORANGE);
+            fg = en ? (st == 0 ? XB_TEXT : Color.FromArgb(154, 52, 18)) : Color.FromArgb(148, 163, 184);
+        }
+        else
+        {
+            Color top = kind == 2 ? Color.FromArgb(239, 68, 68) : Color.FromArgb(252, 170, 66);
+            Color bot = kind == 2 ? Color.FromArgb(200, 30, 30) : XB_ORANGE_D;
+            if (st == 1) { top = XbMix(top, Color.White, 0.15f); bot = XbMix(bot, Color.White, 0.10f); }
+            if (st == 2) { top = XbMix(top, Color.Black, 0.12f); bot = XbMix(bot, Color.Black, 0.15f); }
+            if (!en) { top = XbMix(top, Color.White, 0.55f); bot = XbMix(bot, Color.White, 0.55f); }
+            if (st != 2 && en)
+                XbFill(g, new RectangleF(r.X, r.Y + 2, r.Width, r.Height), 8,
+                    Color.FromArgb(st == 1 ? 90 : 55, kind == 2 ? Color.FromArgb(185, 28, 28) : XB_ORANGE_D), Color.Empty);
+            using (System.Drawing.Drawing2D.GraphicsPath p = XbRound(r, 8))
+            using (System.Drawing.Drawing2D.LinearGradientBrush lb = new System.Drawing.Drawing2D.LinearGradientBrush(
+                r, top, bot, System.Drawing.Drawing2D.LinearGradientMode.Vertical))
+                g.FillPath(lb, p);
+            fg = Color.White;
+        }
+
+        Size ts = TextRenderer.MeasureText(g, caption, xbFBtn, Size.Empty, TextFormatFlags.NoPadding);
+        int gw = 15 + 7 + ts.Width;
+        int x = (int)(r.X + (r.Width - gw) / 2), cy = (int)(r.Y + r.Height / 2);
+        XbIcon(g, icon, new Rectangle(x, cy - 7, 15, 15), kind == 0 ? (en ? XB_ORANGE_D : fg) : fg);
+        TextRenderer.DrawText(g, caption, xbFBtn, new Rectangle(x + 22, cy - ts.Height / 2 - 1, ts.Width + 4, ts.Height + 2), fg,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
     }
 
-    private void ByteNovaCheckStateChanged(object sender, EventArgs e)
+    private static void XbIcon(Graphics g, string kind, Rectangle r, Color c)
     {
-        CheckBox check = sender as CheckBox;
-        if (check == null) return;
-
-        // Preserve gold text and force native checkbox glyph to repaint immediately.
-        check.ForeColor = Color.FromArgb(255, 215, 0);
-        check.Invalidate();
-        check.Update();
-    }
-
-    private void StyleByteNovaRadio(RadioButton radio)
-    {
-        if (radio == null) return;
-
-        // Keep the original round radio-button appearance.
-        radio.Appearance = Appearance.Normal;
-        radio.AutoSize = true;
-        radio.FlatStyle = FlatStyle.Standard;
-        radio.BackColor = Color.Transparent;
-        radio.ForeColor = Color.FromArgb(225, 238, 250);
-        radio.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
-        radio.Padding = new Padding(0);
-        radio.UseVisualStyleBackColor = false;
-
-        radio.CheckedChanged -= ByteNovaRadioStateChanged;
-        radio.CheckedChanged += ByteNovaRadioStateChanged;
-        ByteNovaRadioStateChanged(radio, EventArgs.Empty);
-    }
-
-    private void ByteNovaRadioStateChanged(object sender, EventArgs e)
-    {
-        RadioButton radio = sender as RadioButton;
-        if (radio == null) return;
-
-        radio.ForeColor = radio.Checked
-            ? Color.FromArgb(255, 220, 70)
-            : Color.FromArgb(225, 238, 250);
-
-        radio.Font = new Font(
-            "Segoe UI Semibold",
-            8.5F,
-            radio.Checked ? FontStyle.Bold : FontStyle.Regular);
-
-        radio.Invalidate();
-    }
-
-    private void StyleByteNovaTextBox(TextBox box)
-    {
-        if (box == null) return;
-        box.BackColor = Color.FromArgb(10, 42, 68);
-        box.ForeColor = Color.White;
-        box.BorderStyle = BorderStyle.FixedSingle;
-        box.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
-    }
-
-    private void StyleByteNovaButton(Button button, Color accent)
-    {
-        if (button == null) return;
-        button.BackColor = accent;
-        button.ForeColor = Color.White;
-        button.FlatStyle = FlatStyle.Flat;
-        button.FlatAppearance.BorderSize = 1;
-        button.FlatAppearance.BorderColor = Color.FromArgb(
-            Math.Min(255, accent.R + 45),
-            Math.Min(255, accent.G + 45),
-            Math.Min(255, accent.B + 45));
-        button.FlatAppearance.MouseOverBackColor = Color.FromArgb(
-            Math.Min(255, accent.R + 20),
-            Math.Min(255, accent.G + 20),
-            Math.Min(255, accent.B + 20));
-        button.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
-        button.TextAlign = ContentAlignment.MiddleCenter;
-        button.Image = null;
-        button.ImageAlign = ContentAlignment.MiddleLeft;
+        System.Drawing.Drawing2D.SmoothingMode old = g.SmoothingMode;
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        float x = r.X, y = r.Y, w = r.Width, h = r.Height;
+        using (Pen p = new Pen(c, 1.6F))
+        using (SolidBrush b = new SolidBrush(c))
+        {
+            p.StartCap = System.Drawing.Drawing2D.LineCap.Round;
+            p.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+            p.LineJoin = System.Drawing.Drawing2D.LineJoin.Round;
+            switch (kind)
+            {
+                case "upload":
+                case "export":
+                    g.DrawLines(p, new[] { new PointF(x, y + h * 0.62f), new PointF(x, y + h), new PointF(x + w, y + h), new PointF(x + w, y + h * 0.62f) });
+                    g.DrawLine(p, x + w / 2, y + h * 0.72f, x + w / 2, y);
+                    g.DrawLines(p, new[] { new PointF(x + w * 0.22f, y + h * 0.28f), new PointF(x + w / 2, y), new PointF(x + w * 0.78f, y + h * 0.28f) });
+                    break;
+                case "download":
+                case "import":
+                    g.DrawLines(p, new[] { new PointF(x, y + h * 0.62f), new PointF(x, y + h), new PointF(x + w, y + h), new PointF(x + w, y + h * 0.62f) });
+                    g.DrawLine(p, x + w / 2, y, x + w / 2, y + h * 0.72f);
+                    g.DrawLines(p, new[] { new PointF(x + w * 0.22f, y + h * 0.44f), new PointF(x + w / 2, y + h * 0.72f), new PointF(x + w * 0.78f, y + h * 0.44f) });
+                    break;
+                case "trash":
+                    g.DrawLine(p, x, y + h * 0.2f, x + w, y + h * 0.2f);
+                    g.DrawLine(p, x + w * 0.35f, y, x + w * 0.65f, y);
+                    g.DrawPolygon(p, new[] { new PointF(x + w * 0.14f, y + h * 0.3f), new PointF(x + w * 0.86f, y + h * 0.3f), new PointF(x + w * 0.76f, y + h), new PointF(x + w * 0.24f, y + h) });
+                    using (Pen t = new Pen(c, 1.1F))
+                    {
+                        g.DrawLine(t, x + w * 0.42f, y + h * 0.45f, x + w * 0.42f, y + h * 0.85f);
+                        g.DrawLine(t, x + w * 0.58f, y + h * 0.45f, x + w * 0.58f, y + h * 0.85f);
+                    }
+                    break;
+                case "folder":
+                    g.DrawLines(p, new[] { new PointF(x, y + h * 0.15f), new PointF(x + w * 0.38f, y + h * 0.15f), new PointF(x + w * 0.5f, y + h * 0.3f), new PointF(x + w, y + h * 0.3f), new PointF(x + w, y + h * 0.92f), new PointF(x, y + h * 0.92f), new PointF(x, y + h * 0.15f) });
+                    break;
+                case "lock":
+                    using (System.Drawing.Drawing2D.GraphicsPath lp = XbRound(new RectangleF(x, y + h * 0.42f, w, h * 0.58f), 2))
+                        g.FillPath(b, lp);
+                    g.DrawArc(p, x + w * 0.2f, y, w * 0.6f, h * 0.8f, 180, 180);
+                    using (SolidBrush wb = new SolidBrush(Color.White))
+                        g.FillEllipse(wb, x + w / 2 - 1.5f, y + h * 0.6f, 3, 3);
+                    break;
+                case "file":
+                    g.DrawLines(p, new[] { new PointF(x + w * 0.15f, y), new PointF(x + w * 0.62f, y), new PointF(x + w * 0.88f, y + h * 0.26f), new PointF(x + w * 0.88f, y + h), new PointF(x + w * 0.15f, y + h), new PointF(x + w * 0.15f, y) });
+                    g.DrawLine(p, x + w * 0.34f, y + h * 0.55f, x + w * 0.7f, y + h * 0.55f);
+                    g.DrawLine(p, x + w * 0.34f, y + h * 0.76f, x + w * 0.7f, y + h * 0.76f);
+                    break;
+                case "database":
+                    g.DrawEllipse(p, x, y, w, h * 0.3f);
+                    g.DrawLine(p, x, y + h * 0.15f, x, y + h * 0.85f);
+                    g.DrawLine(p, x + w, y + h * 0.15f, x + w, y + h * 0.85f);
+                    g.DrawArc(p, x, y + h * 0.35f, w, h * 0.3f, 0, 180);
+                    g.DrawArc(p, x, y + h * 0.7f, w, h * 0.3f, 0, 180);
+                    break;
+                case "warning":
+                    using (System.Drawing.Drawing2D.GraphicsPath tp = new System.Drawing.Drawing2D.GraphicsPath())
+                    {
+                        tp.AddPolygon(new[] { new PointF(x + w / 2, y), new PointF(x + w, y + h), new PointF(x, y + h) });
+                        g.FillPath(b, tp);
+                    }
+                    using (Pen wp = new Pen(Color.White, 1.8F))
+                    {
+                        wp.StartCap = System.Drawing.Drawing2D.LineCap.Round;
+                        wp.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+                        g.DrawLine(wp, x + w / 2, y + h * 0.38f, x + w / 2, y + h * 0.66f);
+                    }
+                    using (SolidBrush wb = new SolidBrush(Color.White))
+                        g.FillEllipse(wb, x + w / 2 - 1.1f, y + h * 0.76f, 2.2f, 2.2f);
+                    break;
+            }
+        }
+        g.SmoothingMode = old;
     }
 
     private void frmBackup_Load(object sender, EventArgs e)

@@ -2429,7 +2429,10 @@ internal class TCntrl : UserControl
             {
                 Region oldClip = g.Clip;
                 g.SetClip(clip, CombineMode.Intersect);
-                using (SolidBrush ab = new SolidBrush(accent))
+                // Chrome gets a red bottom border on hover / press; the others keep their brand colour.
+                Color baseLine = string.Equals(text, "Chrome", StringComparison.OrdinalIgnoreCase)
+                    ? Color.FromArgb(220, 38, 38) : accent;
+                using (SolidBrush ab = new SolidBrush(baseLine))
                     g.FillRectangle(ab, r.X, r.Bottom - 3, r.Width, 3);
                 g.Clip = oldClip;
             }
