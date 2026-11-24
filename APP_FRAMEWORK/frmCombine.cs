@@ -303,10 +303,10 @@ public class frmCombine : Form
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             Rectangle r = new Rectangle(0, 0, Width - 1, Height - 1);
 
-            Color penCol = Color.FromArgb(184, 205, 232);
-            float penW = 1.1f;
-            if (Hover) { penCol = Color.FromArgb(150, 184, 226); penW = 1.3f; }
-            if (Active) { penCol = Color.FromArgb(245, 146, 28); penW = 1.7f; }
+            Color penCol = Color.FromArgb(232, 152, 44);
+            float penW = 1.4f;
+            if (Hover) { penCol = Color.FromArgb(245, 146, 28); penW = 1.8f; }
+            if (Active) { penCol = Color.FromArgb(222, 118, 10); penW = 2.1f; }
 
             using (GraphicsPath p = RoundPath(r, 6))
             {
