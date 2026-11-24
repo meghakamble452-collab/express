@@ -233,6 +233,8 @@ public class frmCombine : Form
                 Resize += delegate { ShapeForm(); };
                 Resize += delegate { LayoutBody(); };
             }
+            Shown -= FormShown;
+            Shown += FormShown;
 
             method_0();
             CAAA0.Visible = true;
@@ -254,6 +256,34 @@ public class frmCombine : Form
     {
         if (BAAAA == null) return;
         BAAAA.SetBounds(18, 118, Math.Max(220, ClientSize.Width - 36), Math.Max(140, ClientSize.Height - 138));
+    }
+
+    private void TabResize(object sender, EventArgs e)
+    {
+        PlaceSave(sender as Control);
+    }
+
+    private void PlaceSave(Control tab)
+    {
+        if (tab == null || tab.ClientSize.Width < 200) return;
+
+        foreach (Control c in tab.Controls)
+        {
+            Button b = c as Button;
+            if (b == null || !(b.Tag is string) || (string)b.Tag != "exSave") continue;
+
+            int w = Math.Max(200, tab.ClientSize.Width - 300);
+            b.SetBounds(16, Math.Max(24, tab.ClientSize.Height - 52), w, 36);
+            b.BringToFront();
+        }
+    }
+
+    private void FormShown(object sender, EventArgs e)
+    {
+        LayoutBody();
+        PlaceSave(CAAA0);
+        PlaceSave(tabDebitCard);
+        PlaceSave(tabCreditCard);
     }
 
     private void CloseEnter(object sender, EventArgs e) { _closeHot = true; btnClose.Invalidate(); }
@@ -505,10 +535,14 @@ public class frmCombine : Form
         if (save != null)
         {
             if (save.Parent != tab) MoveTo(save, tab);
-            save.SetBounds(16, endY + 2, Math.Max(200, leftLimit - 30), 36);
+            save.Tag = "exSave";
             save.BringToFront();
         }
 
+        tab.Resize -= TabResize;
+        tab.Resize += TabResize;
+
+        PlaceSave(tab);
         AddCues(tab);
         tab.Invalidate();
     }
@@ -556,15 +590,7 @@ public class frmCombine : Form
             sum += hh;
         }
 
-        int avail = tab.ClientSize.Height - 34 - 50;
-        int gap = 14;
-
-        if (rows.Count > 1)
-        {
-            int free = avail - sum;
-            gap = Math.Max(10, Math.Min(26, free / rows.Count));
-        }
-
+        int gap = 18;
         int y = 16;
         foreach (System.Collections.Generic.List<Control> r in rows)
         {
