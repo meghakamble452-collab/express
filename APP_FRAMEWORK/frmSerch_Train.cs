@@ -1347,15 +1347,14 @@ internal class frmSerch_Train : Form
 
     private void NovaMainControlAdded(object sender, ControlEventArgs e)
     {
-        Control c = e.Control;
-        if (c == null) return;
+        Label lbl = e.Control as Label;
+        if (lbl == null) return;
 
-        c.BorderStyle = BorderStyle.None;
-        c.Paint -= NovaCellPaint;
-        c.Paint += NovaCellPaint;
+        lbl.BorderStyle = BorderStyle.None;
+        lbl.Paint -= NovaCellPaint;
+        lbl.Paint += NovaCellPaint;
 
-        LinkLabel lnk = c as LinkLabel;
-        Label lbl = c as Label;
+        LinkLabel lnk = lbl as LinkLabel;
 
         if (lnk != null)
         {
@@ -1366,7 +1365,7 @@ internal class frmSerch_Train : Form
             lnk.LinkBehavior = LinkBehavior.NeverUnderline;
             lnk.Cursor = Cursors.Hand;
         }
-        else if (lbl != null)
+        else
         {
             lbl.Font = new Font("Segoe UI", 8.5F, FontStyle.Regular);
             string t = lbl.Text;
