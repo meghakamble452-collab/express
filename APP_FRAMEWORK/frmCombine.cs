@@ -506,16 +506,18 @@ public class frmCombine : Form
 
         foreach (Control c in movables)
         {
-            TextBox tb = c as TextBox;
-            ComboBox cb = c as ComboBox;
+            Control f = c;
+            if (c is FieldBox && c.Controls.Count > 0) f = c.Controls[0];
+
+            TextBox tb = f as TextBox;
+            ComboBox cb = f as ComboBox;
             if (tb == null && cb == null) continue;
 
-            Control f = (Control)tb ?? cb;
             int maxW = leftLimit - 24 - f.Left;
-            if (maxW < 100) maxW = 100;
+            if (maxW < 120) maxW = 120;
 
             if (f.Width > maxW) f.Width = maxW;
-            if (f.Width < 130) f.Width = Math.Min(200, maxW);
+            if (f.Width < 150) f.Width = Math.Min(200, maxW);
 
             if (f.Parent is FieldBox) f.Parent.Width = f.Width + 10;
         }
@@ -595,13 +597,10 @@ public class frmCombine : Form
         foreach (System.Collections.Generic.List<Control> r in rows)
         {
             int bandTop = r[0].Top;
-            int hh = 0;
-            foreach (Control c in r) hh = Math.Max(hh, c.Height);
-
             int delta = y - bandTop;
             foreach (Control c in r) c.Top += delta;
 
-            y += hh + gap;
+            y += 40;
         }
 
         return y;
