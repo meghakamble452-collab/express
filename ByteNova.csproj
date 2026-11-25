@@ -84,6 +84,7 @@
     </Reference>
     <Reference Include="Bunifu_UI_v1.52">
       <HintPath>libs\Bunifu_UI_v1.52.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="EAGetMail">
       <HintPath>libs\EAGetMail.dll</HintPath>
@@ -254,4 +255,14 @@
   <ItemGroup>
     <None Include="F:\express\.editorconfig" />
   </ItemGroup>
+  <!-- ===== libs DLLs ko hamesha output me copy karo ===== -->
+  <Target Name="CopyLibsToOutput" AfterTargets="Build">
+    <ItemGroup>
+      <_LibFile Include="libs\**\*.dll" />
+      <_SreFile Include="$(NuGetPackageRoot)system.resources.extensions\8.0.0\lib\net462\System.Resources.Extensions.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_LibFile)" DestinationFolder="$(OutDir)%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_SreFile)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="Exists('%(_SreFile.Identity)')" />
+  </Target>
+  <!-- ===== end ===== -->
 </Project>
