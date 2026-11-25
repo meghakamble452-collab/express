@@ -7,10 +7,11 @@
     <TargetFramework>net48</TargetFramework>
   </PropertyGroup>
   <PropertyGroup>
-  <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-  <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-</PropertyGroup>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
   <PropertyGroup>
     <LangVersion>11.0</LangVersion>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
@@ -21,7 +22,14 @@
     <RootNamespace />
   </PropertyGroup>
   <ItemGroup>
-  <PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
+    <PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
+    <PackageReference Include="System.Reactive" Version="4.4.1" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
+    <PackageReference Include="Titanium.Web.Proxy" Version="3.2.0" />
+    <PackageReference Include="Websocket.Client" Version="4.5.1" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="NEXUS.Extention.irctc.p12" />
     <None Remove="NEXUS.Booking.IPayBinResolver.txt" />
     <None Remove="NEXUS.Extention.Beta.dll" />
@@ -38,12 +46,14 @@
     <None Remove="NEXUS.Extention.XCaptchaRecog.dll" />
     <None Remove="NEXUS.Extention.NpciPay.dll" />
     <None Remove="NEXUS.Extention.FreeCharge.dll" />
-	  <Content Include="ExpressLogo.ico">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="express-logo.png">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
+
+    <Content Include="ExpressLogo.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="express-logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
     <EmbeddedResource Include="NEXUS.Extention.irctc.p12" LogicalName="NEXUS.Extention.irctc.p12" />
     <EmbeddedResource Include="NEXUS.Booking.IPayBinResolver.txt" LogicalName="NEXUS.Booking.IPayBinResolver.txt" />
     <EmbeddedResource Include="NEXUS.Extention.Beta.dll" LogicalName="NEXUS.Extention.Beta.dll" />
@@ -60,14 +70,6 @@
     <EmbeddedResource Include="NEXUS.Extention.XCaptchaRecog.dll" LogicalName="NEXUS.Extention.XCaptchaRecog.dll" />
     <EmbeddedResource Include="NEXUS.Extention.NpciPay.dll" LogicalName="NEXUS.Extention.NpciPay.dll" />
     <EmbeddedResource Include="NEXUS.Extention.FreeCharge.dll" LogicalName="NEXUS.Extention.FreeCharge.dll" />
-
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
-    <PackageReference Include="System.Reactive" Version="4.4.1" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
-    <PackageReference Include="Titanium.Web.Proxy" Version="3.2.0" />
-    <PackageReference Include="Websocket.Client" Version="4.5.1" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AngleSharp">
@@ -179,9 +181,9 @@
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="Titanium.Web.Proxy">
-  <HintPath>libs\Titanium.Web.Proxy.dll</HintPath>
-  <Private>True</Private>
-</Reference>
+      <HintPath>libs\Titanium.Web.Proxy.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Management" />
     <Reference Include="System.Net.Http" />
     <Reference Include="UndetectedChromeDriver">
@@ -196,6 +198,15 @@
     <Reference Include="zxing">
       <HintPath>libs\zxing.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libs\Bunifu_UI_v1.52.dll">
+      <Link>Bunifu_UI_v1.52.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="bg_banner.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="NEXUS.APP_FRAMEWORK.BankList.resx">
@@ -244,25 +255,11 @@
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <None Update="bg_banner.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <EditorConfigFiles Remove="F:\express\.editorconfig" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="F:\express\.editorconfig" />
-  </ItemGroup>
-  <!-- ===== libs DLLs ko hamesha output me copy karo ===== -->
+  <!-- libs ka har DLL hamesha output me copy hoga -->
   <Target Name="CopyLibsToOutput" AfterTargets="Build">
     <ItemGroup>
       <_LibFile Include="libs\**\*.dll" />
-      <_SreFile Include="$(NuGetPackageRoot)system.resources.extensions\8.0.0\lib\net462\System.Resources.Extensions.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(_LibFile)" DestinationFolder="$(OutDir)%(RecursiveDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(_SreFile)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="Exists('%(_SreFile.Identity)')" />
   </Target>
-  <!-- ===== end ===== -->
 </Project>
