@@ -1170,7 +1170,7 @@ public class Freecharge_htm : Form
         this.text6 = "{}";
         if (!_Request_Sbi(string_93, this.text6, string_92, webProxy_3, ref cookieContainer_3, bool_63: true, bool_64: true, num, num, ref string_96, ref string_95, ref webException_0)) ;
         otpId = jsonData_Serial(string_96, "key");
-        HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create("https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/fclink");
+        HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create("https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/fclink");
         httpWebRequest.ServerCertificateValidationCallback = CertificateValidation;
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
         string method = "GET";
@@ -2954,7 +2954,7 @@ public class Freecharge_htm : Form
         string Reffral = "";
         do
         {
-            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create("https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/fclink");
+            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create("https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/fclink");
             httpWebRequest.ServerCertificateValidationCallback = CertificateValidation;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
             string method = "GET";
@@ -3153,7 +3153,7 @@ public class Freecharge_htm : Form
         string postdata = "{\"data0\":\"FREECHARGE2" + "\",\"data1\":\"" + Program.clientID + "\",\"data2\":\"" + Program.mac + "\",\"data3\":\"" + mobilenumber.Text + "\",\"data4\":\"" + data + "\"}";
         do
         {
-            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create("https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/fclink");
+            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create("https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/fclink");
             httpWebRequest.ServerCertificateValidationCallback = CertificateValidation;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
             string method = "GET";

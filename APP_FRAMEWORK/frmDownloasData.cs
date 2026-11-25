@@ -13,7 +13,7 @@ namespace APP_FRAMEWORK;
 
 internal class frmDownloasData : Form
 {
-    private string[] onnxParts = new string[3] { "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/model_int8.onnx.part0", "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/model_int8.onnx.part1", "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/model_int8.onnx.part2" };
+    private string[] onnxParts = new string[3] { "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/model_int8.onnx.part0", "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/model_int8.onnx.part1", "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/model_int8.onnx.part2" };
 
     private int currentPart;
 

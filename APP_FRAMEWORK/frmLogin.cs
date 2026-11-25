@@ -930,7 +930,7 @@ public partial class frmLogin : Form
                 text3 = streamReader.ReadToEnd();
                 if (string.IsNullOrEmpty(text3))
                 {
-                    text3 = "https://novabyte.in/Api/Authenticate|--|NewIRCOMM.txt|--|https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/Updater|--|https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/QRCoder.zip|--|https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/DS-DIGIT.TTF|--|https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/NovaByte.jpg|--|https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/Windows.jpg|--|https://novabyte.in/Api/ResultUpload|--|http://nget.in:8080/api/Password|--|https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/Tesseract.zip|--|https://nexusupdatefile.s3.ap-south-1.amazonaws.com/dtsProxt|--|BB#7U9$SQ88|--|KKKKKKK|--|OFF\r\n";
+                    text3 = "https://novabyte.in/Api/Authenticate|--|NewIRCOMM.txt|--|https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/Updater|--|https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/QRCoder.zip|--|https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/DS-DIGIT.TTF|--|https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/NovaByte.jpg|--|https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/Windows.jpg|--|https://novabyte.in/Api/ResultUpload|--|http://nget.in:8080/api/Password|--|https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/Tesseract.zip|--|https://nexusupdatefile.s3.ap-south-1.amazonaws.com/dtsProxt|--|BB#7U9$SQ88|--|KKKKKKK|--|OFF\r\n";
                 }
                 string text8 = text3;
                 string[] array = new string[1];
@@ -968,7 +968,7 @@ public partial class frmLogin : Form
                 }
                 if (num == 1)
                 {
-                    string text11 = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/Link.txt";
+                    string text11 = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/Link.txt";
                     requestUriString = text11;
                 }
                 num++;
@@ -1420,7 +1420,7 @@ public partial class frmLogin : Form
     {
         string text = "";
         string response = "";
-        string requestUriString = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/offlineallow";
+        string requestUriString = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/offlineallow";
         while (true)
         {
             try
@@ -1613,8 +1613,38 @@ public partial class frmLogin : Form
         }
     }
 
+    private void CheckVpsUpdate()
+    {
+        try
+        {
+            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+            string remote;
+            using (System.Net.WebClient wc = new System.Net.WebClient())
+            {
+                wc.Headers.Add("User-Agent", "Express");
+                remote = wc.DownloadString("https://expressts.co.in/api/version.txt").Trim();
+            }
+            if (remote.Length == 0) return;
+            if (remote == appversion) return;
+
+            try { File.AppendAllText("IRLOG\\v.log", "VPS-UPD " + appversion + " -> " + remote + Environment.NewLine); } catch { }
+
+            Program.NewVersion = remote;
+            Program.bool_IsExeUpdtAvl = true;
+            string filoList = Program.FiloList;
+            string exeName = Program.ExeName;
+            Program.FiloList = filoList + exeName + "|";
+            Program.RunExeUpdater();
+        }
+        catch (Exception ex)
+        {
+            try { File.AppendAllText("IRLOG\\v.log", "VPS-UPD-ERR " + ex.Message + Environment.NewLine); } catch { }
+        }
+    }
+
     private void frmLogin_Load(object sender, EventArgs e)
     {
+        CheckVpsUpdate();
         DeleteCogif();
         ThreadPool.QueueUserWorkItem(ClassStationData.load);
         txtLogin.Text = Program.mySettings_0.userID;

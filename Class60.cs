@@ -702,7 +702,7 @@ internal sealed class Class60
 		try
 		{
 			string text = "";
-			string requestUriString = "https://raw.githubusercontent.com/bytenova-dot/masterdata/refs/heads/main/nsList";
+			string requestUriString = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/nsList";
 			HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(requestUriString);
 			ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 			string contentType = "application/x-www-form-urlencoded; charset=utf-8";
