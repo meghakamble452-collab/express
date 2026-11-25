@@ -1824,7 +1824,7 @@ internal class TCntrl : UserControl
         if (lblStatus != null)
         {
             lblStatus.ForeColor = Color.White;
-            lblStatus.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
+            lblStatus.Font = XtPx("Segoe UI Semibold", 10F, FontStyle.Bold);
         }
         if (chkConfirmation != null) chkConfirmation.Text = "Payment Stop";
         if (_byteNovaLargeLayoutApplied) return;
@@ -2122,12 +2122,12 @@ internal class TCntrl : UserControl
         // Bottom status text: larger + bold.
         if (lblAvailability != null)
         {
-            lblAvailability.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
+            lblAvailability.Font = XtPx("Segoe UI Semibold", 9F, FontStyle.Bold);
             lblAvailability.ForeColor = XT_GREEN;
         }
         if (lblTime != null)
         {
-            lblTime.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            lblTime.Font = XtPx("Segoe UI", 12F, FontStyle.Bold);
             lblTime.ForeColor = XT_NAVY;
         }
 
@@ -2186,7 +2186,7 @@ internal class TCntrl : UserControl
 
             lblAvailability.AutoSize = false;
             int cardH = BottomPanel != null ? Math.Max(24, BottomPanel.ClientSize.Height - 8) : 28;
-            int timeWidth = 108;
+            int timeWidth = XtTimeCardWidth();
             int gap = 8;
             int availabilityWidth = BottomPanel != null
                 ? Math.Max(100, BottomPanel.ClientSize.Width - timeWidth - gap - 16)
@@ -2198,7 +2198,7 @@ internal class TCntrl : UserControl
             lblAvailability.Padding = new Padding(30, 0, 5, 0);
             lblAvailability.BackColor = Color.Transparent;
             lblAvailability.ForeColor = XT_GREEN;
-            lblAvailability.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            lblAvailability.Font = XtPx("Segoe UI", 10.5F, FontStyle.Bold);
             lblAvailability.Visible = true;
             lblAvailability.BringToFront();
         }
@@ -2209,7 +2209,7 @@ internal class TCntrl : UserControl
                 BottomPanel.Controls.Add(lblTime);
 
             lblTime.AutoSize = false;
-            int timeWidth = 108;
+            int timeWidth = XtTimeCardWidth();
             int cardH = BottomPanel != null ? Math.Max(24, BottomPanel.ClientSize.Height - 8) : 28;
             int timeX = BottomPanel != null ? Math.Max(0, BottomPanel.ClientSize.Width - timeWidth - 8) : 224;
             lblTime.SetBounds(timeX, 4, timeWidth, cardH);
@@ -2219,7 +2219,7 @@ internal class TCntrl : UserControl
             lblTime.Padding = new Padding(24, 0, 8, 0);
             lblTime.BackColor = Color.Transparent;
             lblTime.ForeColor = XT_NAVY;
-            lblTime.Font = new Font("Segoe UI", 11.5F, FontStyle.Bold);
+            lblTime.Font = XtPx("Segoe UI", 11.5F, FontStyle.Bold);
             lblTime.Visible = true;
             lblTime.BringToFront();
         }
@@ -2363,7 +2363,7 @@ internal class TCntrl : UserControl
         label.TextAlign = align;
         label.BackColor = Color.Transparent;
         label.ForeColor = XT_NAVY;
-        label.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
+        label.Font = XtPx("Segoe UI", 8.5F, FontStyle.Bold);
         label.AutoEllipsis = true;
         label.UseCompatibleTextRendering = false;
         label.Visible = true;
@@ -2490,7 +2490,7 @@ internal class TCntrl : UserControl
             using (Brush cyan = new SolidBrush(Color.FromArgb(0, 210, 220))) g.FillEllipse(cyan, r);
             Rectangle inner = new Rectangle(r.X + 4, r.Y + 4, r.Width - 8, r.Height - 8);
             using (Brush blue = new SolidBrush(Color.FromArgb(35, 75, 220))) g.FillPie(blue, inner, 205, 260);
-            using (Font f = new Font("Segoe UI Semibold", 9F, FontStyle.Bold))
+            using (Font f = XtPx("Segoe UI Semibold", 9F, FontStyle.Bold))
             using (Brush w = new SolidBrush(Color.White))
                 g.DrawString("e", f, w, r.X + 5, r.Y + 1);
             return;
@@ -2499,7 +2499,7 @@ internal class TCntrl : UserControl
         if (string.Equals(app, "Brave", StringComparison.OrdinalIgnoreCase))
         {
             using (Brush orange = new SolidBrush(Color.FromArgb(255, 105, 30))) g.FillEllipse(orange, r);
-            using (Font f = new Font("Segoe UI Semibold", 9F, FontStyle.Bold))
+            using (Font f = XtPx("Segoe UI Semibold", 9F, FontStyle.Bold))
             using (Brush w = new SolidBrush(Color.White))
                 g.DrawString("B", f, w, r.X + 5, r.Y + 1);
             return;
@@ -2644,7 +2644,7 @@ internal class TCntrl : UserControl
 
         // True geometric centering inside the golden curved box.
         RectangleF statusTextRect = new RectangleF(17F, 9F, 194F, 37F);
-        using (Font statusFont = new Font("Arial Black", 10.5F, FontStyle.Bold))
+        using (Font statusFont = XtPx("Arial Black", 10.5F, FontStyle.Bold))
         using (Brush statusBrush = new SolidBrush(Color.FromArgb(255, 218, 65)))
         using (StringFormat statusFormat = new StringFormat())
         {
@@ -2673,7 +2673,7 @@ internal class TCntrl : UserControl
             ? lblTime.Text.Trim()
             : DateTime.Now.ToString("HH:mm:ss");
 
-        using (Font timeFont = new Font("DS-Digital", 14.0F, FontStyle.Bold))
+        using (Font timeFont = XtPx("DS-Digital", 14.0F, FontStyle.Bold))
             TextRenderer.DrawText(g, statusTime, timeFont,
                 new Rectangle(244, 9, 70, 37), Color.FromArgb(255, 218, 65),
                 TextFormatFlags.Right | TextFormatFlags.VerticalCenter |
@@ -2705,7 +2705,7 @@ internal class TCntrl : UserControl
         string cls = cboClass != null ? cboClass.Text : "";
         string date = lblDate != null ? lblDate.Text : "";
 
-        using (Font big = new Font("Arial Black", 7.5F, FontStyle.Bold))
+        using (Font big = XtPx("Arial Black", 7.5F, FontStyle.Bold))
         {
             TextRenderer.DrawText(g, journey, big, new Rectangle(29, 118, 70, 20), Color.FromArgb(5, 25, 55),
                 TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
@@ -2731,7 +2731,7 @@ internal class TCntrl : UserControl
             g.DrawLine(divider, 231, 149, 231, 166);
         }
 
-        using (Font avlFont = new Font("Arial", 8.2F, FontStyle.Bold))
+        using (Font avlFont = XtPx("Arial", 8.2F, FontStyle.Bold))
             TextRenderer.DrawText(g, avl, avlFont,
                 new Rectangle(38, 146, 132, 22), Color.White,
                 TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
@@ -2748,14 +2748,14 @@ internal class TCntrl : UserControl
                 bottomSelectedBank = "";
         }
 
-        using (Font bankFont = new Font("Arial", 7.6F, FontStyle.Bold))
+        using (Font bankFont = XtPx("Arial", 7.6F, FontStyle.Bold))
             TextRenderer.DrawText(g, bottomSelectedBank, bankFont,
                 new Rectangle(172, 146, 55, 22), Color.FromArgb(255, 215, 0),
                 TextFormatFlags.Right | TextFormatFlags.VerticalCenter |
                 TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
 
         DrawByteNovaClockIcon(g, new Rectangle(236, 149, 17, 17));
-        using (Font timeFont = new Font("Arial", 9.4F, FontStyle.Bold))
+        using (Font timeFont = XtPx("Arial", 9.4F, FontStyle.Bold))
             TextRenderer.DrawText(g, tm, timeFont,
                 new Rectangle(255, 146, 63, 22), Color.White,
                 TextFormatFlags.Right | TextFormatFlags.VerticalCenter |
@@ -2794,7 +2794,7 @@ internal class TCntrl : UserControl
         // Drawing BYTE/NOVA separately can introduce a visual gap because of text measurement.
         // A single DrawString call guarantees there is no inserted space between BYTE and NOVA.
         // Reference branding: mixed-case ByteNova, heavy bold, full golden fill.
-        using (Font brandFont = new Font("Arial Black", 32F, FontStyle.Bold))
+        using (Font brandFont = XtPx("Arial Black", 32F, FontStyle.Bold))
         using (StringFormat brandFormat = new StringFormat(StringFormat.GenericTypographic))
         using (Brush brandBrush = new LinearGradientBrush(
             new Rectangle(textX, area.Y - 2, Math.Max(1, textWidth), 53),
@@ -2814,7 +2814,7 @@ internal class TCntrl : UserControl
         }
 
         // Gold, widely-spaced subtitle like the supplied reference image.
-        using (Font subFont = new Font("Arial Black", 7F, FontStyle.Bold))
+        using (Font subFont = XtPx("Arial Black", 7F, FontStyle.Bold))
             TextRenderer.DrawText(
                 g, "P R E M I U M   T A T K A L   S O F T W A R E",
                 subFont,
@@ -3015,7 +3015,7 @@ internal class TCntrl : UserControl
     {
         // Journey / Train No. / IRCTC ID / Slot captions are custom-painted here.
         // Use ByteNova bright gold so the captions stay clearly visible.
-        using (Font f = new Font("Segoe UI Semibold", 6.2F, FontStyle.Bold))
+        using (Font f = XtPx("Segoe UI Semibold", 6.2F, FontStyle.Bold))
         using (Brush b = new SolidBrush(Color.FromArgb(255, 211, 71)))
             g.DrawString(text, f, b, x, y);
     }
@@ -3057,18 +3057,18 @@ internal class TCntrl : UserControl
         foreach (Control c in parent.Controls)
         {
             if (c is Button)
-                c.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
+                c.Font = XtPx("Segoe UI Semibold", 9F, FontStyle.Bold);
             else if (c is ComboBox)
-                c.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+                c.Font = XtPx("Segoe UI", 9F, FontStyle.Regular);
             else if (c is Label && c != lblStatus)
-                c.Font = new Font("Segoe UI", 8.5F, c.Font.Bold ? FontStyle.Bold : FontStyle.Regular);
+                c.Font = XtPx("Segoe UI", 8.5F, c.Font.Bold ? FontStyle.Bold : FontStyle.Regular);
 
             if (c.HasChildren)
                 ApplyReadableFontRecursive(c);
         }
 
         if (lblStatus != null)
-            lblStatus.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
+            lblStatus.Font = XtPx("Segoe UI Semibold", 10F, FontStyle.Bold);
     }
 
     // ByteNova: keep ComboBox text clearly visible after login/disable.
@@ -3351,13 +3351,13 @@ internal class TCntrl : UserControl
         {
             if (l == null) continue;
             l.ForeColor = Color.FromArgb(230, 245, 255);
-            l.Font = new Font("Segoe UI", Math.Max(7.5F, l.Font.Size), l.Font.Style);
+            l.Font = XtPx("Segoe UI", Math.Max(7.5F, l.Font.SizeInPoints), l.Font.Style);
         }
 
         if (lblTktName != null)
         {
             lblTktName.ForeColor = Color.White;
-            lblTktName.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
+            lblTktName.Font = XtPx("Segoe UI Semibold", 9F, FontStyle.Bold);
         }
         if (lblStatus != null)
         {
@@ -3367,7 +3367,7 @@ internal class TCntrl : UserControl
         if (lblAvailability != null)
         {
             lblAvailability.ForeColor = Color.FromArgb(75, 235, 175);
-            lblAvailability.Font = new Font("Segoe UI Semibold", Math.Max(8F, lblAvailability.Font.Size), FontStyle.Bold);
+            lblAvailability.Font = XtPx("Segoe UI Semibold", Math.Max(8F, lblAvailability.Font.SizeInPoints), FontStyle.Bold);
         }
 
         CheckBox[] checks = { chkConfirmation, check_avl };
@@ -3430,13 +3430,13 @@ internal class TCntrl : UserControl
         // Main ticket title becomes the strongest visual element.
         if (lblTktName != null)
         {
-            lblTktName.Font = new Font("Segoe UI Semibold", 9.5F, FontStyle.Bold);
+            lblTktName.Font = XtPx("Segoe UI Semibold", 9.5F, FontStyle.Bold);
             lblTktName.ForeColor = Color.White;
         }
 
         if (lblJourney != null)
         {
-            lblJourney.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
+            lblJourney.Font = XtPx("Segoe UI Semibold", 8.5F, FontStyle.Bold);
             lblJourney.ForeColor = Color.FromArgb(115, 225, 255);
         }
 
@@ -3463,7 +3463,7 @@ internal class TCntrl : UserControl
             if (b == null) continue;
             b.Margin = new Padding(2);
             b.TextAlign = ContentAlignment.MiddleCenter;
-            b.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Bold);
+            b.Font = XtPx("Segoe UI Semibold", 8F, FontStyle.Bold);
         }
 
         // Requested browser names; original click handlers stay attached.
@@ -3503,7 +3503,7 @@ internal class TCntrl : UserControl
             using (Pen ring = new Pen(Color.FromArgb(235, 255, 255, 255), 1.4F))
                 g.DrawEllipse(ring, 1.5F, 1.5F, 14.5F, 14.5F);
 
-            using (Font f = new Font("Segoe UI Symbol", 8F, FontStyle.Bold, GraphicsUnit.Point))
+            using (Font f = XtPx("Segoe UI Symbol", 8F, FontStyle.Bold))
             using (Brush b = new SolidBrush(Color.White))
             {
                 StringFormat sf = new StringFormat();
@@ -3562,7 +3562,7 @@ internal class TCntrl : UserControl
         button.FlatAppearance.MouseOverBackColor = ControlPaint.Light(accent, 0.10F);
         button.FlatAppearance.MouseDownBackColor = ControlPaint.Dark(accent, 0.12F);
 
-        button.Font = new Font("Segoe UI Semibold", 8F, FontStyle.Bold);
+        button.Font = XtPx("Segoe UI Semibold", 8F, FontStyle.Bold);
         button.Cursor = Cursors.Hand;
         button.TextAlign = ContentAlignment.MiddleCenter;
     }
@@ -3629,12 +3629,12 @@ internal class TCntrl : UserControl
         get { return Rectangle.Inflate(XT_STATUS, 2, 2); }
     }
 
-    private readonly Font xtFStatus = new Font("Segoe UI Semibold", 10.5F);
-    private readonly Font xtFCaption = new Font("Segoe UI Semibold", 8.5F);
-    private readonly Font xtFCombo = new Font("Segoe UI", 9F);
-    private readonly Font xtFComboBold = new Font("Segoe UI Semibold", 9F);
-    private readonly Font xtFCheck = new Font("Segoe UI Semibold", 9F);
-    private readonly Font xtFBtn = new Font("Segoe UI Semibold", 9.5F);
+    private readonly Font xtFStatus = XtPx("Segoe UI Semibold", 10.5F);
+    private readonly Font xtFCaption = XtPx("Segoe UI Semibold", 8.5F);
+    private readonly Font xtFCombo = XtPx("Segoe UI", 9F);
+    private readonly Font xtFComboBold = XtPx("Segoe UI Semibold", 9F);
+    private readonly Font xtFCheck = XtPx("Segoe UI Semibold", 9F);
+    private readonly Font xtFBtn = XtPx("Segoe UI Semibold", 9.5F);
 
     private readonly Dictionary<Control, int> xtHover = new Dictionary<Control, int>();
     private ComboBox xtHotCombo;
@@ -3975,7 +3975,7 @@ internal class TCntrl : UserControl
         XtSIcon(g, "check", new RectangleF(rib.X + 14, rcy - 7, 14, 14), XT_SUCCESS, 2.2f);
 
         // time chip on the right
-        using (Font tf = new Font("Segoe UI Semibold", 9.5F))
+        using (Font tf = XtPx("Segoe UI Semibold", 9.5F))
         {
             Size ts = TextRenderer.MeasureText(g, time, tf, Size.Empty, TextFormatFlags.NoPadding);
             Rectangle chip = new Rectangle(rib.Right - 12 - (ts.Width + 34), rcy - 13, ts.Width + 34, 26);
@@ -3985,7 +3985,7 @@ internal class TCntrl : UserControl
                 TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
 
             Rectangle tr = new Rectangle(rib.X + 42, rib.Y, chip.X - rib.X - 50, rib.Height);
-            using (Font hf = new Font("Segoe UI Semibold", 12F))
+            using (Font hf = XtPx("Segoe UI Semibold", 12F))
                 TextRenderer.DrawText(g, "Ticket Booked", hf, tr, Color.White,
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
         }
@@ -4014,7 +4014,7 @@ internal class TCntrl : UserControl
                 using (Pen sp = new Pen(Color.FromArgb(230, 236, 245)))
                     g.DrawLine(sp, col.X - 4, dg.Y + 10, col.X - 4, dg.Bottom - 10);
             XtSIcon(g, icons[i], new RectangleF(col.X + 2, dg.Y + 10, 12, 12), XT_ORANGE, 1.5f);
-            using (Font cf = new Font("Segoe UI Semibold", 7.5F))
+            using (Font cf = XtPx("Segoe UI Semibold", 7.5F))
                 TextRenderer.DrawText(g, caps[i], cf, new Rectangle(col.X + 18, dg.Y + 8, col.Width - 20, 16), XT_MUTED,
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
             string v = string.IsNullOrEmpty(vals[i]) ? "-" : vals[i];
@@ -4028,7 +4028,7 @@ internal class TCntrl : UserControl
         XtCard(g, bs);
         int bcy = bs.Y + bs.Height / 2;
         int right = bs.Right - 10;
-        using (Font bf = new Font("Segoe UI Semibold", 8.5F))
+        using (Font bf = XtPx("Segoe UI Semibold", 8.5F))
         {
             if (login.Length > 0)
                 right = XtBadge(g, login, bf, right, bcy, Color.FromArgb(219, 234, 254), XT_BLUE, "globe") - 6;
@@ -4036,14 +4036,14 @@ internal class TCntrl : UserControl
                 right = XtBadge(g, bank, bf, right, bcy, Color.FromArgb(255, 237, 213), Color.FromArgb(194, 65, 12), "card") - 6;
         }
         XtSIcon(g, "train", new RectangleF(bs.X + 14, bcy - 7, 14, 14), XT_SUCCESS, 1.6f);
-        XtFitText(g, avl.Length > 0 ? avl : "-", "Segoe UI", FontStyle.Bold, 10f, 7.5f,
+        XtFitText(g, avl.Length > 0 ? XtWithRupee(avl) : "-", "Segoe UI", FontStyle.Bold, 10f, 7.5f,
             new Rectangle(bs.X + 34, bs.Y + 2, Math.Max(20, right - (bs.X + 34) - 4), bs.Height - 4), Color.FromArgb(21, 128, 61), true);
 
         // ---------- 5. footer: user / slot + brand ----------
         Rectangle ft = new Rectangle(M, bs.Bottom + 4, CW, Height - bs.Bottom - 4 - 4);
         int fcy = ft.Y + ft.Height / 2;
         int brandW = 0;
-        using (Font nf = new Font("Segoe UI", 9.5F, FontStyle.Bold | FontStyle.Italic))
+        using (Font nf = XtPx("Segoe UI", 9.5F, FontStyle.Bold | FontStyle.Italic))
         {
             Size ns = TextRenderer.MeasureText(g, "Express", nf, Size.Empty, TextFormatFlags.NoPadding);
             brandW = 18 + 5 + ns.Width;
@@ -4060,7 +4060,7 @@ internal class TCntrl : UserControl
             else
             {
                 XtFill(g, lr, 4, Color.FromArgb(132, 204, 22), Color.Empty);
-                using (Font ef = new Font("Segoe UI", 8F, FontStyle.Bold))
+                using (Font ef = XtPx("Segoe UI", 8F, FontStyle.Bold))
                     TextRenderer.DrawText(g, "E", ef, lr, Color.FromArgb(46, 16, 101),
                         TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
             }
@@ -4078,7 +4078,42 @@ internal class TCntrl : UserControl
             g.DrawRectangle(fr, 0, 0, Width - 1, Height - 1);
     }
 
-    // Pill badge drawn right-aligned ending at `right`; returns its left edge.
+    // Width of the after-login time card: always room for a full "HH:mm:ss" plus the clock icon padding.
+    private int XtTimeCardWidth()
+    {
+        using (Font f = XtPx("Segoe UI", 11.5F, FontStyle.Bold))
+        {
+            int w = TextRenderer.MeasureText("00:00:00", f, Size.Empty, TextFormatFlags.NoPadding).Width;
+            int w2 = TextRenderer.MeasureText("88:88:88", f, Size.Empty, TextFormatFlags.NoPadding).Width;
+            return Math.Max(124, Math.Max(w, w2) + 24 + 8 + 18);   // text + icon padding + right padding + breathing room
+        }
+    }
+
+    // "AVL-0139 | 31.8" -> "AVL-0139  |  ₹ 31.8" (display only; the label text itself is untouched).
+    private static string XtWithRupee(string avl)
+    {
+        if (string.IsNullOrEmpty(avl)) return avl;
+        int bar = avl.LastIndexOf('|');
+        if (bar < 0) return avl;
+        string price = avl.Substring(bar + 1).Trim();
+        if (price.Length == 0 || price.IndexOf((char)0x20B9) >= 0 ||
+            price.StartsWith("Rs", StringComparison.OrdinalIgnoreCase) || !char.IsDigit(price[0]))
+            return avl;
+        return avl.Substring(0, bar).TrimEnd() + "  |  " + (char)0x20B9 + " " + price;
+    }
+
+    // DPI-independent fonts: sizes are given in points-at-96-DPI and created in PIXELS, so text keeps
+    // exactly the same size relative to our fixed-pixel layout at 100 / 125 / 150 % scaling.
+    private static Font XtPx(string family, float pt)
+    {
+        return new Font(family, pt * 96f / 72f, FontStyle.Regular, GraphicsUnit.Pixel);
+    }
+
+    private static Font XtPx(string family, float pt, FontStyle style)
+    {
+        return new Font(family, pt * 96f / 72f, style, GraphicsUnit.Pixel);
+    }
+
     private int XtBadge(Graphics g, string text, Font f, int right, int cy, Color fill, Color fg, string icon)
     {
         // Shrink the font (down to 7pt) before ever cutting the text; ellipsis only as a last resort.
@@ -4086,10 +4121,11 @@ internal class TCntrl : UserControl
         Font use = f;
         Font owned = null;
         Size ts = TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding);
-        for (float pt = f.SizeInPoints - 0.5f; ts.Width + 34 > maxW && pt >= 7f; pt -= 0.5f)
+        float basePt = f.Unit == GraphicsUnit.Pixel ? f.Size * 72f / 96f : f.SizeInPoints;
+        for (float pt = basePt - 0.5f; ts.Width + 34 > maxW && pt >= 7f; pt -= 0.5f)
         {
             if (owned != null) owned.Dispose();
-            owned = new Font(f.FontFamily, pt, f.Style);
+            owned = XtPx(f.FontFamily.Name, pt, f.Style);
             use = owned;
             ts = TextRenderer.MeasureText(g, text, use, Size.Empty, TextFormatFlags.NoPadding);
         }
@@ -4113,7 +4149,7 @@ internal class TCntrl : UserControl
         const TextFormatFlags one = TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine;
         for (float pt = maxPt; pt >= minPt - 0.01f; pt -= 0.5f)
         {
-            using (Font f = new Font(family, pt, style))
+            using (Font f = XtPx(family, pt, style))
             {
                 Size s = TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding);
                 if (s.Width <= r.Width && s.Height <= r.Height)
@@ -4129,7 +4165,7 @@ internal class TCntrl : UserControl
                                          TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl;
             for (float pt = Math.Min(maxPt, 10f); pt >= minPt - 0.01f; pt -= 0.5f)
             {
-                using (Font f = new Font(family, pt, style))
+                using (Font f = XtPx(family, pt, style))
                 {
                     Size s = TextRenderer.MeasureText(g, text, f, new Size(r.Width, int.MaxValue), TextFormatFlags.NoPadding | TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl);
                     if (s.Height <= r.Height)
@@ -4139,11 +4175,11 @@ internal class TCntrl : UserControl
                     }
                 }
             }
-            using (Font f = new Font(family, minPt, style))
+            using (Font f = XtPx(family, minPt, style))
                 TextRenderer.DrawText(g, text, f, r, color, wrap | TextFormatFlags.EndEllipsis);
             return;
         }
-        using (Font f = new Font(family, minPt, style))
+        using (Font f = XtPx(family, minPt, style))
             TextRenderer.DrawText(g, text, f, r, color, one | TextFormatFlags.EndEllipsis);
     }
 

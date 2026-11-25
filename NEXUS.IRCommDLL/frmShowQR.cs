@@ -81,14 +81,14 @@ public class frmShowQR : Form
         ForeColor = qText;
         FormBorderStyle = FormBorderStyle.None;
         DoubleBuffered = true;
-        ClientSize = new Size(320, 422);
+        ClientSize = new Size(404, 506);
         bunifuElipse1.ElipseRadius = 12;
 
         // ---------------- QR area ----------------
         // The PictureBox covers the QR card's inner square. Its own image drawing is
         // replaced in the Paint handler below by a pixel-perfect, nearest-neighbour render.
         pictureBox1.Dock = DockStyle.None;
-        pictureBox1.SetBounds(22, 64, 276, 276);
+        pictureBox1.SetBounds(22, 64, 360, 360);
         pictureBox1.BackColor = Color.White;
         pictureBox1.BorderStyle = BorderStyle.None;
         pictureBox1.SizeMode = PictureBoxSizeMode.Normal;   // no bilinear scaling by the PictureBox
@@ -140,13 +140,67 @@ public class frmShowQR : Form
 
                 // top-left finder pattern: its top row is 7 dark modules
                 int run = 0;
-                while (minX + run <= maxX && dark(minX + run, minY)) run++;
+                // (checked on the first few rows: anti-aliased corners can make the very first row lighter)
+                for (int yy = minY; yy <= Math.Min(maxY, minY + 3); yy++)
+                {
+                    int sx0 = minX;
+                    while (sx0 <= maxX && !dark(sx0, yy)) sx0++;
+                    int r0 = 0;
+                    while (sx0 + r0 <= maxX && dark(sx0 + r0, yy)) r0++;
+                    if (r0 > run) run = r0;
+                }
                 double mod = run / 7.0;
                 if (mod < 1) return null;
                 double bw = maxX - minX + 1, bh = maxY - minY + 1;
                 int n = (int)Math.Round(bw / mod);
                 if (n < 21 || n > 177 || (n - 17) % 4 != 0) return null;
-                if (Math.Abs(bw / mod - n) > 0.45 || Math.Abs(bh / mod - n) > 0.6) return null;
+                if (Math.Abs(bw / mod - n) > 1.0 || Math.Abs(bw - bh) > 1.5 * mod) return null;   // rough shape check; the strict per-module check follows
+
+                // ---- read the module grid with a strict self-check ----
+                // Each module is sampled on a 3x3 grid inside its central half. A module is
+                // "ambiguous" if its samples disagree or their average is mid-grey (64..192).
+                Func<int, int, int> lum = (x, y) =>
+                {
+                    int c = px[y * w + x];
+                    return (((c >> 16) & 255) * 299 + ((c >> 8) & 255) * 587 + (c & 255) * 114) / 1000;
+                };
+                double mw = bw / n, mh = bh / n;
+                bool[,] grid = new bool[n, n];
+                int ambiguous = 0;
+                for (int j = 0; j < n; j++)
+                    for (int i = 0; i < n; i++)
+                    {
+                        int dk = 0, cnt = 0; long sum = 0;
+                        for (int oy = -1; oy <= 1; oy++)
+                            for (int ox = -1; ox <= 1; ox++)
+                            {
+                                int sx = Math.Max(0, Math.Min(w - 1, (int)(minX + (i + 0.5 + ox * 0.25) * mw)));
+                                int sy = Math.Max(0, Math.Min(h - 1, (int)(minY + (j + 0.5 + oy * 0.25) * mh)));
+                                int l = lum(sx, sy);
+                                sum += l; cnt++;
+                                if (l < 128) dk++;
+                            }
+                        double avg = (double)sum / cnt;
+                        grid[i, j] = dk * 2 > cnt;
+                        if ((dk != 0 && dk != cnt) || (avg > 64 && avg < 192)) ambiguous++;
+                    }
+                if (ambiguous > n * n * 0.02) return null;          // > 2% unsure -> use the original image
+
+                // all three finder patterns must match exactly, including their white separators
+                Func<int, int, bool> finderOk = (fx, fy) =>
+                {
+                    for (int y = fy - 1; y <= fy + 7; y++)
+                        for (int x = fx - 1; x <= fx + 7; x++)
+                        {
+                            if (x < 0 || y < 0 || x >= n || y >= n) continue;
+                            int u = x - fx, v = y - fy;
+                            bool inside = u >= 0 && u <= 6 && v >= 0 && v <= 6;
+                            bool want = inside && (u == 0 || u == 6 || v == 0 || v == 6 || (u >= 2 && u <= 4 && v >= 2 && v <= 4));
+                            if (grid[x, y] != want) return false;
+                        }
+                    return true;
+                };
+                if (!finderOk(0, 0) || !finderOk(n - 7, 0) || !finderOk(0, n - 7)) return null;
 
                 int total = n + 8;                                   // quiet zone: 4 modules each side
                 int scale = Math.Max(1, avail / total);
@@ -155,15 +209,10 @@ public class frmShowQR : Form
                 {
                     og.Clear(Color.White);
                     og.SmoothingMode = SmoothingMode.None;
-                    double mh = bh / n;
                     for (int j = 0; j < n; j++)
                         for (int i = 0; i < n; i++)
-                        {
-                            int sx = Math.Min(w - 1, (int)(minX + (i + 0.5) * mod));
-                            int sy = Math.Min(h - 1, (int)(minY + (j + 0.5) * mh));
-                            if (dark(sx, sy))
+                            if (grid[i, j])
                                 og.FillRectangle(Brushes.Black, (i + 4) * scale, (j + 4) * scale, scale, scale);
-                        }
                 }
                 return outB;
             }
@@ -263,7 +312,7 @@ public class frmShowQR : Form
         // label1.Text is set by the logic ("Pay Using QR :- <upi>  Amt=  <amount>");
         // it is drawn as a clean two-column card: PAY TO | AMOUNT.
         label1.AutoSize = false;
-        label1.SetBounds(22, 358, 276, 50);
+        label1.SetBounds(22, 442, 360, 50);
         label1.BackColor = Color.White;
         label1.ForeColor = qText;
         label1.Font = new Font("Segoe UI Semibold", 9F);
@@ -441,15 +490,15 @@ public class frmShowQR : Form
         }
 
         // ---------------- QR card ----------------
-        // pictureBox1 sits at (22,64,276,276) inside this card.
-        RectangleF qrCard = new RectangleF(12, 56, W - 24, 292);
+        // pictureBox1 sits at (22,64,360,360) inside this card.
+        RectangleF qrCard = new RectangleF(12, 56, W - 24, 376);
         card(qrCard, 14, Color.White, Color.FromArgb(220, 228, 241));
         using (SolidBrush acc = new SolidBrush(orange))
             g.FillRectangle(acc, qrCard.X + 1, qrCard.Y + 18, 3, qrCard.Height - 36);
 
         // ---------------- payment info card ----------------
-        // label1 sits at (22,358,276,50); the card frames it.
-        RectangleF info = new RectangleF(12, 354, W - 24, 58);
+        // label1 sits at (22,442,360,50); the card frames it.
+        RectangleF info = new RectangleF(12, 438, W - 24, 58);
         card(info, 12, Color.White, Color.FromArgb(253, 186, 116));
         using (SolidBrush acc = new SolidBrush(orange))
             g.FillRectangle(acc, info.X + 1, info.Y + 12, 3, info.Height - 24);

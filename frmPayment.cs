@@ -79,67 +79,173 @@ internal class frmPayment : Form
     }
 
 
+    // =====================================================================
+    // Express theme (light + bhagwa) - visual layer only.
+    // Payment / dialog / loop logic below is untouched.
+    // =====================================================================
+    private static readonly Color XP_BG = Color.FromArgb(236, 242, 251);
+    private static readonly Color XP_ORANGE = Color.FromArgb(245, 146, 28);
+    private static readonly Color XP_HEAD_L = Color.FromArgb(214, 96, 4);
+    private static readonly Color XP_HEAD_R = Color.FromArgb(248, 158, 44);
+    private static readonly Color XP_NAVY = Color.FromArgb(15, 42, 92);
+    private static readonly Color XP_TEXT = Color.FromArgb(30, 41, 59);
+    private static readonly Color XP_MUTED = Color.FromArgb(100, 116, 139);
+    private static readonly Color XP_FRAME = Color.FromArgb(178, 196, 226);
+    private static readonly Color XP_CARD_LINE = Color.FromArgb(220, 228, 241);
+
+    // Base layout in 96-dpi pixels; scaled by xpK so nothing is cut at 125-150 % scaling.
+    private const int XP_W = 400, XP_HEAD = 42, XP_M = 12, XP_BTN_H = 38, XP_CARD_MIN = 60;
+    private float xpK = 1f;
+    private Font xpFTitle, xpFMsg, xpFBtn, xpFHint;
+    private Rectangle xpCard;
+    private bool xpCloseHot, xpCloseDown;
+    private int xpBtnState;            // 0 normal, 1 hover, 2 pressed
+    private bool xpLaying;
+
+    private int XpS(float v) { return (int)Math.Round(v * xpK); }
+
     private void ApplyByteNovaTheme()
     {
         SuspendLayout();
 
-        ClientSize = new Size(330, 126);
-        BackColor = Color.FromArgb(3, 13, 29);
-        ForeColor = Color.White;
-        FormBorderStyle = FormBorderStyle.None;
-        bunifuElipse_0.ElipseRadius = 9;
+        try
+        {
+            using (Graphics sg = Graphics.FromHwnd(IntPtr.Zero))
+                xpK = Math.Max(1f, sg.DpiX / 96f);
+        }
+        catch { xpK = 1f; }
 
+        // pixel-unit fonts: their size follows xpK exactly like the layout does
+        xpFTitle = new Font("Segoe UI Semibold", 14f * xpK, FontStyle.Regular, GraphicsUnit.Pixel);
+        xpFMsg = new Font("Segoe UI Semibold", 13.5f * xpK, FontStyle.Regular, GraphicsUnit.Pixel);
+        xpFBtn = new Font("Segoe UI Semibold", 14f * xpK, FontStyle.Regular, GraphicsUnit.Pixel);
+        xpFHint = new Font("Segoe UI", 12.5f * xpK, FontStyle.Italic, GraphicsUnit.Pixel);
+
+        BackColor = XP_BG;
+        ForeColor = XP_TEXT;
+        FormBorderStyle = FormBorderStyle.None;
+        DoubleBuffered = true;
+        bunifuElipse_0.ElipseRadius = XpS(10);
+        XpBuffer(pnlHeader);
+
+        // ---- header ribbon ----
         pnlHeader.Dock = DockStyle.None;
-        pnlHeader.SetBounds(4, 4, 322, 25);
-        pnlHeader.BackColor = Color.FromArgb(3, 20, 40);
+        pnlHeader.BackColor = XP_HEAD_L;
         pnlHeader.Paint -= ByteNovaHeaderPaint;
         pnlHeader.Paint += ByteNovaHeaderPaint;
 
         tktname.AutoSize = false;
-        tktname.SetBounds(9, 2, 270, 21);
+        tktname.AutoEllipsis = true;
         tktname.ForeColor = Color.White;
         tktname.BackColor = Color.Transparent;
-        tktname.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold);
+        tktname.Font = xpFTitle;
         tktname.TextAlign = ContentAlignment.MiddleLeft;
+        tktname.UseCompatibleTextRendering = false;
 
-        btnCancel.SetBounds(293, 1, 26, 22);
-        btnCancel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnCancel.Anchor = AnchorStyles.Top | AnchorStyles.Left;
         btnCancel.BackColor = Color.Transparent;
         btnCancel.Image = null;
         btnCancel.ImageActive = null;
         btnCancel.Zoom = 0;
+        btnCancel.Cursor = Cursors.Hand;
         btnCancel.Paint -= ByteNovaClosePaint;
         btnCancel.Paint += ByteNovaClosePaint;
-        btnCancel.BringToFront();
+        btnCancel.MouseEnter += delegate { xpCloseHot = true; btnCancel.Invalidate(); };
+        btnCancel.MouseLeave += delegate { xpCloseHot = false; xpCloseDown = false; btnCancel.Invalidate(); };
+        btnCancel.MouseDown += delegate { xpCloseDown = true; btnCancel.Invalidate(); };
+        btnCancel.MouseUp += delegate { xpCloseDown = false; if (!btnCancel.IsDisposed) btnCancel.Invalidate(); };
 
+        // ---- message ----
         lblError.AutoSize = false;
-        lblError.SetBounds(9, 34, 312, 48);
         lblError.BackColor = Color.Transparent;
-        lblError.ForeColor = Color.White;
-        lblError.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
+        lblError.ForeColor = XP_TEXT;
+        lblError.Font = xpFMsg;
         lblError.TextAlign = ContentAlignment.MiddleCenter;
+        lblError.UseCompatibleTextRendering = false;
         lblError.VisibleChanged -= ByteNovaLblErrorVisibleChanged;
         lblError.VisibleChanged += ByteNovaLblErrorVisibleChanged;
+        lblError.TextChanged -= XpMessageChanged;
+        lblError.TextChanged += XpMessageChanged;
         if (lblError.Visible) lblError.BringToFront();
 
-        btnSubmit.SetBounds(9, 87, 312, 31);
-        StyleByteNovaButton(btnSubmit, Color.FromArgb(0, 126, 176));
+        // ---- primary button (text comes from the logic: Process Payment / Submit Passenger / Close) ----
+        StyleByteNovaButton(btnSubmit, XP_BG);
 
         // Keep the existing hidden Next control and its original functionality.
-        btnNxt.SetBounds(255, 1, 34, 22);
         btnNxt.FlatStyle = FlatStyle.Flat;
         btnNxt.FlatAppearance.BorderSize = 1;
-        btnNxt.FlatAppearance.BorderColor = Color.FromArgb(255, 200, 65);
-        btnNxt.BackColor = Color.FromArgb(118, 72, 20);
+        btnNxt.FlatAppearance.BorderColor = XP_ORANGE;
+        btnNxt.BackColor = XP_HEAD_L;
         btnNxt.ForeColor = Color.White;
 
         Paint -= ByteNovaFormPaint;
         Paint += ByteNovaFormPaint;
 
+        XpLayout();
         ResumeLayout(false);
+        Invalidate(true);
+    }
+
+    // frmPayment_Load (alert mode) resets a few bounds; lay the themed design out again after it.
+    protected override void OnLoad(EventArgs e)
+    {
+        base.OnLoad(e);
+        if (!IsDisposed) XpLayout();
+    }
+
+    private static void XpBuffer(Control c)
+    {
+        try
+        {
+            typeof(Control).GetProperty("DoubleBuffered",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .SetValue(c, true, null);
+        }
+        catch { }
+    }
+
+    private void XpMessageChanged(object sender, EventArgs e)
+    {
+        XpLayout();
         Invalidate();
     }
 
+    private void XpLayout()
+    {
+        if (xpLaying || xpFMsg == null) return;
+        xpLaying = true;
+        try
+        {
+            int w = XpS(XP_W), m = XpS(XP_M), head = XpS(XP_HEAD);
+
+            // message card grows with the text so nothing is ever cut
+            int textW = w - 2 * m - XpS(64);
+            string msg = lblError.Text ?? "";
+            int textH = 0;
+            if (msg.Trim().Length > 0)
+                textH = TextRenderer.MeasureText(msg, xpFMsg, new Size(textW, int.MaxValue),
+                    TextFormatFlags.WordBreak | TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding).Height;
+            int cardH = Math.Max(XpS(XP_CARD_MIN), textH + XpS(24));
+            xpCard = new Rectangle(m, head + m, w - 2 * m, cardH);
+
+            int btnY = xpCard.Bottom + XpS(10);
+            int h = btnY + XpS(XP_BTN_H) + m;
+            ClientSize = new Size(w, h);
+
+            pnlHeader.SetBounds(0, 0, w, head);
+            int cw = XpS(34), ch = XpS(26);
+            btnCancel.SetBounds(w - cw - XpS(9), (head - XpS(3) - ch) / 2, cw, ch);
+            tktname.SetBounds(XpS(46), 0, btnCancel.Left - XpS(52), head - XpS(3));
+            btnNxt.SetBounds(btnCancel.Left - XpS(42), btnCancel.Top, XpS(36), ch);
+            btnCancel.BringToFront();
+
+            lblError.SetBounds(xpCard.X + XpS(52), xpCard.Y + XpS(6), xpCard.Width - XpS(60), xpCard.Height - XpS(12));
+            if (lblError.Visible) lblError.BringToFront();
+
+            btnSubmit.SetBounds(m, btnY, w - 2 * m, XpS(XP_BTN_H));
+        }
+        finally { xpLaying = false; }
+    }
 
     private void ByteNovaLblErrorVisibleChanged(object sender, EventArgs e)
     {
@@ -148,6 +254,7 @@ internal class frmPayment : Form
             lblError.BringToFront();
             lblError.Refresh();
         }
+        Invalidate();
     }
 
     private void StyleByteNovaButton(Button b, Color back)
@@ -156,72 +263,256 @@ internal class frmPayment : Form
         b.BackColor = back;
         b.ForeColor = Color.White;
         b.FlatStyle = FlatStyle.Flat;
-        b.FlatAppearance.BorderSize = 1;
-        b.FlatAppearance.BorderColor = Color.FromArgb(198, 244, 50);
-        b.FlatAppearance.MouseOverBackColor = ControlPaint.Light(back, .08F);
-        b.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
+        b.FlatAppearance.BorderSize = 0;
+        b.FlatAppearance.MouseOverBackColor = back;
+        b.FlatAppearance.MouseDownBackColor = back;
+        b.Font = xpFBtn ?? b.Font;
         b.UseVisualStyleBackColor = false;
+        b.Cursor = Cursors.Hand;
+        b.Paint -= XpButtonPaint;
+        b.Paint += XpButtonPaint;
+        b.MouseEnter += delegate { xpBtnState = 1; b.Invalidate(); };
+        b.MouseLeave += delegate { xpBtnState = 0; b.Invalidate(); };
+        b.MouseDown += delegate (object s, MouseEventArgs e) { if (e.Button == MouseButtons.Left) { xpBtnState = 2; b.Invalidate(); } };
+        b.MouseUp += delegate
+        {
+            if (b.IsDisposed) return;
+            xpBtnState = b.ClientRectangle.Contains(b.PointToClient(MousePosition)) ? 1 : 0;
+            b.Invalidate();
+        };
+        b.TextChanged += delegate { b.Invalidate(); };
+    }
+
+    // ---------------- painting ----------------
+
+    private static GraphicsPath XpRound(RectangleF r, float rad)
+    {
+        GraphicsPath p = new GraphicsPath();
+        float d = Math.Min(rad * 2, Math.Min(r.Width, r.Height));
+        if (d < 1) { p.AddRectangle(r); return p; }
+        p.AddArc(r.X, r.Y, d, d, 180, 90);
+        p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+        p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+        p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+        p.CloseFigure();
+        return p;
+    }
+
+    private static void XpFill(Graphics g, RectangleF r, float rad, Color fill, Color border)
+    {
+        if (r.Width < 1 || r.Height < 1) return;
+        using (GraphicsPath p = XpRound(r, rad))
+        {
+            using (SolidBrush b = new SolidBrush(fill)) g.FillPath(b, p);
+            if (border.A > 0) using (Pen pen = new Pen(border, 1F)) g.DrawPath(pen, p);
+        }
+    }
+
+    private static Color XpMix(Color a, Color b, float t)
+    {
+        return Color.FromArgb(a.A,
+            (int)(a.R + (b.R - a.R) * t),
+            (int)(a.G + (b.G - a.G) * t),
+            (int)(a.B + (b.B - a.B) * t));
+    }
+
+    private bool XpIsWarning()
+    {
+        string t = (lblError.Text ?? "").ToUpperInvariant();
+        return t.Contains("HIGHER") || t.Contains("ALREADY");
     }
 
     private void ByteNovaHeaderPaint(object sender, PaintEventArgs e)
     {
         Rectangle r = pnlHeader.ClientRectangle;
         if (r.Width <= 0 || r.Height <= 0) return;
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        using (LinearGradientBrush br = new LinearGradientBrush(
-            r, Color.FromArgb(3, 27, 52), Color.FromArgb(64, 35, 116),
-            LinearGradientMode.Horizontal))
-            e.Graphics.FillRectangle(br, r);
-        using (Pen p = new Pen(Color.FromArgb(198, 244, 50), 1F))
-            e.Graphics.DrawRectangle(p, 0, 0, r.Width - 1, r.Height - 1);
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        using (LinearGradientBrush br = new LinearGradientBrush(r, XP_HEAD_L, XP_HEAD_R, LinearGradientMode.Horizontal))
+            g.FillRectangle(br, r);
+        using (SolidBrush shine = new SolidBrush(Color.FromArgb(20, 255, 255, 255)))
+            g.FillRectangle(shine, 0, 0, r.Width, (r.Height - XpS(3)) / 2);
+        using (SolidBrush navy = new SolidBrush(XP_NAVY))
+            g.FillRectangle(navy, 0, r.Height - XpS(3), r.Width, XpS(3));
+
+        // white badge with a Lucide credit-card icon
+        int hb = r.Height - XpS(3);
+        float bd = XpS(28);
+        RectangleF badge = new RectangleF(XpS(10), (hb - bd) / 2f, bd, bd);
+        using (SolidBrush sh = new SolidBrush(Color.FromArgb(45, 0, 0, 0)))
+            g.FillEllipse(sh, badge.X, badge.Y + 1, badge.Width, badge.Height);
+        using (SolidBrush wb = new SolidBrush(Color.White))
+            g.FillEllipse(wb, badge);
+        XpIcon(g, "card", RectangleF.Inflate(badge, -XpS(7), -XpS(7)), XP_HEAD_L);
     }
 
     private void ByteNovaClosePaint(object sender, PaintEventArgs e)
     {
-        Rectangle r = btnCancel.ClientRectangle;
-        if (r.Width <= 0 || r.Height <= 0) return;
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        using (LinearGradientBrush br = new LinearGradientBrush(
-            r, Color.FromArgb(205, 32, 48), Color.FromArgb(105, 8, 24),
-            LinearGradientMode.Vertical))
-            e.Graphics.FillRectangle(br, r);
-        using (Pen p = new Pen(Color.White, 1.8F))
+        Control c = btnCancel;
+        Rectangle r0 = c.ClientRectangle;
+        if (r0.Width <= 0 || r0.Height <= 0) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+
+        // repaint the ribbon underneath so the old image never shows through
+        Control p = c.Parent;
+        int pw = p != null ? Math.Max(1, p.Width) : c.Width;
+        int ph = p != null ? Math.Max(1, p.Height) : c.Height;
+        using (LinearGradientBrush bg = new LinearGradientBrush(new Rectangle(-c.Left, -c.Top, pw, ph), XP_HEAD_L, XP_HEAD_R, LinearGradientMode.Horizontal))
+            g.FillRectangle(bg, r0);
+        using (SolidBrush shine = new SolidBrush(Color.FromArgb(20, 255, 255, 255)))
+            g.FillRectangle(shine, 0, 0, c.Width, Math.Max(0, (ph - XpS(3)) / 2 - c.Top));
+
+        RectangleF r = new RectangleF(0.5f, xpCloseDown ? 1.5f : 0.5f, c.Width - 2, c.Height - 2);
+        Color fill = xpCloseDown ? Color.FromArgb(153, 27, 27) : xpCloseHot ? Color.White : Color.FromArgb(220, 38, 38);
+        Color line = xpCloseDown ? Color.FromArgb(127, 29, 29) : xpCloseHot ? Color.FromArgb(220, 38, 38) : Color.FromArgb(185, 28, 28);
+        Color glyph = xpCloseHot && !xpCloseDown ? Color.FromArgb(220, 38, 38) : Color.White;
+        if (!xpCloseDown)
+            XpFill(g, new RectangleF(r.X, r.Y + 1.5f, r.Width, r.Height), XpS(7), Color.FromArgb(60, 0, 0, 0), Color.Empty);
+        XpFill(g, r, XpS(7), fill, line);
+
+        float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f, a = XpS(5.5f);
+        using (Pen x = new Pen(glyph, 2.2f * xpK))
         {
-            e.Graphics.DrawLine(p, 8, 6, r.Width - 8, r.Height - 6);
-            e.Graphics.DrawLine(p, r.Width - 8, 6, 8, r.Height - 6);
+            x.StartCap = LineCap.Round;
+            x.EndCap = LineCap.Round;
+            g.DrawLine(x, cx - a, cy - a, cx + a, cy + a);
+            g.DrawLine(x, cx + a, cy - a, cx - a, cy + a);
         }
     }
 
     private void ByteNovaFormPaint(object sender, PaintEventArgs e)
     {
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.Clear(XP_BG);
 
-        using (Pen outer = new Pen(Color.FromArgb(198, 244, 50), 1.2F))
-            e.Graphics.DrawRectangle(outer, 1, 1, ClientSize.Width - 3, ClientSize.Height - 3);
+        bool warn = XpIsWarning();
+        Color accent = warn ? Color.FromArgb(217, 119, 6) : XP_ORANGE;
+        Color cardFill = warn ? Color.FromArgb(255, 251, 235) : Color.White;
+        Color cardLine = warn ? Color.FromArgb(253, 211, 77) : XP_CARD_LINE;
 
-        Rectangle card = new Rectangle(6, 32, 318, 53);
-        using (GraphicsPath path = ByteNovaRoundedRect(card, 9))
-        using (LinearGradientBrush fill = new LinearGradientBrush(
-            card, Color.FromArgb(8, 38, 65), Color.FromArgb(5, 24, 48),
-            LinearGradientMode.Vertical))
-        using (Pen border = new Pen(Color.FromArgb(198, 244, 50), 1F))
+        RectangleF card = new RectangleF(xpCard.X, xpCard.Y, xpCard.Width - 1, xpCard.Height - 1);
+        XpFill(g, new RectangleF(card.X, card.Y + 1.5f, card.Width, card.Height), XpS(10), Color.FromArgb(215, 226, 243), Color.Empty);
+        XpFill(g, card, XpS(10), cardFill, cardLine);
+        XpFill(g, new RectangleF(card.X + 1, card.Y + XpS(10), XpS(3), card.Height - XpS(20)), 1.5f * xpK, accent, Color.Empty);
+
+        // icon tile: alert-triangle for warnings, info otherwise
+        float tile = XpS(32);
+        RectangleF it = new RectangleF(card.X + XpS(12), card.Y + (card.Height - tile) / 2f, tile, tile);
+        XpFill(g, it, XpS(8), Color.FromArgb(warn ? 60 : 36, accent), Color.Empty);
+        XpIcon(g, warn ? "alert" : "info", RectangleF.Inflate(it, -XpS(7), -XpS(7)), accent);
+
+        // empty message: a calm painted hint (the label text itself is untouched)
+        if (!lblError.Visible || (lblError.Text ?? "").Trim().Length == 0)
         {
-            e.Graphics.FillPath(fill, path);
-            e.Graphics.DrawPath(border, path);
+            Rectangle hr = new Rectangle(xpCard.X + XpS(52), xpCard.Y, xpCard.Width - XpS(60), xpCard.Height);
+            TextRenderer.DrawText(g, "Ready to process payment", xpFHint, hr, XP_MUTED,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
         }
+
+        using (Pen outer = new Pen(XP_FRAME, 1.2F))
+            g.DrawRectangle(outer, 0.6f, 0.6f, ClientSize.Width - 1.2f, ClientSize.Height - 1.2f);
     }
 
-    private GraphicsPath ByteNovaRoundedRect(Rectangle r, int radius)
+    private void XpButtonPaint(object sender, PaintEventArgs e)
     {
-        GraphicsPath p = new GraphicsPath();
-        int d = radius * 2;
-        p.AddArc(r.Left, r.Top, d, d, 180, 90);
-        p.AddArc(r.Right - d, r.Top, d, d, 270, 90);
-        p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
-        p.AddArc(r.Left, r.Bottom - d, d, d, 90, 90);
-        p.CloseFigure();
-        return p;
+        Button b = sender as Button;
+        if (b == null) return;
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.Clear(XP_BG);
+
+        int st = xpBtnState;
+        bool on = b.Enabled;
+        RectangleF r = new RectangleF(0.5f, st == 2 ? 1.5f : 0.5f, b.Width - 2, b.Height - 3);
+        Color top = Color.FromArgb(252, 170, 66), bot = Color.FromArgb(232, 112, 4);
+        if (st == 1) { top = XpMix(top, Color.White, 0.14f); bot = XpMix(bot, Color.White, 0.08f); }
+        if (st == 2) { top = XpMix(top, Color.Black, 0.12f); bot = XpMix(bot, Color.Black, 0.16f); }
+        if (!on) { top = XpMix(top, Color.White, 0.55f); bot = XpMix(bot, Color.White, 0.55f); }
+        if (st != 2 && on)
+            XpFill(g, new RectangleF(r.X, r.Y + 2, r.Width, r.Height), XpS(9), Color.FromArgb(st == 1 ? 90 : 60, 194, 84, 0), Color.Empty);
+        using (GraphicsPath path = XpRound(r, XpS(9)))
+        using (LinearGradientBrush bg = new LinearGradientBrush(r, top, bot, LinearGradientMode.Vertical))
+        {
+            g.FillPath(bg, path);
+            Region old = g.Clip;
+            g.SetClip(path, CombineMode.Intersect);
+            using (SolidBrush gloss = new SolidBrush(Color.FromArgb(st == 2 ? 16 : 38, 255, 255, 255)))
+                g.FillRectangle(gloss, r.X, r.Y, r.Width, r.Height / 2);
+            if (st == 1)
+                using (SolidBrush nb = new SolidBrush(XP_NAVY))
+                    g.FillRectangle(nb, r.X, r.Bottom - XpS(3), r.Width, XpS(3));
+            g.Clip = old;
+        }
+
+        string text = b.Text ?? "";
+        string up = text.ToUpperInvariant();
+        string icon = up.Contains("CLOSE") ? "x" : up.Contains("PASSENGER") ? "user" : "card";
+        Size ts = TextRenderer.MeasureText(g, text, xpFBtn, Size.Empty, TextFormatFlags.NoPadding);
+        float isz = XpS(18), gap = XpS(9);
+        float gw = isz + gap + ts.Width + XpS(14);   // + room for the arrow
+        float x = r.X + (r.Width - gw) / 2f + (st == 1 ? XpS(2) : 0);
+        float cy = r.Y + r.Height / 2f;
+        XpIcon(g, icon, new RectangleF(x, cy - isz / 2f, isz, isz), Color.White);
+        TextRenderer.DrawText(g, text, xpFBtn,
+            new Rectangle((int)(x + isz + gap), (int)(cy - ts.Height / 2f) - 1, ts.Width + 4, ts.Height + 2),
+            Color.White, TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+        if (icon == "card")
+            XpIcon(g, "arrow", new RectangleF(x + isz + gap + ts.Width + XpS(6), cy - XpS(5), XpS(10), XpS(10)), Color.White);
     }
+
+    // Lucide-style line icons (2px stroke, round caps/joins)
+    private void XpIcon(Graphics g, string kind, RectangleF r, Color c)
+    {
+        SmoothingMode old = g.SmoothingMode;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        float x = r.X, y = r.Y, w = r.Width, h = r.Height;
+        using (Pen p = new Pen(c, Math.Max(1.5f, 1.9f * xpK)))
+        using (SolidBrush b = new SolidBrush(c))
+        {
+            p.StartCap = LineCap.Round; p.EndCap = LineCap.Round; p.LineJoin = LineJoin.Round;
+            switch (kind)
+            {
+                case "card":
+                    using (GraphicsPath cp = XpRound(new RectangleF(x, y + h * 0.18f, w, h * 0.66f), w * 0.12f))
+                        g.DrawPath(p, cp);
+                    g.DrawLine(p, x, y + h * 0.4f, x + w, y + h * 0.4f);
+                    g.DrawLine(p, x + w * 0.16f, y + h * 0.66f, x + w * 0.36f, y + h * 0.66f);
+                    break;
+                case "arrow":
+                    g.DrawLine(p, x, y + h / 2, x + w, y + h / 2);
+                    g.DrawLines(p, new[] { new PointF(x + w * 0.55f, y), new PointF(x + w, y + h / 2), new PointF(x + w * 0.55f, y + h) });
+                    break;
+                case "info":
+                    g.DrawEllipse(p, x, y, w, h);
+                    g.DrawLine(p, x + w / 2, y + h * 0.46f, x + w / 2, y + h * 0.72f);
+                    g.FillEllipse(b, x + w / 2 - 1.3f * xpK, y + h * 0.26f - 1.3f * xpK, 2.6f * xpK, 2.6f * xpK);
+                    break;
+                case "alert":
+                    using (GraphicsPath tp = new GraphicsPath())
+                    {
+                        tp.AddLines(new[] { new PointF(x + w / 2, y + h * 0.04f), new PointF(x + w, y + h * 0.92f), new PointF(x, y + h * 0.92f) });
+                        tp.CloseFigure();
+                        g.DrawPath(p, tp);
+                    }
+                    g.DrawLine(p, x + w / 2, y + h * 0.38f, x + w / 2, y + h * 0.6f);
+                    g.FillEllipse(b, x + w / 2 - 1.3f * xpK, y + h * 0.74f - 1.3f * xpK, 2.6f * xpK, 2.6f * xpK);
+                    break;
+                case "user":
+                    g.DrawEllipse(p, x + w * 0.3f, y, w * 0.4f, h * 0.42f);
+                    g.DrawArc(p, x + w * 0.08f, y + h * 0.52f, w * 0.84f, h * 0.9f, 180, 180);
+                    break;
+                case "x":
+                    g.DrawEllipse(p, x, y, w, h);
+                    g.DrawLine(p, x + w * 0.34f, y + h * 0.34f, x + w * 0.66f, y + h * 0.66f);
+                    g.DrawLine(p, x + w * 0.66f, y + h * 0.34f, x + w * 0.34f, y + h * 0.66f);
+                    break;
+            }
+        }
+        g.SmoothingMode = old;
+    }
+
 
     internal void method_0(Control control_0, Rectangle rectangle_0)
     {

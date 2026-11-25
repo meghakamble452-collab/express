@@ -781,28 +781,38 @@ namespace APP_FRAMEWORK
                 if (exClockPill != null)
                     exClockPill.Bounds = new Rectangle(clockX, ExS(8, k), ExClockWidth(k), ExS(66, k));
 
-                int infoX = clockX + (exClockPill != null ? exClockPill.Width : 0) + ExS(14, k);
+                // Clock sits on the LEFT (right after the brand); user info is right-aligned just before power/close.
+                int minInfoX = clockX + (exClockPill != null ? exClockPill.Width : 0) + ExS(18, k);
 
                 if (exInfo != null)
                 {
-                    int maxRel = Math.Max(ExS(160, k), infoRight - ExS(14, k) - infoX);
-                    int cxp = ExS(46, k);
+                    Panel[] chips = { exChId, exChVal, exChVer, exChPay };
+                    int lead = ExS(46, k), chipGap = ExS(7, k), tail = ExS(9, k);
+                    int infoWant = lead + tail;
+                    int cnt = 0;
+                    foreach (Panel cp in chips) if (cp != null) { infoWant += ExChipW(cp); cnt++; }
+                    if (cnt > 1) infoWant += (cnt - 1) * chipGap;
+
+                    int infoEnd = infoRight - ExS(14, k);
+                    int infoX = Math.Max(minInfoX, infoEnd - infoWant);
+                    int maxRel = Math.Max(ExS(160, k), infoEnd - infoX);
+
+                    int cxp = lead;
                     int chipTop = ExS(7, k);
                     int chipH = ExS(52, k);
-                    Panel[] chips = { exChId, exChVal, exChVer, exChPay };
                     foreach (Panel cp in chips)
                     {
                         if (cp == null) continue;
                         int cwp = ExChipW(cp);
-                        if (cxp + cwp > maxRel - ExS(8, k))
-                            cwp = Math.Max(ExS(52, k), maxRel - ExS(8, k) - cxp);
+                        if (cxp + cwp > maxRel - tail)
+                            cwp = Math.Max(ExS(52, k), maxRel - tail - cxp);
                         cp.Bounds = new Rectangle(cxp, chipTop, cwp, chipH);
                         cp.Region = null;   // smooth AA corners are painted; no jagged Region
-                        cxp += cwp + ExS(7, k);
+                        cxp += cwp + chipGap;
                     }
 
-                    int infoW = Math.Max(ExS(160, k), Math.Min(cxp + ExS(1, k), maxRel));
-                    exInfo.Bounds = new Rectangle(infoX, ExS(8, k), infoW, ExS(66, k));
+                    int infoW = Math.Min(cxp - chipGap + tail, maxRel);
+                    exInfo.Bounds = new Rectangle(infoX, ExS(8, k), Math.Max(ExS(160, k), infoW), ExS(66, k));
                 }
 
                 foreach (Control c in exCanvas.Controls)
@@ -1353,6 +1363,12 @@ namespace APP_FRAMEWORK
             int valW = cap == "PAYMENT"
                 ? ExS(34, exK) + TextRenderer.MeasureText(val.ToUpperInvariant(), fb, Size.Empty, TextFormatFlags.NoPadding).Width
                 : TextRenderer.MeasureText(val, fv, Size.Empty, TextFormatFlags.NoPadding).Width;
+            // the validity countdown changes every second: reserve room for its widest digits so it never clips
+            if (cap == "VALIDITY")
+            {
+                string tpl = System.Text.RegularExpressions.Regex.Replace(val ?? "", "[0-9]", "8");
+                valW = Math.Max(valW, TextRenderer.MeasureText(tpl, fv, Size.Empty, TextFormatFlags.NoPadding).Width + ExS(4, exK));
+            }
             return Math.Max(capW, valW) + ExS(24, exK);
         }
 

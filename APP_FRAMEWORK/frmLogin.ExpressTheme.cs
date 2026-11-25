@@ -51,8 +51,8 @@ namespace APP_FRAMEWORK
         // content edges inside the card: x 16 .. 356 (buttons and the field border share them)
         private const int EDGE_L = 16, EDGE_R = 356;
         // panel2 carries a 3px glow margin on the sides and a 9px notch band on top for the floated label
-        private const int FIELD_PAD = 3, FIELD_NOTCH = 9;
-        private const int FIELD_X = EDGE_L - FIELD_PAD, FIELD_Y = 84, FIELD_W = EDGE_R - EDGE_L + FIELD_PAD * 2, FIELD_H = 60;
+        private const int FIELD_PAD = 3, FIELD_NOTCH = 20;
+        private const int FIELD_X = EDGE_L - FIELD_PAD, FIELD_Y = 82, FIELD_W = EDGE_R - EDGE_L + FIELD_PAD * 2, FIELD_H = 67;
         private const int FIELD_TEXT_X = 42;
         private static readonly Color ExKeyText = Color.FromArgb(214, 96, 4);
 
@@ -163,8 +163,8 @@ namespace APP_FRAMEWORK
             exCard.BringToFront();
 
             exBrand = new Panel();
-            exBrand.Location = new Point(EDGE_L, 18);
-            exBrand.Size = new Size(42, 42);
+            exBrand.Location = new Point(EDGE_L, 15);
+            exBrand.Size = new Size(50, 50);
             exBrand.BackColor = Color.Transparent;
             ExBuffer(exBrand);
             exBrand.Paint += ExBrandPaint;
@@ -177,6 +177,9 @@ namespace APP_FRAMEWORK
             exTitle.Size = new Size(150, 26);
             exTitle.TextAlign = ContentAlignment.MiddleLeft;
             exSub = ExLabel("PREMIUM TATKAL SOFTWARE", 70, 42, new Font("Segoe UI Semibold", 6.75F), ExSlate);
+            // wordmark + tagline are painted on the card (path text, measured - never clipped at any DPI)
+            exTitle.Visible = false;
+            exSub.Visible = false;
 
             // MAC DETAIL - kept (object + MouseHover handler) but hidden, as before the redesign
             label4.Parent = exCard;
@@ -210,7 +213,7 @@ namespace APP_FRAMEWORK
             txtLogin.BorderStyle = BorderStyle.None;
             txtLogin.BackColor = ExFieldBg;
             txtLogin.ForeColor = ExKeyText;                  // typed key in bhagwa
-            txtLogin.Font = new Font("Segoe UI Semibold", 10F);
+            txtLogin.Font = ExF0("Segoe UI Semibold", 9F);
             // vertically centred inside the painted box (box = FIELD_NOTCH .. FIELD_H - FIELD_PAD)
             int boxMid = (FIELD_NOTCH + (FIELD_H - FIELD_PAD)) / 2;
             txtLogin.Location = new Point(FIELD_TEXT_X, boxMid - txtLogin.PreferredHeight / 2);
@@ -219,6 +222,10 @@ namespace APP_FRAMEWORK
             txtLogin.HideSelection = false;
             txtLogin.Enter += (s, e) => panel2.Invalidate();
             txtLogin.Leave += (s, e) => panel2.Invalidate();
+            // empty + unfocused: a faint placeholder inside the box (native cue banner - it is the
+            // textbox's own hint text, so it can never overlap typed text)
+            txtLogin.HandleCreated += (s, e) => ExSetCue();
+            if (txtLogin.IsHandleCreated) ExSetCue();
             txtLogin.MouseEnter += (s, e) => exFieldHover = 1f;
             txtLogin.MouseLeave += (s, e) => exFieldHover = 0f;
             txtLogin.BackColorChanged += (s, e) => { if (txtLogin.BackColor != ExFieldBg) txtLogin.BackColor = ExFieldBg; };
@@ -235,13 +242,13 @@ namespace APP_FRAMEWORK
             exFloat.BringToFront();
 
             // ---------------- toggles (mirror the Bunifu switches the logic reads) ----------------
-            exRemember = ExToggle(new Point(EDGE_L, 162), true, ExRememberToggle);
-            exRememberCap = ExLabel("Remember My Key", EDGE_L + 44, 163, new Font("Segoe UI", 8.5F), ExInk);
+            exRemember = ExToggle(new Point(EDGE_L, 164), true, ExRememberToggle);
+            exRememberCap = ExLabel("Remember My Key", EDGE_L + 44, 165, ExF0("Segoe UI", 8.5F), ExInk);
             exRememberCap.Cursor = Cursors.Hand;
             exRememberCap.Click += ExRememberToggle;
 
-            exAuto = ExToggle(new Point(196, 162), true, ExAutoToggle);
-            exAutoCap = ExLabel("Auto Login", 196 + 44, 163, new Font("Segoe UI", 8.5F), ExInk);
+            exAuto = ExToggle(new Point(196, 164), true, ExAutoToggle);
+            exAutoCap = ExLabel("Auto Login", 196 + 44, 165, ExF0("Segoe UI", 8.5F), ExInk);
             exAutoCap.Cursor = Cursors.Hand;
             exAutoCap.Click += ExAutoToggle;
 
@@ -255,8 +262,8 @@ namespace APP_FRAMEWORK
             byteNovaRestartOption.Visible = false;
 
             // ---------------- buttons (same left/right edges as the field) ----------------
-            ExStyleButton(bunifuFlatButton2, new Point(EDGE_L, 200), new Size(108, 40), Color.White, ExExitPaint);
-            ExStyleButton(bunifuFlatButton1, new Point(EDGE_L + 108 + 10, 200), new Size(EDGE_R - (EDGE_L + 108 + 10), 40), ExBlue, ExSubmitPaint);
+            ExStyleButton(bunifuFlatButton2, new Point(EDGE_L, 202), new Size(108, 40), Color.White, ExExitPaint);
+            ExStyleButton(bunifuFlatButton1, new Point(EDGE_L + 108 + 10, 202), new Size(EDGE_R - (EDGE_L + 108 + 10), 40), ExBlue, ExSubmitPaint);
 
             // ---------------- validating overlay ----------------
             if (byteNovaServerLoader != null)
@@ -344,28 +351,48 @@ namespace APP_FRAMEWORK
             exAuto.Invalidate();
         }
 
+        // 1 = raised (focused), 0 = sitting on the top border (unfocused, with or without text)
         private float ExFloatTarget()
         {
-            return (txtLogin.Focused || txtLogin.TextLength > 0) ? 1f : 0f;
+            return txtLogin.Focused ? 1f : 0f;
         }
 
-        // Floating label: rests on the input line, rises to the top-left and shrinks when active.
+        // Pixel-unit fonts: exK is applied exactly once, so Windows DPI can't double-size and clip them.
+        private Font ExF(string family, float pt, FontStyle style = FontStyle.Regular)
+        {
+            return new Font(family, pt * 96f / 72f * exK, style, GraphicsUnit.Pixel);
+        }
+
+        // 96-dpi pixel font for controls (ExScaleTree scales pixel fonts by exK afterwards)
+        private static Font ExF0(string family, float pt, FontStyle style = FontStyle.Regular)
+        {
+            return new Font(family, pt * 96f / 72f, style, GraphicsUnit.Pixel);
+        }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, string lParam);
+
+        private void ExSetCue()
+        {
+            try { SendMessage(txtLogin.Handle, 0x1501 /* EM_SETCUEBANNER */, IntPtr.Zero, "Enter your licence key"); } catch { }
+        }
+
+        // Floating label:
+        //   unfocused -> a notch ON the top border line (never inside the box)
+        //   focused   -> rises fully ABOVE the box as a small caption
         private void ExLayoutFloat()
         {
             if (exFloat == null) return;
             float t = ExEase(exFloatT);
-            // rest: on the text line, vertically centred in the box; floated: a notch on the top border
-            float boxMid = (FIELD_NOTCH + (FIELD_H - FIELD_PAD)) / 2f;
-            float restY = boxMid - 10f, restH = 20f, restX = FIELD_TEXT_X;
-            float upY = FIELD_NOTCH - 7f, upH = 14f, upX = FIELD_PAD + 11f;
-            float restW = (panel2.Width / ExS_DPI) - FIELD_TEXT_X - 14f;
-            float upW;
-            using (Font uf = new Font("Segoe UI", 7.5F, FontStyle.Bold))
-                upW = TextRenderer.MeasureText("LICENCE KEY", uf, Size.Empty, TextFormatFlags.NoPadding).Width + 10f;
-            float x = restX + (upX - restX) * t;
-            float y = restY + (upY - restY) * t;
-            float w = restW + (upW - restW) * t;
-            float h = restH + (upH - restH) * t;
+            float lineY = FIELD_NOTCH;                                   // top border of the box
+            float onH = 14f, onY = lineY - onH / 2f, onX = FIELD_PAD + 10f;
+            float upH = 15f, upY = lineY - upH - 3f, upX = FIELD_PAD + 1f;
+            float w;
+            using (Font uf = ExF0("Segoe UI", 8F, FontStyle.Bold))
+                w = TextRenderer.MeasureText("LICENCE KEY", uf, Size.Empty, TextFormatFlags.NoPadding).Width + 12f;
+            float x = onX + (upX - onX) * t;
+            float y = onY + (upY - onY) * t;
+            float h = onH + (upH - onH) * t;
             Rectangle want = new Rectangle(ExS(x), ExS(y), ExS(w), ExS(h));
             if (exFloat.Bounds != want) exFloat.Bounds = want;
             exFloat.Invalidate();
@@ -424,7 +451,9 @@ namespace APP_FRAMEWORK
                 c.Location = new Point((int)Math.Round(c.Left * k), (int)Math.Round(c.Top * k));
                 if (!c.AutoSize)
                     c.Size = new Size((int)Math.Round(c.Width * k), (int)Math.Round(c.Height * k));
-                try { c.Font = new Font(c.Font.FontFamily, Math.Max(6f, c.Font.Size * k), c.Font.Style); } catch { }
+                // only pixel-unit fonts are scaled; point fonts already follow Windows DPI (scaling them again double-sizes and clips)
+                if (c.Font.Unit == GraphicsUnit.Pixel)
+                    try { c.Font = new Font(c.Font.FontFamily, Math.Max(6f, c.Font.Size * k), c.Font.Style, GraphicsUnit.Pixel); } catch { }
                 ExScaleTree(c, k);
             }
             parent.ResumeLayout(false);
@@ -725,7 +754,7 @@ namespace APP_FRAMEWORK
                 g.FillEllipse(wb, badge);
             ExIcon(g, "key", new RectangleF(badge.X + ExS(6), badge.Y + ExS(6), ExS(14), ExS(14)), ExSaffronD, 1.9f * exK);
 
-            using (Font tf = new Font("Segoe UI Semibold", 10.5F * exK))
+            using (Font tf = ExF("Segoe UI Semibold", 10.5F))
             {
                 Size ts = TextRenderer.MeasureText(g, "Key Login", tf, Size.Empty, TextFormatFlags.NoPadding);
                 ExText(g, "Key Login", tf, new Rectangle(badge.Right + ExS(10), (h - ts.Height) / 2, ts.Width + ExS(4), ts.Height),
@@ -786,12 +815,14 @@ namespace APP_FRAMEWORK
                 using (Pen pen = new Pen(ExLine, 1f)) g.DrawPath(pen, path);
             }
 
+            ExPaintWordmark(g);
+
             // "SECURE" badge (shield-check) top-right
-            using (Font bf = new Font("Segoe UI", 7F * exK, FontStyle.Bold))
+            using (Font bf = ExF("Segoe UI", 7F, FontStyle.Bold))
             {
                 Size ts = TextRenderer.MeasureText(g, "SECURE", bf, Size.Empty, TextFormatFlags.NoPadding);
                 int bw = ts.Width + ExS(28);
-                Rectangle badge = new Rectangle(ExS(EDGE_R) - bw, ExS(28), bw, ExS(20));
+                Rectangle badge = new Rectangle(ExS(EDGE_R) - bw, ExS(19), bw, ExS(20));
                 using (GraphicsPath bp = ExRound(badge, badge.Height / 2))
                 {
                     using (SolidBrush b = new SolidBrush(Color.FromArgb(220, 252, 231))) g.FillPath(b, bp);
@@ -801,8 +832,8 @@ namespace APP_FRAMEWORK
                 ExText(g, "SECURE", bf, new Rectangle(badge.X + ExS(22), badge.Y, ts.Width + ExS(4), badge.Height),
                     Color.FromArgb(21, 128, 61), TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
 
-                using (Font vf = new Font("Segoe UI", 7F * exK))
-                    ExText(g, "v0.0.1", vf, new Rectangle(badge.X - ExS(56), badge.Y, ExS(50), badge.Height),
+                using (Font vf = ExF("Segoe UI", 7F))
+                    ExText(g, "v0.0.1", vf, new Rectangle(badge.Right - ExS(80), badge.Bottom + ExS(4), ExS(80) - ExS(6), ExS(14)),
                         ExSlate, TextFormatFlags.Right | TextFormatFlags.VerticalCenter);
             }
 
@@ -811,16 +842,66 @@ namespace APP_FRAMEWORK
                 g.DrawLine(p, ExS(EDGE_L), ExS(72), ExS(EDGE_R), ExS(72));
 
             // footer hint with info icon (centred, quiet)
-            using (Font hf = new Font("Segoe UI", 7.75F * exK))
+            using (Font hf = ExF("Segoe UI", 7.75F))
             {
                 string hint = "Server se validate hone ke baad software khulega.";
                 Size hs = TextRenderer.MeasureText(g, hint, hf, Size.Empty, TextFormatFlags.NoPadding);
                 int iw = ExS(13), gap = ExS(6);
                 int fx = (exCard.Width - (iw + gap + hs.Width)) / 2;
-                int fy = ExS(256);
+                int fy = ExS(258);
                 ExIcon(g, "info", new RectangleF(fx, fy + (ExS(18) - iw) / 2f, iw, iw), ExSaffron, 1.5f * exK);
                 ExText(g, hint, hf, new Rectangle(fx + iw + gap, fy, hs.Width + ExS(4), ExS(18)), ExSlate,
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+            }
+        }
+
+        // EXPRESS wordmark: built as a GraphicsPath in pixels and positioned from its real bounds,
+        // so ascent/descent are always fully inside the card at 100 / 125 / 150 % DPI.
+        private void ExPaintWordmark(Graphics g)
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            float left = exBrand.Right + ExS(12);
+            float top = exBrand.Top + ExS(1);
+
+            using (GraphicsPath word = new GraphicsPath())
+            using (FontFamily ff = new FontFamily("Segoe UI"))
+            {
+                FontStyle st = ff.IsStyleAvailable(FontStyle.Bold | FontStyle.Italic) ? FontStyle.Bold | FontStyle.Italic : FontStyle.Bold;
+                word.AddString("EXPRESS", ff, (int)st, ExS(26), PointF.Empty, StringFormat.GenericTypographic);
+                RectangleF wb = word.GetBounds();
+                using (Matrix m = new Matrix())
+                {
+                    m.Translate(left - wb.X, top - wb.Y);
+                    word.Transform(m);
+                }
+                wb = word.GetBounds();
+
+                // soft bhagwa glow + blue gradient fill
+                using (Pen glow = new Pen(Color.FromArgb(38, ExSaffron), ExS(3)))
+                {
+                    glow.LineJoin = LineJoin.Round;
+                    g.DrawPath(glow, word);
+                }
+                using (LinearGradientBrush wbr = new LinearGradientBrush(
+                    new RectangleF(wb.X, wb.Y - 1, Math.Max(1, wb.Width), wb.Height + 2), ExBlueDeep, ExBlueSoft, 90f))
+                    g.FillPath(wbr, word);
+
+                // bhagwa accent underline
+                float uy = wb.Bottom + ExS(5);
+                RectangleF ul = new RectangleF(wb.X + ExS(1), uy, ExS(34), ExS(3));
+                using (GraphicsPath up = ExRoundF(ul, ul.Height / 2f))
+                using (LinearGradientBrush ub = new LinearGradientBrush(new RectangleF(ul.X - 1, ul.Y, ul.Width + 2, ul.Height), ExSaffronD, ExSaffronL, 0f))
+                    g.FillPath(ub, up);
+
+                // tagline, measured so it is never clipped
+                using (Font tf = ExF("Segoe UI Semibold", 7F))
+                {
+                    Size ts = TextRenderer.MeasureText(g, "PREMIUM TATKAL SOFTWARE", tf, Size.Empty, TextFormatFlags.NoPadding);
+                    ExText(g, "PREMIUM TATKAL SOFTWARE", tf,
+                        new Rectangle((int)wb.X + ExS(1), (int)ul.Bottom + ExS(4), ts.Width + ExS(4), ts.Height + 2),
+                        ExSlate, TextFormatFlags.Left);
+                }
             }
         }
 
@@ -851,7 +932,7 @@ namespace APP_FRAMEWORK
             }
             else
             {
-                using (Font f = new Font("Segoe UI Black", 20F * exK, FontStyle.Bold))
+                using (Font f = ExF("Segoe UI Black", 20F, FontStyle.Bold))
                     ExText(g, "E", f, new Rectangle(0, 0, exBrand.Width, exBrand.Height), ExSaffronD,
                         TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             }
@@ -902,15 +983,13 @@ namespace APP_FRAMEWORK
         private void ExFloatPaint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
-            g.Clear(ExFieldBg);   // white: at rest it matches the box, floated it is the notch over the border
+            g.Clear(ExFieldBg);   // white: on the border it is the notch, raised it sits on the white card
             float t = ExEase(exFloatT);
-            float size = (9.5F + (7.5F - 9.5F) * t) * exK;
-            Color rest = Color.FromArgb(128, 142, 164);
-            Color up = ExMix(ExSlate, ExBlueSoft, exFocusT);
-            Color col = ExMix(rest, up, t);
-            string text = t > 0.5f ? "LICENCE KEY" : "Enter your licence key";
-            using (Font f = new Font("Segoe UI", size, t > 0.5f ? FontStyle.Bold : FontStyle.Regular))
-                ExText(g, text, f, new Rectangle(ExS(5f * t), 0, exFloat.Width - ExS(5f * t), exFloat.Height), col,
+            float pt = 7.5F + (8F - 7.5F) * t;
+            Color col = ExMix(ExSlate, ExBlueSoft, t);                 // slate on the border, blue when raised
+            float pad = 4f * (1f - t);                                  // notch padding fades out when raised
+            using (Font f = ExF("Segoe UI", pt, FontStyle.Bold))
+                ExText(g, "LICENCE KEY", f, new Rectangle(ExS(pad), 0, exFloat.Width - ExS(pad), exFloat.Height), col,
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
         }
 
@@ -1015,7 +1094,7 @@ namespace APP_FRAMEWORK
                 g.Clip = old;
             }
 
-            using (Font f = new Font("Segoe UI Semibold", 9.5F * exK))
+            using (Font f = ExF("Segoe UI Semibold", 9.5F))
             {
                 string text = "SUBMIT";
                 Size ts = TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding);
@@ -1049,7 +1128,7 @@ namespace APP_FRAMEWORK
                 using (Pen p = new Pen(line, 1.3f * exK)) g.DrawPath(p, path);
             }
 
-            using (Font f = new Font("Segoe UI Semibold", 9.5F * exK))
+            using (Font f = ExF("Segoe UI Semibold", 9.5F))
             {
                 string text = "EXIT";
                 Size ts = TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding);
@@ -1199,7 +1278,7 @@ namespace APP_FRAMEWORK
             ExIcon(g, "shield", new RectangleF(bcx - ExS(11), bcy - ExS(11), ExS(22), ExS(22)), Color.White, 2f * exK);
 
             // title + bouncing dots
-            using (Font tf = new Font("Segoe UI Semibold", 12F * exK))
+            using (Font tf = ExF("Segoe UI Semibold", 12F))
             {
                 string title = "Validating key";
                 Size ts = TextRenderer.MeasureText(g, title, tf, Size.Empty, TextFormatFlags.NoPadding);
@@ -1220,14 +1299,14 @@ namespace APP_FRAMEWORK
                 }
             }
 
-            using (Font mf = new Font("Segoe UI", 8.75F * exK))
+            using (Font mf = ExF("Segoe UI", 8.75F))
                 ExText(g, "Please wait, server se response aa raha hai", mf,
                     new Rectangle(card.X + ExS(14), card.Y + ExS(98), card.Width - ExS(28), ExS(18)),
                     ExSlate, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
 
             string status = ExLoaderStatusLine();
             if (status.Length > 0)
-                using (Font sf = new Font("Segoe UI", 7.75F * exK))
+                using (Font sf = ExF("Segoe UI", 7.75F))
                     ExText(g, status, sf,
                         new Rectangle(card.X + ExS(14), card.Y + ExS(118), card.Width - ExS(28), ExS(16)),
                         ExBlueSoft, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
