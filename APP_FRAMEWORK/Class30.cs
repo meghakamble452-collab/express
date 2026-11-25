@@ -391,30 +391,35 @@ internal class Class30
         sQLiteConnection.Close();
         new FileInfo(Path.Combine(text2)).Attributes = FileAttributes.Hidden;
         EnsureAllTables(sQLiteConnection);
+        try { if (File.Exists("IRLOG//repair.flag")) File.Delete("IRLOG//repair.flag"); } catch { }
         }
         catch (Exception ex)
         {
+        Class28.smethod_26("DBOpen", ex.ToString());
+
         // 1) backup — DB kabhi na mare
         try { if (File.Exists("Database.db")) File.Copy("Database.db", "Database.db.bak", true); } catch { }
 
-        // 2) purani key se rekey karke chalne ki koshish
-        bool rekeyed = false;
+        // 2) purani key se rekey try karo, phir dobara open karke CHECK karo
+        bool ok = false;
         try
         {
         updatePWD(Program.DBPASS);
         Program.string_1A = Program.DBPASS;
-        File.WriteAllText("IRLOG//pwd", Program.DBPASS);
-        rekeyed = true;
-        }
-        catch { rekeyed = false; }
-
-        if (rekeyed)
+        using (SQLiteConnection testCon = new SQLiteConnection(Class34.string_Database))
         {
-        try { System.Diagnostics.Process.Start(Application.ExecutablePath); } catch { }
-        Environment.Exit(0);
-        return;
+        testCon.Open();
+        ok = true;
         }
+        }
+        catch { ok = false; }
 
+        if (ok)
+        {
+        File.WriteAllText("IRLOG//pwd", Program.DBPASS);
+        }
+        else
+        {
         // 3) ab bhi fail — delete NAHI, sirf side me rename
         try
         {
@@ -423,7 +428,12 @@ internal class Class30
         if (File.Exists("IRLOG//pwd")) File.Delete("IRLOG//pwd");
         }
         catch { }
+        }
 
+        // 4) restart sirf EK baar — warna loop
+        if (!File.Exists("IRLOG//repair.flag"))
+        {
+        try { Directory.CreateDirectory("IRLOG"); File.WriteAllText("IRLOG//repair.flag", "1"); } catch { }
         try { System.Diagnostics.Process.Start(Application.ExecutablePath); } catch { }
         Environment.Exit(0);
         }
