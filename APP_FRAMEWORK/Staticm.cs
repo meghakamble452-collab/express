@@ -3543,12 +3543,10 @@ internal class Staticm
 		{
 			Program.mcommInstance_ = new IRComm();
 			Program.mcommInstance_.SetCon(Class34.string_Database);
-			mCOMM mcommInstance_ = Program.mcommInstance_;
-			string key = "paidpair";
-			Program.paidpair = int.Parse(mcommInstance_.GetData(key));
-			mCOMM mcommInstance_2 = Program.mcommInstance_;
-			string key2 = "unpaidpair";
-			Program.unpaidpair = int.Parse(mcommInstance_2.GetData(key2));
+			if (!int.TryParse(Program.mcommInstance_.GetData("paidpair"), out Program.paidpair) || Program.paidpair < 1)
+        Program.paidpair = 1;
+        if (!int.TryParse(Program.mcommInstance_.GetData("unpaidpair"), out Program.unpaidpair) || Program.unpaidpair < 1)
+        Program.unpaidpair = 1;
 			mCOMM mcommInstance_3 = Program.mcommInstance_;
 			string key3 = "WindowCount";
 			Program.WindowCount = 4; int.Parse(mcommInstance_3.GetData(key3));
@@ -3563,12 +3561,12 @@ internal class Staticm
 			mcommInstance_6.SetData(key6, frmLogin.isPremium.ToString());
 		}
 		catch (Exception ex)
-		{
-			MessageBox.Show(ex.ToString());
-			string text = "Source File not Fount";
-			MessageBox.Show(text);
-			Environment.Exit(0);
-		}
+        {
+        Class28.smethod_26("Method_3500", ex.ToString());
+        Program.paidpair = 1;
+        Program.unpaidpair = 1;
+        Program.WindowCount = 4;
+        }
 	}
 
 	private static string Method_36()

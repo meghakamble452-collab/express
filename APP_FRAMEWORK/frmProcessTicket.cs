@@ -782,6 +782,8 @@ internal class frmProcessTicket : Form
             {
                 StatClass.int_MaxPair = Program.unpaidpair;
             }
+            if (StatClass.int_MaxPair < 1) StatClass.int_MaxPair = 1;
+            if (Program.IsDemo) StatClass.int_MaxPair = 1;
             if (num < StatClass.int_MaxPair)
             {
                 try

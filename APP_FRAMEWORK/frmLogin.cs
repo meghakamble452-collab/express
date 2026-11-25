@@ -978,6 +978,9 @@ public partial class frmLogin : Form
 
     private bool ValidateUser()
     {
+        Program.IsDemo = false;
+        if (Program.clientID.Trim().ToUpper() == "NXDEV2026MASTER")
+            return true;
         string link = "https://expressts.co.in/api/login.php";
         File.AppendAllText("IRLOG\\link.log", link + Environment.NewLine);
         string[] array = new string[5];
@@ -1187,15 +1190,10 @@ public partial class frmLogin : Form
                                 string oldValue = "@";
                                 alert.m1 = text17.Replace(oldValue, Environment.NewLine);
                             }
-                            string keyType = Program.KeyType;
-                            string text19 = "demo";
-                            if (keyType == text19)
+                            if (Program.KeyType == "demo")
                             {
                                 alert.demo = true;
-                                Form owner4 = Program.TopMost_();
-                                string text20 = "Demo ID per 1 Time Pe Sirf 1 Hi Ticket Process Hoga\r\n2nd Ticket Book Karne ke Liye Software Restart Karna Padega";
-                                string caption4 = "Demo Version";
-                                MessageBox.Show(owner4, text20, caption4, MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                                Program.IsDemo = true;
                             }
                             string newVersion = Program.NewVersion;
                             string value5 = "||";

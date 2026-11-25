@@ -272,9 +272,7 @@ internal class Class30
         }
         catch (Exception ex2)
         {
-        string message = ex2.Message;
-        string caption3 = "SQL Lite Error";
-        MessageBox.Show(message, caption3);
+        Class28.smethod_26("SQLite", ex2.ToString());
         }
         }
 

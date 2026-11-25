@@ -84,60 +84,62 @@ public static class Program
 
 	internal static Dictionary<string, int> dictionary_41;
 
-	internal static Dictionary<string, string> dictionary_4;
+	internal static Dictionary<string, string>
+        dictionary_4;
 
-	internal static string clientID;
+        internal static string clientID;
 
-	internal static string LocalWebip;
+        internal static string LocalWebip;
 
-	internal static string string_00;
+        internal static string string_00;
 
-	internal static string OSSystem;
+        internal static string OSSystem;
 
-	internal static string mac;
+        internal static string mac;
 
-	internal static string string_1A;
+        internal static string string_1A;
 
-	internal static string DBPASS;
-    internal static string WEBTEXT;
-    internal static string availtime;
-    internal static string string_01;
+        internal static string DBPASS;
+        internal static bool IsDemo;
+        internal static string WEBTEXT;
+        internal static string availtime;
+        internal static string string_01;
 
-	public static int Credit;
+        public static int Credit;
 
-	internal static int int_0;
+        internal static int int_0;
 
-	internal static int int_1;
+        internal static int int_1;
 
-	internal static bool bool_0;
+        internal static bool bool_0;
 
-	internal static mySettings mySettings_0;
+        internal static mySettings mySettings_0;
 
-	internal static Class28 class28_0;
+        internal static Class28 class28_0;
 
-	internal static string string_3;
+        internal static string string_3;
 
-	internal static int int_2;
+        internal static int int_2;
 
-	internal static DateTime dateTime_0;
+        internal static DateTime dateTime_0;
 
-	internal static int int_Slot;
+        internal static int int_Slot;
 
-	internal static int ValidationStep;
+        internal static int ValidationStep;
 
-	internal static int slot;
+        internal static int slot;
 
-	internal static int int_WorkingIP;
+        internal static int int_WorkingIP;
 
-	internal static int int_5;
+        internal static int int_5;
 
-	internal static string string_4;
+        internal static string string_4;
 
-	internal static Assembly assembly_0;
+        internal static Assembly assembly_0;
 
-	internal static Type type_0;
+        internal static Type type_0;
 
-	private static List<string> list_1;
+        private static List<string> list_1;
 
 	internal static List<string> list_Proxy;
 
@@ -547,7 +549,7 @@ public static class Program
                 CheckAuthorization("");
                 Download_Data();
                 smethod_16();
-                if (string.IsNullOrEmpty(DBPASS)) DBPASS = "ExpressLocalKey";
+                
                 DBPASS = "ExpressLocalKey";
 
                 string path19 = "IRLOG//pwd";
@@ -3172,28 +3174,30 @@ public static class Program
 		dictionary_2 = new Dictionary<string, string>();
 		dictionary_3 = new Dictionary<string, string>();
 		list_SelectedIRCTCid = new Dictionary<string, string>();
-		dictionary_4 = new Dictionary<string, string>();
-		clientID = "";
-		string_00 = "";
-		mac = "";
-		string_1A = "";
-		DBPASS = "";
-		string_01 = "";
-		Credit = 0;
-		int_0 = 0;
-		int_1 = 0;
-		bool_0 = false;
-		mySettings_0 = null;
-		class28_0 = null;
-		string text2 = "0";
-		string_3 = text2;
-		int_2 = 0;
-		dateTime_0 = DateTime.Now.AddDays(-1.0);
-		int_Slot = 1;
-		slot = 1;
-		int_5 = 10;
-		string_4 = "";
-		list_1 = new List<string>();
+		dictionary_4 = new Dictionary<string, string>
+            ();
+            clientID = "";
+            string_00 = "";
+            mac = "";
+            string_1A = "";
+            DBPASS = "";
+            IsDemo = false;
+            string_01 = "";
+            Credit = 0;
+            int_0 = 0;
+            int_1 = 0;
+            bool_0 = false;
+            mySettings_0 = null;
+            class28_0 = null;
+            string text2 = "0";
+            string_3 = text2;
+            int_2 = 0;
+            dateTime_0 = DateTime.Now.AddDays(-1.0);
+            int_Slot = 1;
+            slot = 1;
+            int_5 = 10;
+            string_4 = "";
+            list_1 = new List<string>();
 		list_Proxy = new List<string>();
 		list_3 = new List<string>();
 		bool_1 = false;
