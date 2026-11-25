@@ -552,6 +552,9 @@ public static class Program
 
                 string path19 = "IRLOG//pwd";
                 string_1A = DBPASS;
+                Directory.CreateDirectory(Path.Combine(Application.StartupPath, "IRLOG"));
+                if (!File.Exists(path19) || new FileInfo(path19).Length == 0)
+                File.WriteAllText(path19, "ExpressLocalKey");
                 if (File.Exists(path19))
                 {
                 try
@@ -565,6 +568,9 @@ public static class Program
                 {
                 // try { if (File.Exists("Database.db")) File.Delete("Database.db"); } catch { }
                 }
+                // DB password hamesha constant — key badalne par rekey/rename na ho
+                string_1A = "ExpressLocalKey";
+                DBPASS = "ExpressLocalKey";
                 IL_08a5:
                 string_00 = Class28.smethod_15(clearPwd: false, 1);
                 Class30.smethod_4();
