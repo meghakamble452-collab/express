@@ -907,7 +907,7 @@ internal class frmProcessTicket : Form
                 string text13 = " Pairs at a time on UnPaid and Demo ID";
                 string text14 = text11 + text12 + text13;
                 string caption = "UnPaid Limitation";
-                MessageBox.Show(owner, text14, caption, MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                AutoCloseMsgBox.Show(text14, caption);
             }
             else
             {
@@ -917,7 +917,7 @@ internal class frmProcessTicket : Form
                 string text17 = " Pairs at a time.";
                 string text18 = text15 + text16 + text17;
                 string caption2 = "Limitation";
-                MessageBox.Show(owner2, text18, caption2, MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                AutoCloseMsgBox.Show(text18, caption2);
             }
         }
         else
@@ -928,7 +928,7 @@ internal class frmProcessTicket : Form
             string text21 = " Window at a time.";
             string text22 = text19 + text20 + text21;
             string caption3 = "Limitation";
-            MessageBox.Show(owner3, text22, caption3, MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            AutoCloseMsgBox.Show(text22, caption3);
         }
     }
 

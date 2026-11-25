@@ -221,7 +221,7 @@ namespace APP_FRAMEWORK
             exInfo.Paint += ExInfoPaint;
             exCanvas.Controls.Add(exInfo);
 
-            exChId = ExInfoChip("USER ID", Convert.ToString(Program.clientID), Color.White);
+            exChId = ExInfoChip("USER ID", Convert.ToString(Program.clientID) + (Program.IsDemo ? "   •   DEMO" : ""), Color.White);
             exChVer = ExInfoChip("VERSION", Program.appversion, Color.White);
             exChPay = ExInfoChip("PAYMENT", string.IsNullOrEmpty(Program.KeyStatus) ? "—" : Program.KeyStatus,
                 Program.KeyStatus == "Paid" ? Color.FromArgb(198, 255, 220) : Color.FromArgb(255, 208, 176));

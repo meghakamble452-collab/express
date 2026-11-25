@@ -943,7 +943,7 @@ namespace APP_FRAMEWORK
                     Color.FromArgb(21, 128, 61), TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
 
                 using (Font vf = ExF("Segoe UI", 6.5F))
-                    ExText(g, "v0.0.1", vf, new Rectangle(badge.Right - ExS(80), badge.Bottom + ExS(4), ExS(80) - ExS(6), ExS(14)),
+                    ExText(g, "v" + Program.appversion, vf, new Rectangle(badge.Right - ExS(80), badge.Bottom + ExS(4), ExS(80) - ExS(6), ExS(14)),
                         ExSlate, TextFormatFlags.Right | TextFormatFlags.VerticalCenter);
             }
 
