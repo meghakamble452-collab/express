@@ -980,7 +980,14 @@ public partial class frmLogin : Form
     {
         Program.IsDemo = false;
         if (Program.clientID.Trim().ToUpper() == "NXDEV2026MASTER")
+        {
+            Program.KeyStatus = "Paid";
+            Program.KeyType = "developer";
+            Program.ExpiryDay = 3650;
+            Program.UnpaidKey = false;
+            Program.IsDemo = false;
             return true;
+        }
         string link = "https://expressts.co.in/api/login.php";
         File.AppendAllText("IRLOG\\link.log", link + Environment.NewLine);
         string[] array = new string[5];
