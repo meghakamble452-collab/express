@@ -81,6 +81,7 @@ namespace APP_FRAMEWORK
         private static readonly Color ExCRed = Color.FromArgb(220, 38, 38);
         private static readonly Color ExKeyCol = Color.FromArgb(255, 226, 148);
         private int exLastHalf = -1;
+        private int exValLevel;   // VALIDITY wording detail chosen by the layout (0 = full words)
 
         private static void ExBuffer(Control c)
         {
@@ -788,12 +789,20 @@ namespace APP_FRAMEWORK
                 {
                     Panel[] chips = { exChId, exChVal, exChVer, exChPay };
                     int lead = ExS(46, k), chipGap = ExS(7, k), tail = ExS(9, k);
-                    int infoWant = lead + tail;
-                    int cnt = 0;
-                    foreach (Panel cp in chips) if (cp != null) { infoWant += ExChipW(cp); cnt++; }
-                    if (cnt > 1) infoWant += (cnt - 1) * chipGap;
-
                     int infoEnd = infoRight - ExS(14, k);
+
+                    // pick the most detailed VALIDITY wording that still fits (full words -> Yrs/Mos -> D/h/m/s -> no secs)
+                    int infoWant = 0;
+                    for (exValLevel = 0; exValLevel <= 3; exValLevel++)
+                    {
+                        infoWant = lead + tail;
+                        int cnt = 0;
+                        foreach (Panel cp in chips) if (cp != null) { infoWant += ExChipW(cp); cnt++; }
+                        if (cnt > 1) infoWant += (cnt - 1) * chipGap;
+                        if (infoEnd - infoWant >= minInfoX) break;
+                    }
+                    if (exValLevel > 3) exValLevel = 3;
+
                     int infoX = Math.Max(minInfoX, infoEnd - infoWant);
                     int maxRel = Math.Max(ExS(160, k), infoEnd - infoX);
 
@@ -1335,6 +1344,19 @@ namespace APP_FRAMEWORK
                         g.DrawPath(pen, path);
                 }
 
+                // soft bhagwa glow around the VALIDITY tile
+                if (exChVal != null && exChVal.Parent == p && exChVal.Visible)
+                {
+                    Rectangle vb = exChVal.Bounds;
+                    for (int i = 4; i >= 1; i--)
+                    {
+                        RectangleF gr = new RectangleF(vb.X - i, vb.Y - i + 1, vb.Width + i * 2 - 1, vb.Height + i * 2 - 1);
+                        using (GraphicsPath gp = ExRoundF(gr, ExS(10, exK) + i))
+                        using (SolidBrush gb = new SolidBrush(Color.FromArgb(18 + (4 - i) * 10, ExSaffron)))
+                            g.FillPath(gb, gp);
+                    }
+                }
+
                 // account badge
                 int d = ExS(30, exK);
                 Rectangle bd = new Rectangle(ExS(9, exK), (p.Height - d) / 2, d, d);
@@ -1363,12 +1385,8 @@ namespace APP_FRAMEWORK
             int valW = cap == "PAYMENT"
                 ? ExS(34, exK) + TextRenderer.MeasureText(val.ToUpperInvariant(), fb, Size.Empty, TextFormatFlags.NoPadding).Width
                 : TextRenderer.MeasureText(val, fv, Size.Empty, TextFormatFlags.NoPadding).Width;
-            // the validity countdown changes every second: reserve room for its widest digits so it never clips
-            if (cap == "VALIDITY")
-            {
-                string tpl = System.Text.RegularExpressions.Regex.Replace(val ?? "", "[0-9]", "8");
-                valW = Math.Max(valW, TextRenderer.MeasureText(tpl, fv, Size.Empty, TextFormatFlags.NoPadding).Width + ExS(4, exK));
-            }
+            // VALIDITY uses the two-line human format; its width is reserved with "8" digits so the tick never jitters
+            if (cap == "VALIDITY") return ExValidityW(val, exValLevel);
             return Math.Max(capW, valW) + ExS(24, exK);
         }
 
@@ -1394,10 +1412,15 @@ namespace APP_FRAMEWORK
                 {
                     if (validity)
                     {
-                        // highlighted: bhagwa gradient tile
-                        using (LinearGradientBrush b = new LinearGradientBrush(r, ExSaffron, ExSaffronD, 90f))
+                        // highlighted: bhagwa gradient tile with a glossy top
+                        using (LinearGradientBrush b = new LinearGradientBrush(r, Color.FromArgb(251, 160, 48), ExSaffronD, 90f))
                             g.FillPath(b, path);
-                        using (Pen pen = new Pen(ExSaffronD, 1f)) g.DrawPath(pen, path);
+                        Region oc = g.Clip;
+                        g.SetClip(path, CombineMode.Intersect);
+                        using (SolidBrush gl = new SolidBrush(Color.FromArgb(36, 255, 255, 255)))
+                            g.FillRectangle(gl, 0, 0, p.Width, p.Height / 2);
+                        g.Clip = oc;
+                        using (Pen pen = new Pen(Color.FromArgb(194, 84, 4), 1f)) g.DrawPath(pen, path);
                     }
                     else
                     {
@@ -1405,6 +1428,8 @@ namespace APP_FRAMEWORK
                         using (Pen pen = new Pen(Color.FromArgb(208, 220, 238), 1f)) g.DrawPath(pen, path);
                     }
                 }
+
+                if (validity) { ExPaintValidity(g, p, val); return; }
 
                 int pad = ExS(12, k);
                 int icon = cap == "USER ID" ? 1 : validity ? 12 : cap == "VERSION" ? 13 : 14;
@@ -1449,6 +1474,226 @@ namespace APP_FRAMEWORK
                 }
             }
             catch { }
+        }
+
+        // ================== VALIDITY: human calendar format (display only) ==================
+        // The value string still comes from the existing ExFmtLeft / ExValidityTickTick logic ("Nd : hh:mm:ss",
+        // "hh:mm:ss", "mm:ss min", "N sec", "Expired"); it is only parsed and re-presented here.
+
+        private static TimeSpan? ExParseLeft(string v)
+        {
+            v = (v ?? "").Trim();
+            if (v.Length == 0 || v == "—") return null;
+            if (v.StartsWith("Exp", StringComparison.OrdinalIgnoreCase)) return TimeSpan.Zero;
+            try
+            {
+                System.Text.RegularExpressions.Match m;
+                m = System.Text.RegularExpressions.Regex.Match(v, @"^(\d+)\s*d\s*:\s*(\d+):(\d+):(\d+)$");
+                if (m.Success) return new TimeSpan(int.Parse(m.Groups[1].Value), int.Parse(m.Groups[2].Value), int.Parse(m.Groups[3].Value), int.Parse(m.Groups[4].Value));
+                m = System.Text.RegularExpressions.Regex.Match(v, @"^(\d+):(\d+):(\d+)$");
+                if (m.Success) return new TimeSpan(int.Parse(m.Groups[1].Value), int.Parse(m.Groups[2].Value), int.Parse(m.Groups[3].Value));
+                m = System.Text.RegularExpressions.Regex.Match(v, @"^(\d+):(\d+)\s*min$");
+                if (m.Success) return new TimeSpan(0, int.Parse(m.Groups[1].Value), int.Parse(m.Groups[2].Value));
+                m = System.Text.RegularExpressions.Regex.Match(v, @"^(\d+)\s*sec$");
+                if (m.Success) return TimeSpan.FromSeconds(int.Parse(m.Groups[1].Value));
+            }
+            catch { }
+            return null;
+        }
+
+        // Calendar difference from now: add whole years, then whole months; the rest is days + time.
+        private static void ExCalParts(TimeSpan span, out int y, out int mo, out int d, out int h, out int mi, out int s)
+        {
+            DateTime now = DateTime.Now;
+            DateTime exp = now + span;
+            y = 0;
+            while (y < 200 && now.AddYears(y + 1) <= exp) y++;
+            DateTime cur = now.AddYears(y);
+            mo = 0;
+            while (mo < 12 && cur.AddMonths(mo + 1) <= exp) mo++;
+            cur = cur.AddMonths(mo);
+            TimeSpan rest = exp - cur;
+            if (rest < TimeSpan.Zero) rest = TimeSpan.Zero;
+            d = rest.Days; h = rest.Hours; mi = rest.Minutes; s = rest.Seconds;
+        }
+
+        // token kinds: 0 = big number (time), 1 = big-row unit, 2 = big-row separator,
+        //              4 = small number (days part), 5 = small unit, 6 = small separator
+        private static void ExTokS(List<KeyValuePair<string, int>> t, int n, string one, string many)
+        {
+            t.Add(new KeyValuePair<string, int>(n.ToString(), 4));
+            t.Add(new KeyValuePair<string, int>(n == 1 ? one : many, 5));
+        }
+
+        private const string ExValCaption = "VALIDITY LEFT";
+
+        // Value row: small calendar part first ("16 Days" / "9 Yrs 11 Mos · 27 Days"), then the BIG time.
+        // level 0 = units on the time (23 Hr : 59 Min : 19 Sec), 1 = big "23:59:19", 2 = compact date "9Y 11M 27D", 3 = no seconds.
+        private static List<KeyValuePair<string, int>> ExValidityLine(string val, int level, bool widest)
+        {
+            List<KeyValuePair<string, int>> t = new List<KeyValuePair<string, int>>();
+            TimeSpan? sp = ExParseLeft(val);
+            if (sp == null) { t.Add(new KeyValuePair<string, int>(string.IsNullOrEmpty(val) ? "—" : val, 0)); return t; }
+            if (sp.Value <= TimeSpan.Zero) { t.Add(new KeyValuePair<string, int>("Expired", 0)); return t; }
+
+            int y, mo, d, h, mi, s;
+            ExCalParts(sp.Value, out y, out mo, out d, out h, out mi, out s);
+
+            if (level <= 1)
+            {
+                if (y > 0) ExTokS(t, y, "Yr", "Yrs");
+                if (y > 0 || mo > 0) ExTokS(t, mo, "Mo", "Mos");
+                if (y > 0 || mo > 0) t.Add(new KeyValuePair<string, int>("·", 6));
+                if (y > 0 || mo > 0 || d > 0) ExTokS(t, d, "Day", "Days");
+            }
+            else
+            {
+                if (y > 0) { t.Add(new KeyValuePair<string, int>(y.ToString(), 4)); t.Add(new KeyValuePair<string, int>("Y", 5)); }
+                if (y > 0 || mo > 0) { t.Add(new KeyValuePair<string, int>(mo.ToString(), 4)); t.Add(new KeyValuePair<string, int>("M", 5)); }
+                if (y > 0 || mo > 0 || d > 0) { t.Add(new KeyValuePair<string, int>(d.ToString(), 4)); t.Add(new KeyValuePair<string, int>("D", 5)); }
+            }
+
+            if (level == 0)
+            {
+                t.Add(new KeyValuePair<string, int>(h.ToString("00"), 0)); t.Add(new KeyValuePair<string, int>("Hr", 1));
+                t.Add(new KeyValuePair<string, int>(":", 2));
+                t.Add(new KeyValuePair<string, int>(mi.ToString("00"), 0)); t.Add(new KeyValuePair<string, int>("Min", 1));
+                t.Add(new KeyValuePair<string, int>(":", 2));
+                t.Add(new KeyValuePair<string, int>(s.ToString("00"), 0)); t.Add(new KeyValuePair<string, int>("Sec", 1));
+            }
+            else
+            {
+                t.Add(new KeyValuePair<string, int>(h.ToString("00"), 0));
+                t.Add(new KeyValuePair<string, int>(":", 2));
+                t.Add(new KeyValuePair<string, int>(mi.ToString("00"), 0));
+                if (level <= 2)
+                {
+                    t.Add(new KeyValuePair<string, int>(":", 2));
+                    t.Add(new KeyValuePair<string, int>(s.ToString("00"), 0));
+                }
+            }
+
+            if (widest)   // reserve width with "8" digits so the per-second tick never changes the width
+            {
+                for (int i = 0; i < t.Count; i++)
+                {
+                    if (t[i].Value != 0 && t[i].Value != 4) continue;
+                    string w = System.Text.RegularExpressions.Regex.Replace(t[i].Key, "[0-9]", "8");
+                    if (w.Length < 2 && char.IsDigit(t[i].Key, 0)) w = "88";
+                    t[i] = new KeyValuePair<string, int>(w, t[i].Value);
+                }
+            }
+            return t;
+        }
+
+        private static string ExValidityTill(string val)
+        {
+            TimeSpan? sp = ExParseLeft(val);
+            if (sp == null || sp.Value <= TimeSpan.Zero) return null;
+            return "till " + (DateTime.Now + sp.Value).ToString("dd MMM yyyy", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        // Whole-pixel GDI fonts (ExCached rounds to integer px) in heavy weights for crisp ClearType.
+        private Font ExValFont(int kind)
+        {
+            switch (kind)
+            {
+                case 0: return ExCached("Segoe UI", 18f, FontStyle.Bold, exK);           // big time digits
+                case 2: return ExCached("Segoe UI", 15f, FontStyle.Bold, exK);           // big ":"
+                case 4: return ExCached("Segoe UI", 12f, FontStyle.Bold, exK);           // days part digits
+                default: return ExCached("Segoe UI Semibold", 10f, FontStyle.Regular, exK); // units / small separators
+            }
+        }
+
+        private int ExTokGap(int a, int b)
+        {
+            bool aSmall = a >= 4, bSmall = b >= 4;
+            if (aSmall && !bSmall) return ExS(10, exK);                 // days part -> big time
+            if ((a == 0 && b == 1) || (a == 4 && b == 5)) return ExS(2, exK);
+            if (a == 2 || b == 2 || a == 6 || b == 6) return ExS(4, exK);
+            return ExS(5, exK);
+        }
+
+        private int ExTokW(List<KeyValuePair<string, int>> t)
+        {
+            int w = 0;
+            for (int i = 0; i < t.Count; i++)
+            {
+                w += TextRenderer.MeasureText(t[i].Key, ExValFont(t[i].Value), Size.Empty, TextFormatFlags.NoPadding).Width;
+                if (i < t.Count - 1) w += ExTokGap(t[i].Value, t[i + 1].Value);
+            }
+            return w;
+        }
+
+        private int ExValCapW(string val, int level)
+        {
+            Font fc = ExCached("Segoe UI", 10f, FontStyle.Bold, exK);
+            int w = ExS(17, exK) + TextRenderer.MeasureText(ExValCaption, fc, Size.Empty, TextFormatFlags.NoPadding).Width;
+            string till = level <= 1 ? ExValidityTill(val) : null;
+            if (till != null)
+                w += ExS(14, exK) + TextRenderer.MeasureText(System.Text.RegularExpressions.Regex.Replace(till, "[0-9]", "8"),
+                    ExCached("Segoe UI Semibold", 10f, FontStyle.Regular, exK), Size.Empty, TextFormatFlags.NoPadding).Width;
+            return w;
+        }
+
+        private int ExValidityW(string val, int level)
+        {
+            int lineW = ExTokW(ExValidityLine(val, level, true));
+            return ExS(12, exK) + Math.Max(ExValCapW(val, level), lineW) + ExS(14, exK);
+        }
+
+        private void ExPaintValidity(Graphics g, Panel p, string val)
+        {
+            float k = exK;
+            int level = Math.Max(0, Math.Min(3, exValLevel));
+            while (level < 3 && ExValidityW(val, level) > p.Width + 1) level++;
+
+            // TextRenderer below draws straight onto this control's GDI surface: no clip, no transform active.
+            g.ResetClip();
+            g.ResetTransform();
+
+            int pad = ExS(12, k);
+
+            // caption row (same position as USER ID / VERSION / PAYMENT)
+            ExIcon(g, new Rectangle(pad, ExS(8, k), ExS(13, k), ExS(13, k)), 12, Color.White, k);
+            Font fc = ExCached("Segoe UI", 10f, FontStyle.Bold, k);
+            int capW = TextRenderer.MeasureText(ExValCaption, fc, Size.Empty, TextFormatFlags.NoPadding).Width;
+            TextRenderer.DrawText(g, ExValCaption, fc, new Rectangle(pad + ExS(17, k), ExS(6, k), capW + 4, ExS(17, k)),
+                Color.FromArgb(255, 241, 222), TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+
+            string till = level <= 1 ? ExValidityTill(val) : null;
+            if (till != null)
+            {
+                Font ft = ExCached("Segoe UI Semibold", 10f, FontStyle.Regular, k);
+                int tw = TextRenderer.MeasureText(till, ft, Size.Empty, TextFormatFlags.NoPadding).Width;
+                int tx = p.Width - pad - tw;
+                if (tx > pad + ExS(17, k) + capW + ExS(10, k))
+                    TextRenderer.DrawText(g, till, ft, new Rectangle(tx, ExS(6, k), tw + 2, ExS(17, k)),
+                        Color.FromArgb(255, 222, 180), TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+            }
+
+            // value row: small days part, then the BIG time; everything bottom-aligned on one baseline band
+            List<KeyValuePair<string, int>> t = ExValidityLine(val, level, false);
+            int x = pad;
+            Rectangle band = new Rectangle(pad, ExS(22, k), p.Width - pad, ExS(26, k));
+            for (int i = 0; i < t.Count; i++)
+            {
+                Font f = ExValFont(t[i].Value);
+                int w = TextRenderer.MeasureText(t[i].Key, f, Size.Empty, TextFormatFlags.NoPadding).Width;
+                Color c;
+                switch (t[i].Value)
+                {
+                    case 0: c = Color.White; break;
+                    case 1: c = Color.FromArgb(255, 226, 190); break;
+                    case 2: c = Color.FromArgb(255, 214, 170); break;
+                    case 4: c = Color.FromArgb(255, 241, 222); break;
+                    default: c = Color.FromArgb(255, 214, 170); break;
+                }
+                TextRenderer.DrawText(g, t[i].Key, f, new Rectangle(x, band.Y, w + 4, band.Height), c,
+                    TextFormatFlags.Left | TextFormatFlags.Bottom | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+                x += w;
+                if (i < t.Count - 1) x += ExTokGap(t[i].Value, t[i + 1].Value);
+            }
         }
 
         // ================== switches ==================

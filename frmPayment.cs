@@ -210,27 +210,114 @@ internal class frmPayment : Form
         Invalidate();
     }
 
+    // Fit exactly on the ticket window this popup opens over (same size + position).
+    protected override void OnShown(EventArgs e)
+    {
+        base.OnShown(e);
+        if (!IsDisposed) XpMatchHost();
+    }
+
+    private Size xpHostSize = Size.Empty;
+
+    private void XpMatchHost()
+    {
+        try
+        {
+            Point me = Location;
+            Point mid = new Point(Left + Width / 2, Top + Height / 2);
+            Form host = null;
+
+            Form own = Owner;
+            if (own != null && own != this && own.Visible &&
+                (own.Bounds.Contains(me) || own.Bounds.Contains(mid)))
+                host = own;
+
+            if (host == null)
+            {
+                long best = long.MaxValue;
+                bool bestIsTicket = false;
+                List<Form> forms = new List<Form>();
+                foreach (Form of in Application.OpenForms) forms.Add(of);
+                foreach (Form f in forms)
+                {
+                    if (f == null || f == this || f.IsDisposed || !f.Visible || f is frmPayment) continue;
+                    Rectangle b = f.Bounds;
+                    if (b.Width < 50 || b.Height < 50) continue;
+                    if (!b.Contains(me) && !b.Contains(mid)) continue;
+                    bool isTicket = f.GetType().Name == "frmProcessTicket";
+                    long area = (long)b.Width * b.Height;
+                    if ((isTicket && !bestIsTicket) || (isTicket == bestIsTicket && area < best))
+                    {
+                        host = f;
+                        best = area;
+                        bestIsTicket = isTicket;
+                    }
+                }
+            }
+
+            if (host == null) return;          // nothing found: keep the default size/position
+            Rectangle hb = host.Bounds;
+            xpHostSize = hb.Size;
+            Bounds = hb;
+            XpLayout();
+            Invalidate(true);
+        }
+        catch { }
+    }
+
     private void XpLayout()
     {
         if (xpLaying || xpFMsg == null) return;
         xpLaying = true;
         try
         {
-            int w = XpS(XP_W), m = XpS(XP_M), head = XpS(XP_HEAD);
-
-            // message card grows with the text so nothing is ever cut
-            int textW = w - 2 * m - XpS(64);
+            int m = XpS(XP_M), head = XpS(XP_HEAD), btnH = XpS(XP_BTN_H);
             string msg = lblError.Text ?? "";
-            int textH = 0;
-            if (msg.Trim().Length > 0)
-                textH = TextRenderer.MeasureText(msg, xpFMsg, new Size(textW, int.MaxValue),
-                    TextFormatFlags.WordBreak | TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding).Height;
-            int cardH = Math.Max(XpS(XP_CARD_MIN), textH + XpS(24));
-            xpCard = new Rectangle(m, head + m, w - 2 * m, cardH);
+            bool hasMsg = msg.Trim().Length > 0;
+            const TextFormatFlags wrap = TextFormatFlags.WordBreak | TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding;
+            int w, h;
 
-            int btnY = xpCard.Bottom + XpS(10);
-            int h = btnY + XpS(XP_BTN_H) + m;
-            ClientSize = new Size(w, h);
+            if (!xpHostSize.IsEmpty)
+            {
+                // sized to the ticket window behind: card fills the middle, button at the bottom
+                w = xpHostSize.Width;
+                h = xpHostSize.Height;
+                ClientSize = new Size(w, h);
+                int btnTop = h - m - btnH;
+                xpCard = new Rectangle(m, head + m, w - 2 * m, Math.Max(XpS(40), btnTop - XpS(10) - (head + m)));
+
+                // shrink the message font only if the text would not fit the card
+                int tw = xpCard.Width - XpS(64), th = xpCard.Height - XpS(12);
+                float px = 15f;
+                Font f = null;
+                while (true)
+                {
+                    if (f != null && f != xpFMsg) f.Dispose();
+                    f = new Font("Segoe UI Semibold", px * xpK, FontStyle.Regular, GraphicsUnit.Pixel);
+                    if (!hasMsg || px <= 10.5f ||
+                        TextRenderer.MeasureText(msg, f, new Size(tw, int.MaxValue), wrap).Height <= th)
+                        break;
+                    px -= 0.5f;
+                }
+                Font oldMsg = xpFMsg;
+                xpFMsg = f;
+                lblError.Font = f;
+                if (oldMsg != null && oldMsg != f) oldMsg.Dispose();
+            }
+            else
+            {
+                w = XpS(XP_W);
+                // message card grows with the text so nothing is ever cut
+                int textW = w - 2 * m - XpS(64);
+                int textH = 0;
+                if (hasMsg)
+                    textH = TextRenderer.MeasureText(msg, xpFMsg, new Size(textW, int.MaxValue), wrap).Height;
+                int cardH = Math.Max(XpS(XP_CARD_MIN), textH + XpS(24));
+                xpCard = new Rectangle(m, head + m, w - 2 * m, cardH);
+                h = xpCard.Bottom + XpS(10) + btnH + m;
+                ClientSize = new Size(w, h);
+            }
+            int btnY = h - m - btnH;
 
             pnlHeader.SetBounds(0, 0, w, head);
             int cw = XpS(34), ch = XpS(26);
@@ -242,7 +329,7 @@ internal class frmPayment : Form
             lblError.SetBounds(xpCard.X + XpS(52), xpCard.Y + XpS(6), xpCard.Width - XpS(60), xpCard.Height - XpS(12));
             if (lblError.Visible) lblError.BringToFront();
 
-            btnSubmit.SetBounds(m, btnY, w - 2 * m, XpS(XP_BTN_H));
+            btnSubmit.SetBounds(m, btnY, w - 2 * m, btnH);
         }
         finally { xpLaying = false; }
     }

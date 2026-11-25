@@ -42,18 +42,18 @@ namespace APP_FRAMEWORK
         private int exDragX, exDragY;
 
         // ---- layout (96 dpi units; everything is multiplied by exK on high-dpi) ----
-        private const int BASE_W = 400;
-        private const int BASE_H = 364;
-        private const int HEAD_H = 48;
-        private const int CORNER = 16;
-        private const int BTN_RADIUS = 10;
-        private const int CARD_X = 14, CARD_Y = 62, CARD_W = 372, CARD_H = 288;
+        private const int BASE_W = 340;
+        private const int BASE_H = 290;
+        private const int HEAD_H = 38;
+        private const int CORNER = 14;
+        private const int BTN_RADIUS = 9;
+        private const int CARD_X = 10, CARD_Y = 48, CARD_W = 320, CARD_H = 232;
         // content edges inside the card: x 16 .. 356 (buttons and the field border share them)
-        private const int EDGE_L = 16, EDGE_R = 356;
+        private const int EDGE_L = 12, EDGE_R = 308;
         // panel2 carries a 3px glow margin on the sides and a 9px notch band on top for the floated label
-        private const int FIELD_PAD = 3, FIELD_NOTCH = 20;
-        private const int FIELD_X = EDGE_L - FIELD_PAD, FIELD_Y = 82, FIELD_W = EDGE_R - EDGE_L + FIELD_PAD * 2, FIELD_H = 67;
-        private const int FIELD_TEXT_X = 42;
+        private const int FIELD_PAD = 3, FIELD_NOTCH = 16;
+        private const int FIELD_X = EDGE_L - FIELD_PAD, FIELD_Y = 62, FIELD_W = EDGE_R - EDGE_L + FIELD_PAD * 2, FIELD_H = 59;
+        private const int FIELD_TEXT_X = 36;
         private static readonly Color ExKeyText = Color.FromArgb(214, 96, 4);
 
         private static readonly Color ExBlue = Color.FromArgb(29, 98, 216);
@@ -141,8 +141,8 @@ namespace APP_FRAMEWORK
             exHeader.BringToFront();
 
             exClose = new Panel();
-            exClose.Size = new Size(30, 26);
-            exClose.Location = new Point(BASE_W - 12 - 30, (HEAD_H - 3 - 26) / 2);
+            exClose.Size = new Size(26, 22);
+            exClose.Location = new Point(BASE_W - 10 - 26, (HEAD_H - 3 - 22) / 2);
             exClose.BackColor = Color.Transparent;
             exClose.Cursor = Cursors.Hand;
             ExBuffer(exClose);
@@ -163,8 +163,8 @@ namespace APP_FRAMEWORK
             exCard.BringToFront();
 
             exBrand = new Panel();
-            exBrand.Location = new Point(EDGE_L, 15);
-            exBrand.Size = new Size(50, 50);
+            exBrand.Location = new Point(EDGE_L, 12);
+            exBrand.Size = new Size(38, 38);
             exBrand.BackColor = Color.Transparent;
             ExBuffer(exBrand);
             exBrand.Paint += ExBrandPaint;
@@ -205,6 +205,10 @@ namespace APP_FRAMEWORK
             panel2.Paint -= ExFieldPaint;
             panel2.Paint += ExFieldPaint;
             panel2.Cursor = Cursors.IBeam;
+
+            // The designer's old "Key" caption (label1) lives inside panel2 at (13,63). In the new field it
+            // sat across the box's bottom-left border as a white strip - hide it (purely decorative, no logic).
+            label1.Visible = false;
             panel2.Click += (s, e) => txtLogin.Focus();
             panel2.MouseEnter += (s, e) => exFieldHover = 1f;
             panel2.MouseLeave += (s, e) => exFieldHover = 0f;
@@ -213,15 +217,15 @@ namespace APP_FRAMEWORK
             txtLogin.BorderStyle = BorderStyle.None;
             txtLogin.BackColor = ExFieldBg;
             txtLogin.ForeColor = ExKeyText;                  // typed key in bhagwa
-            txtLogin.Font = ExF0("Segoe UI Semibold", 9F);
+            txtLogin.Font = ExF0("Segoe UI Semibold", 8.5F);
             // vertically centred inside the painted box (box = FIELD_NOTCH .. FIELD_H - FIELD_PAD)
             int boxMid = (FIELD_NOTCH + (FIELD_H - FIELD_PAD)) / 2;
             txtLogin.Location = new Point(FIELD_TEXT_X, boxMid - txtLogin.PreferredHeight / 2);
             txtLogin.Size = new Size(FIELD_W - FIELD_TEXT_X - 14, txtLogin.PreferredHeight);
             txtLogin.TextAlign = HorizontalAlignment.Left;
             txtLogin.HideSelection = false;
-            txtLogin.Enter += (s, e) => panel2.Invalidate();
-            txtLogin.Leave += (s, e) => panel2.Invalidate();
+            txtLogin.Enter += (s, e) => ExInvalidateField();
+            txtLogin.Leave += (s, e) => ExInvalidateField();
             // empty + unfocused: a faint placeholder inside the box (native cue banner - it is the
             // textbox's own hint text, so it can never overlap typed text)
             txtLogin.HandleCreated += (s, e) => ExSetCue();
@@ -242,13 +246,13 @@ namespace APP_FRAMEWORK
             exFloat.BringToFront();
 
             // ---------------- toggles (mirror the Bunifu switches the logic reads) ----------------
-            exRemember = ExToggle(new Point(EDGE_L, 164), true, ExRememberToggle);
-            exRememberCap = ExLabel("Remember My Key", EDGE_L + 44, 165, ExF0("Segoe UI", 8.5F), ExInk);
+            exRemember = ExToggle(new Point(EDGE_L, 132), true, ExRememberToggle);
+            exRememberCap = ExLabel("Remember My Key", EDGE_L + 38, 133, ExF0("Segoe UI", 8F), ExInk);
             exRememberCap.Cursor = Cursors.Hand;
             exRememberCap.Click += ExRememberToggle;
 
-            exAuto = ExToggle(new Point(196, 164), true, ExAutoToggle);
-            exAutoCap = ExLabel("Auto Login", 196 + 44, 165, ExF0("Segoe UI", 8.5F), ExInk);
+            exAuto = ExToggle(new Point(166, 132), true, ExAutoToggle);
+            exAutoCap = ExLabel("Auto Login", 166 + 38, 133, ExF0("Segoe UI", 8F), ExInk);
             exAutoCap.Cursor = Cursors.Hand;
             exAutoCap.Click += ExAutoToggle;
 
@@ -262,8 +266,8 @@ namespace APP_FRAMEWORK
             byteNovaRestartOption.Visible = false;
 
             // ---------------- buttons (same left/right edges as the field) ----------------
-            ExStyleButton(bunifuFlatButton2, new Point(EDGE_L, 202), new Size(108, 40), Color.White, ExExitPaint);
-            ExStyleButton(bunifuFlatButton1, new Point(EDGE_L + 108 + 10, 202), new Size(EDGE_R - (EDGE_L + 108 + 10), 40), ExBlue, ExSubmitPaint);
+            ExStyleButton(bunifuFlatButton2, new Point(EDGE_L, 164), new Size(92, 34), Color.White, ExExitPaint);
+            ExStyleButton(bunifuFlatButton1, new Point(EDGE_L + 92 + 8, 164), new Size(EDGE_R - (EDGE_L + 92 + 8), 34), ExBlue, ExSubmitPaint);
 
             // ---------------- validating overlay ----------------
             if (byteNovaServerLoader != null)
@@ -385,10 +389,10 @@ namespace APP_FRAMEWORK
             if (exFloat == null) return;
             float t = ExEase(exFloatT);
             float lineY = FIELD_NOTCH;                                   // top border of the box
-            float onH = 14f, onY = lineY - onH / 2f, onX = FIELD_PAD + 10f;
-            float upH = 15f, upY = lineY - upH - 3f, upX = FIELD_PAD + 1f;
+            float onH = 12f, onY = lineY - onH / 2f, onX = FIELD_PAD + 9f;
+            float upH = 13f, upY = lineY - upH - 3f, upX = FIELD_PAD + 1f;
             float w;
-            using (Font uf = ExF0("Segoe UI", 8F, FontStyle.Bold))
+            using (Font uf = ExF0("Segoe UI", 7.5F, FontStyle.Bold))
                 w = TextRenderer.MeasureText("LICENCE KEY", uf, Size.Empty, TextFormatFlags.NoPadding).Width + 12f;
             float x = onX + (upX - onX) * t;
             float y = onY + (upY - onY) * t;
@@ -438,9 +442,38 @@ namespace APP_FRAMEWORK
             if (!IsHandleCreated) return;
             if (Width < 4 || Height < 4) return;
 
-            int d = (int)(CORNER * 2 * exK);
+            // Only (re)apply when the size really changed. SetWindowRgn(redraw) repaints the whole window,
+            // incl. the TextBox, and was re-asserted every 16 ms for 1.5 s after Show - that kills the caret blink.
+            if (exRegionSize == Size && exRegionHandle == Handle) return;
+            exRegionSize = Size;
+            exRegionHandle = Handle;
+
+            // Windows 11: let DWM round the window - real anti-aliased corners, no Region at all.
+            if (ExTryDwmRound())
+            {
+                SetWindowRgn(Handle, IntPtr.Zero, true);
+                return;
+            }
+
+            // Older Windows: a Region can't anti-alias, so the frame painter fills the pixels outside the
+            // rounded path with the border colour and strokes the AA border exactly on the edge.
+            int d = (int)Math.Round(ExCornerR() * 2);
             IntPtr h = CreateRoundRectRgn(0, 0, Width + 1, Height + 1, d, d);
             SetWindowRgn(Handle, h, true);
+        }
+
+        private Size exRegionSize;
+        private IntPtr exRegionHandle;
+
+        // Repaint the field chrome but never the TextBox area (repainting it hides / restarts the caret).
+        private void ExInvalidateField()
+        {
+            if (panel2 == null || panel2.IsDisposed) return;
+            using (Region rg = new Region(panel2.ClientRectangle))
+            {
+                if (txtLogin != null && txtLogin.Parent == panel2) rg.Exclude(txtLogin.Bounds);
+                panel2.Invalidate(rg, false);
+            }
         }
 
         private void ExScaleTree(Control parent, float k)
@@ -509,7 +542,7 @@ namespace APP_FRAMEWORK
         {
             Panel t = new Panel();
             t.Location = p;
-            t.Size = new Size(36, 20);
+            t.Size = new Size(32, 18);
             t.BackColor = Color.White;
             t.Cursor = Cursors.Hand;
             t.Tag = state;
@@ -614,7 +647,8 @@ namespace APP_FRAMEWORK
             float ft = ExApproach(exFloatT, ExFloatTarget());
             float fo = ExApproach(exFocusT, txtLogin.Focused ? 1f : 0f);
             if (ft != exFloatT) { exFloatT = ft; ExLayoutFloat(); }
-            if (fo != exFocusT) { exFocusT = fo; panel2.Invalidate(); exFloat.Invalidate(); }
+            // only while the focus animation is running; once settled nothing near the textbox is repainted
+            if (fo != exFocusT) { exFocusT = fo; ExInvalidateField(); exFloat.Invalidate(); }
 
             if (loaderUp) byteNovaServerLoader.Invalidate(ExLoaderCardRect(byteNovaServerLoader));
         }
@@ -715,11 +749,84 @@ namespace APP_FRAMEWORK
             using (SolidBrush bg = new SolidBrush(ExPageBg))
                 g.FillRectangle(bg, new Rectangle(0, 0, ClientSize.Width, ClientSize.Height));
 
-            Rectangle b = new Rectangle(0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
-            using (GraphicsPath path = ExRound(b, ExS(CORNER)))
-            using (LinearGradientBrush lb = new LinearGradientBrush(new Rectangle(0, 0, ClientSize.Width, ClientSize.Height), ExBlue, ExSaffron, 35f))
-            using (Pen pen = new Pen(lb, 1.6f * exK))
-                g.DrawPath(pen, path);
+            ExPaintFrame(g, Point.Empty);
+        }
+
+        // ------------------------------------------------------------------
+        // window frame: smooth rounded corners + 3px bhagwa gradient border
+        // ------------------------------------------------------------------
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct ExOsVersion
+        {
+            public int Size, Major, Minor, Build, Platform;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)] public string Csd;
+        }
+
+        [DllImport("ntdll.dll")]
+        private static extern int RtlGetVersion(ref ExOsVersion v);
+
+        private bool exDwmTried, exDwmRound;
+
+        private bool ExTryDwmRound()
+        {
+            if (exDwmTried) return exDwmRound;
+            exDwmTried = true;
+            try
+            {
+                ExOsVersion v = new ExOsVersion();
+                v.Size = Marshal.SizeOf(typeof(ExOsVersion));
+                if (RtlGetVersion(ref v) != 0 || v.Major < 10 || v.Build < 22000) return exDwmRound = false;
+                int pref = 2;   // DWMWCP_ROUND
+                exDwmRound = DwmSetWindowAttribute(Handle, 33 /* DWMWA_WINDOW_CORNER_PREFERENCE */, ref pref, sizeof(int)) == 0;
+            }
+            catch { exDwmRound = false; }
+            if (exDwmRound) Invalidate(true);   // repaint the frame with the DWM radius
+            return exDwmRound;
+        }
+
+        // DWM uses an 8px (logical) radius on Windows 11; our own Region uses CORNER.
+        private float ExCornerR()
+        {
+            return (exDwmRound ? 8f : CORNER) * exK;
+        }
+
+        private const float FRAME_W = 3f;
+
+        // Paints the outer frame in form coordinates; `offset` is the top-left of the surface being painted
+        // (form = 0,0; header / overlay pass their Location so the frame is continuous over them).
+        private void ExPaintFrame(Graphics g, Point offset)
+        {
+            int W = ClientSize.Width, H = ClientSize.Height;
+            if (W < 4 || H < 4) return;
+            GraphicsState st = g.Save();
+            g.TranslateTransform(-offset.X, -offset.Y);
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+            float R = ExCornerR();
+            float bw = FRAME_W * exK;
+            Rectangle all = new Rectangle(0, 0, W, H);
+            using (LinearGradientBrush br = new LinearGradientBrush(all, ExSaffronD, ExSaffronL, 35f))
+            {
+                // 1) every pixel outside the rounded edge gets the border colour -> no white specks / stair steps
+                using (GraphicsPath edge = ExRoundF(new RectangleF(0, 0, W, H), R))
+                using (Region outside = new Region(all))
+                {
+                    outside.Exclude(edge);
+                    g.FillRegion(br, outside);
+                }
+                // 2) anti-aliased border exactly on the window edge, following the corners
+                using (GraphicsPath ring = ExRoundF(new RectangleF(bw / 2f, bw / 2f, W - bw, H - bw), Math.Max(1f, R - bw / 2f)))
+                using (Pen pen = new Pen(br, bw))
+                {
+                    pen.LineJoin = LineJoin.Round;
+                    g.DrawPath(pen, ring);
+                }
+            }
+            g.Restore(st);
         }
 
         private void ExHeaderPaint(object sender, PaintEventArgs e)
@@ -747,19 +854,22 @@ namespace APP_FRAMEWORK
 
             // key badge + "Key Login" (the brand name appears only once, beside the logo in the card)
             int h = r.Height - ExS(3);
-            Rectangle badge = new Rectangle(ExS(14), (h - ExS(26)) / 2, ExS(26), ExS(26));
+            Rectangle badge = new Rectangle(ExS(10), (h - ExS(22)) / 2, ExS(22), ExS(22));
             using (SolidBrush sh = new SolidBrush(Color.FromArgb(45, 0, 0, 0)))
                 g.FillEllipse(sh, badge.X, badge.Y + ExS(1), badge.Width, badge.Height);
             using (SolidBrush wb = new SolidBrush(Color.White))
                 g.FillEllipse(wb, badge);
-            ExIcon(g, "key", new RectangleF(badge.X + ExS(6), badge.Y + ExS(6), ExS(14), ExS(14)), ExSaffronD, 1.9f * exK);
+            ExIcon(g, "key", new RectangleF(badge.X + ExS(5), badge.Y + ExS(5), ExS(12), ExS(12)), ExSaffronD, 1.8f * exK);
 
-            using (Font tf = ExF("Segoe UI Semibold", 10.5F))
+            using (Font tf = ExF("Segoe UI Semibold", 9F))
             {
                 Size ts = TextRenderer.MeasureText(g, "Key Login", tf, Size.Empty, TextFormatFlags.NoPadding);
-                ExText(g, "Key Login", tf, new Rectangle(badge.Right + ExS(10), (h - ts.Height) / 2, ts.Width + ExS(4), ts.Height),
+                ExText(g, "Key Login", tf, new Rectangle(badge.Right + ExS(8), (h - ts.Height) / 2, ts.Width + ExS(4), ts.Height),
                     Color.White, TextFormatFlags.Left);
             }
+
+            // the header is a full-width child: repaint the window frame over it so its top corners stay smooth
+            ExPaintFrame(g, exHeader.Location);
         }
 
         private void ExClosePaint(object sender, PaintEventArgs e)
@@ -806,10 +916,10 @@ namespace APP_FRAMEWORK
             g.SmoothingMode = SmoothingMode.AntiAlias;
             RectangleF r = new RectangleF(0.5f, 0.5f, exCard.Width - 2f, exCard.Height - 2f - ExS(2));
 
-            using (GraphicsPath sh = ExRoundF(new RectangleF(r.X, r.Y + ExS(2), r.Width, r.Height), ExS(16)))
+            using (GraphicsPath sh = ExRoundF(new RectangleF(r.X, r.Y + ExS(2), r.Width, r.Height), ExS(12)))
             using (SolidBrush sb = new SolidBrush(Color.FromArgb(214, 225, 243)))
                 g.FillPath(sb, sh);
-            using (GraphicsPath path = ExRoundF(r, ExS(16)))
+            using (GraphicsPath path = ExRoundF(r, ExS(12)))
             {
                 using (SolidBrush b = new SolidBrush(Color.White)) g.FillPath(b, path);
                 using (Pen pen = new Pen(ExLine, 1f)) g.DrawPath(pen, path);
@@ -818,37 +928,37 @@ namespace APP_FRAMEWORK
             ExPaintWordmark(g);
 
             // "SECURE" badge (shield-check) top-right
-            using (Font bf = ExF("Segoe UI", 7F, FontStyle.Bold))
+            using (Font bf = ExF("Segoe UI", 6.5F, FontStyle.Bold))
             {
                 Size ts = TextRenderer.MeasureText(g, "SECURE", bf, Size.Empty, TextFormatFlags.NoPadding);
-                int bw = ts.Width + ExS(28);
-                Rectangle badge = new Rectangle(ExS(EDGE_R) - bw, ExS(19), bw, ExS(20));
+                int bw = ts.Width + ExS(24);
+                Rectangle badge = new Rectangle(ExS(EDGE_R) - bw, ExS(14), bw, ExS(18));
                 using (GraphicsPath bp = ExRound(badge, badge.Height / 2))
                 {
                     using (SolidBrush b = new SolidBrush(Color.FromArgb(220, 252, 231))) g.FillPath(b, bp);
                     using (Pen p = new Pen(Color.FromArgb(134, 239, 172), 1f)) g.DrawPath(p, bp);
                 }
-                ExIcon(g, "shield", new RectangleF(badge.X + ExS(7), badge.Y + ExS(4), ExS(12), ExS(12)), Color.FromArgb(21, 128, 61), 1.5f * exK);
-                ExText(g, "SECURE", bf, new Rectangle(badge.X + ExS(22), badge.Y, ts.Width + ExS(4), badge.Height),
+                ExIcon(g, "shield", new RectangleF(badge.X + ExS(6), badge.Y + ExS(4), ExS(10), ExS(10)), Color.FromArgb(21, 128, 61), 1.4f * exK);
+                ExText(g, "SECURE", bf, new Rectangle(badge.X + ExS(19), badge.Y, ts.Width + ExS(4), badge.Height),
                     Color.FromArgb(21, 128, 61), TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
 
-                using (Font vf = ExF("Segoe UI", 7F))
+                using (Font vf = ExF("Segoe UI", 6.5F))
                     ExText(g, "v0.0.1", vf, new Rectangle(badge.Right - ExS(80), badge.Bottom + ExS(4), ExS(80) - ExS(6), ExS(14)),
                         ExSlate, TextFormatFlags.Right | TextFormatFlags.VerticalCenter);
             }
 
             // thin divider between brand and form
             using (Pen p = new Pen(Color.FromArgb(234, 239, 247), 1f))
-                g.DrawLine(p, ExS(EDGE_L), ExS(72), ExS(EDGE_R), ExS(72));
+                g.DrawLine(p, ExS(EDGE_L), ExS(58), ExS(EDGE_R), ExS(58));
 
             // footer hint with info icon (centred, quiet)
-            using (Font hf = ExF("Segoe UI", 7.75F))
+            using (Font hf = ExF("Segoe UI", 7F))
             {
                 string hint = "Server se validate hone ke baad software khulega.";
                 Size hs = TextRenderer.MeasureText(g, hint, hf, Size.Empty, TextFormatFlags.NoPadding);
-                int iw = ExS(13), gap = ExS(6);
+                int iw = ExS(11), gap = ExS(5);
                 int fx = (exCard.Width - (iw + gap + hs.Width)) / 2;
-                int fy = ExS(258);
+                int fy = ExS(206);
                 ExIcon(g, "info", new RectangleF(fx, fy + (ExS(18) - iw) / 2f, iw, iw), ExSaffron, 1.5f * exK);
                 ExText(g, hint, hf, new Rectangle(fx + iw + gap, fy, hs.Width + ExS(4), ExS(18)), ExSlate,
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
@@ -861,14 +971,14 @@ namespace APP_FRAMEWORK
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            float left = exBrand.Right + ExS(12);
+            float left = exBrand.Right + ExS(10);
             float top = exBrand.Top + ExS(1);
 
             using (GraphicsPath word = new GraphicsPath())
             using (FontFamily ff = new FontFamily("Segoe UI"))
             {
                 FontStyle st = ff.IsStyleAvailable(FontStyle.Bold | FontStyle.Italic) ? FontStyle.Bold | FontStyle.Italic : FontStyle.Bold;
-                word.AddString("EXPRESS", ff, (int)st, ExS(26), PointF.Empty, StringFormat.GenericTypographic);
+                word.AddString("EXPRESS", ff, (int)st, ExS(21), PointF.Empty, StringFormat.GenericTypographic);
                 RectangleF wb = word.GetBounds();
                 using (Matrix m = new Matrix())
                 {
@@ -888,18 +998,18 @@ namespace APP_FRAMEWORK
                     g.FillPath(wbr, word);
 
                 // bhagwa accent underline
-                float uy = wb.Bottom + ExS(5);
-                RectangleF ul = new RectangleF(wb.X + ExS(1), uy, ExS(34), ExS(3));
+                float uy = wb.Bottom + ExS(4);
+                RectangleF ul = new RectangleF(wb.X + ExS(1), uy, ExS(26), ExS(2.5f));
                 using (GraphicsPath up = ExRoundF(ul, ul.Height / 2f))
                 using (LinearGradientBrush ub = new LinearGradientBrush(new RectangleF(ul.X - 1, ul.Y, ul.Width + 2, ul.Height), ExSaffronD, ExSaffronL, 0f))
                     g.FillPath(ub, up);
 
                 // tagline, measured so it is never clipped
-                using (Font tf = ExF("Segoe UI Semibold", 7F))
+                using (Font tf = ExF("Segoe UI Semibold", 6F))
                 {
                     Size ts = TextRenderer.MeasureText(g, "PREMIUM TATKAL SOFTWARE", tf, Size.Empty, TextFormatFlags.NoPadding);
                     ExText(g, "PREMIUM TATKAL SOFTWARE", tf,
-                        new Rectangle((int)wb.X + ExS(1), (int)ul.Bottom + ExS(4), ts.Width + ExS(4), ts.Height + 2),
+                        new Rectangle((int)wb.X + ExS(1), (int)ul.Bottom + ExS(3), ts.Width + ExS(4), ts.Height + 2),
                         ExSlate, TextFormatFlags.Left);
                 }
             }
@@ -913,7 +1023,7 @@ namespace APP_FRAMEWORK
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
             RectangleF r = new RectangleF(1f, 1f, exBrand.Width - 3f, exBrand.Height - 3f);
 
-            using (GraphicsPath path = ExRoundF(r, ExS(14)))
+            using (GraphicsPath path = ExRoundF(r, ExS(11)))
             {
                 using (LinearGradientBrush bg = new LinearGradientBrush(r, Color.FromArgb(255, 247, 237), Color.FromArgb(255, 237, 213), 90f))
                     g.FillPath(bg, path);
@@ -932,7 +1042,7 @@ namespace APP_FRAMEWORK
             }
             else
             {
-                using (Font f = ExF("Segoe UI Black", 20F, FontStyle.Bold))
+                using (Font f = ExF("Segoe UI Black", 15F, FontStyle.Bold))
                     ExText(g, "E", f, new Rectangle(0, 0, exBrand.Width, exBrand.Height), ExSaffronD,
                         TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             }
@@ -951,11 +1061,11 @@ namespace APP_FRAMEWORK
 
             // focus glow ring
             if (f > 0.01f)
-                using (GraphicsPath gp = ExRoundF(RectangleF.Inflate(r, ExS(2.5f), ExS(2.5f)), ExS(13)))
+                using (GraphicsPath gp = ExRoundF(RectangleF.Inflate(r, ExS(2.5f), ExS(2.5f)), ExS(11)))
                 using (SolidBrush gb = new SolidBrush(Color.FromArgb((int)(52 * f), ExBlueSoft)))
                     g.FillPath(gb, gp);
 
-            using (GraphicsPath path = ExRoundF(r, ExS(11)))
+            using (GraphicsPath path = ExRoundF(r, ExS(9)))
             {
                 using (SolidBrush bg = new SolidBrush(ExFieldBg)) g.FillPath(bg, path);
                 Color idle = exFieldHover > 0f ? Color.FromArgb(148, 163, 184) : Color.FromArgb(203, 213, 225);
@@ -966,16 +1076,23 @@ namespace APP_FRAMEWORK
             // bhagwa accent that grows along the bottom while focused
             if (f > 0.01f)
             {
+                // kept strictly inside the rounded border: clipped to the box path, inset from the corners
                 float lw = (r.Width - ExS(28)) * ExEase(f);
                 float lx = r.X + (r.Width - lw) / 2f;
-                using (GraphicsPath lp = ExRoundF(new RectangleF(lx, r.Bottom - ExS(2.5f), lw, ExS(2.5f)), ExS(1.2f)))
-                using (LinearGradientBrush lb = new LinearGradientBrush(new RectangleF(lx - 1, r.Bottom - 3, lw + 2, 4), ExSaffronD, ExSaffronL, 0f))
+                using (GraphicsPath box = ExRoundF(RectangleF.Inflate(r, -ExS(1), -ExS(1)), ExS(8)))
+                using (GraphicsPath lp = ExRoundF(new RectangleF(lx, r.Bottom - ExS(1) - ExS(2.5f), lw, ExS(2.5f)), ExS(1.2f)))
+                using (LinearGradientBrush lb = new LinearGradientBrush(new RectangleF(lx - 1, r.Bottom - ExS(4), lw + 2, ExS(4)), ExSaffronD, ExSaffronL, 0f))
+                {
+                    Region old = g.Clip;
+                    g.SetClip(box, CombineMode.Intersect);
                     g.FillPath(lb, lp);
+                    g.Clip = old;
+                }
             }
 
             // icon centred vertically in the box, centred in the column left of the text
             Color ic = ExMix(Color.FromArgb(120, 136, 160), ExSaffronD, f);
-            float isz = ExS(16);
+            float isz = ExS(14);
             float colL = r.X, colR = ExS(FIELD_TEXT_X) - ExS(4);
             ExIcon(g, "key", new RectangleF(colL + (colR - colL - isz) / 2f, r.Y + (r.Height - isz) / 2f, isz, isz), ic, 1.9f * exK);
         }
@@ -985,7 +1102,7 @@ namespace APP_FRAMEWORK
             Graphics g = e.Graphics;
             g.Clear(ExFieldBg);   // white: on the border it is the notch, raised it sits on the white card
             float t = ExEase(exFloatT);
-            float pt = 7.5F + (8F - 7.5F) * t;
+            float pt = 7F + (7.5F - 7F) * t;
             Color col = ExMix(ExSlate, ExBlueSoft, t);                 // slate on the border, blue when raised
             float pad = 4f * (1f - t);                                  // notch padding fades out when raised
             using (Font f = ExF("Segoe UI", pt, FontStyle.Bold))
@@ -1094,11 +1211,11 @@ namespace APP_FRAMEWORK
                 g.Clip = old;
             }
 
-            using (Font f = ExF("Segoe UI Semibold", 9.5F))
+            using (Font f = ExF("Segoe UI Semibold", 9F))
             {
                 string text = "SUBMIT";
                 Size ts = TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding);
-                float isz = ExS(18);
+                float isz = ExS(15);
                 float gw = ts.Width + ExS(10) + isz;
                 float x = r.X + (r.Width - gw) / 2f + ExS(3) * h;   // content nudges right on hover
                 float cy = r.Y + r.Height / 2f;
@@ -1128,11 +1245,11 @@ namespace APP_FRAMEWORK
                 using (Pen p = new Pen(line, 1.3f * exK)) g.DrawPath(p, path);
             }
 
-            using (Font f = ExF("Segoe UI Semibold", 9.5F))
+            using (Font f = ExF("Segoe UI Semibold", 9F))
             {
                 string text = "EXIT";
                 Size ts = TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding);
-                float isz = ExS(17);
+                float isz = ExS(14);
                 float gw = isz + ExS(8) + ts.Width;
                 float x = r.X + (r.Width - gw) / 2f;
                 float cy = r.Y + r.Height / 2f;
@@ -1325,6 +1442,9 @@ namespace APP_FRAMEWORK
                 ExSeg(g, track, (p2 * p2) * 1.5f - 0.25f, 0.18f);
                 g.Clip = old;
             }
+
+            // overlay spans the full width: keep the window frame continuous over it
+            ExPaintFrame(g, box.Location);
         }
 
         private static void ExSeg(Graphics g, RectangleF track, float startFrac, float lenFrac)

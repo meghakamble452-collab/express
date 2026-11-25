@@ -81,14 +81,15 @@ public class frmShowQR : Form
         ForeColor = qText;
         FormBorderStyle = FormBorderStyle.None;
         DoubleBuffered = true;
-        ClientSize = new Size(404, 506);
-        bunifuElipse1.ElipseRadius = 12;
+        // Default size of the ticket window this popup covers; once shown it takes that
+        // window's exact bounds (see qMatch below) and the layout adapts to ClientSize.
+        ClientSize = new Size(465, 290);
+        bunifuElipse1.ElipseRadius = 10;
 
         // ---------------- QR area ----------------
-        // The PictureBox covers the QR card's inner square. Its own image drawing is
-        // replaced in the Paint handler below by a pixel-perfect, nearest-neighbour render.
+        // The PictureBox covers the QR card's inner square (bounds set by qLayout). Its own
+        // image drawing is replaced in the Paint handler below by a pixel-perfect render.
         pictureBox1.Dock = DockStyle.None;
-        pictureBox1.SetBounds(22, 64, 360, 360);
         pictureBox1.BackColor = Color.White;
         pictureBox1.BorderStyle = BorderStyle.None;
         pictureBox1.SizeMode = PictureBoxSizeMode.Normal;   // no bilinear scaling by the PictureBox
@@ -96,6 +97,9 @@ public class frmShowQR : Form
         Image qSrc = null;          // image the cache was built from
         Bitmap qCrisp = null;       // rebuilt QR: 1 colour per module, integer scale
         int qPhase = 0;             // scan-marker animation phase
+        int qModPx = 0;             // module size (px) of the rebuilt QR
+        int qBuiltFor = -1;         // box size the cache was built for
+        float qMarkX = 9;           // x of the left scan marker (for cheap invalidation)
 
         // Builds a perfectly sharp QR bitmap from whatever image the server sent.
         // Detects the module grid (finder pattern = 7 modules) and re-draws every module
@@ -202,8 +206,11 @@ public class frmShowQR : Form
                 };
                 if (!finderOk(0, 0) || !finderOk(n - 7, 0) || !finderOk(0, n - 7)) return null;
 
+                // `avail` = full white square (QR box + the white card padding around it);
+                // the code plus a 4-module quiet zone on every side must fit inside it.
                 int total = n + 8;                                   // quiet zone: 4 modules each side
                 int scale = Math.Max(1, avail / total);
+                qModPx = scale;
                 Bitmap outB = new Bitmap(total * scale, total * scale, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 using (Graphics og = Graphics.FromImage(outB))
                 {
@@ -224,73 +231,77 @@ public class frmShowQR : Form
             int W = pictureBox1.Width, H = pictureBox1.Height;
             g.Clear(Color.White);
 
-            const int frame = 14;                                     // room for brackets / scan markers
-            Rectangle zone = new Rectangle(frame, frame, W - frame * 2, H - frame * 2);
-            int avail = Math.Min(zone.Width, zone.Height);
+            // The whole white card counts as the quiet zone: the PictureBox is inset 3px in the
+            // white card, so the white square available to the code is the box + 3px each side.
+            int side = Math.Min(W, H);
+            int avail = side + 6;
 
             Image img = pictureBox1.Image;
-            if (!ReferenceEquals(img, qSrc))
+            if (!ReferenceEquals(img, qSrc) || qBuiltFor != avail)
             {
                 if (qCrisp != null) { qCrisp.Dispose(); qCrisp = null; }
                 qSrc = img;
+                qBuiltFor = avail;
+                qModPx = 0;
                 try { qCrisp = buildCrisp(img, avail); } catch { qCrisp = null; }
             }
 
-            Rectangle qr;
+            Rectangle code;
             g.SmoothingMode = SmoothingMode.None;
             g.InterpolationMode = InterpolationMode.NearestNeighbor;
             g.PixelOffsetMode = PixelOffsetMode.Half;
-            if (qCrisp != null)
+            if (qCrisp != null && qModPx > 0)
             {
-                qr = new Rectangle(zone.X + (zone.Width - qCrisp.Width) / 2, zone.Y + (zone.Height - qCrisp.Height) / 2,
-                    qCrisp.Width, qCrisp.Height);
-                g.DrawImageUnscaled(qCrisp, qr.X, qr.Y);
+                // centred; the bitmap's own white border (4 modules) may overlap the white card padding
+                int bx = (W - qCrisp.Width) / 2, by = (H - qCrisp.Height) / 2;
+                g.DrawImageUnscaled(qCrisp, bx, by);
+                int q4 = 4 * qModPx;
+                code = new Rectangle(bx + q4, by + q4, qCrisp.Width - 2 * q4, qCrisp.Height - 2 * q4);
             }
             else if (img != null)
             {
-                // Fallback (not a plain QR image): integer upscale if it fits, otherwise fit,
-                // always nearest-neighbour so edges stay hard.
-                int k = Math.Max(img.Width, img.Height) <= avail ? avail / Math.Max(img.Width, img.Height) : 0;
+                // Fallback (not verified as a plain QR): integer upscale if it fits, otherwise fit,
+                // always nearest-neighbour so edges stay hard. The image keeps its own margin.
+                int k = Math.Max(img.Width, img.Height) <= side ? side / Math.Max(img.Width, img.Height) : 0;
                 Size sz = k >= 1
                     ? new Size(img.Width * k, img.Height * k)
-                    : new Size((int)(img.Width * (double)avail / Math.Max(img.Width, img.Height)),
-                               (int)(img.Height * (double)avail / Math.Max(img.Width, img.Height)));
-                qr = new Rectangle(zone.X + (zone.Width - sz.Width) / 2, zone.Y + (zone.Height - sz.Height) / 2, sz.Width, sz.Height);
-                g.DrawImage(img, qr);
+                    : new Size((int)(img.Width * (double)side / Math.Max(img.Width, img.Height)),
+                               (int)(img.Height * (double)side / Math.Max(img.Width, img.Height)));
+                code = new Rectangle((W - sz.Width) / 2, (H - sz.Height) / 2, sz.Width, sz.Height);
+                g.DrawImage(img, code);
             }
             else
             {
-                qr = zone;
-                using (Font lf = new Font("Segoe UI", 9F)) TextRenderer.DrawText(g, "Loading QR...", lf, zone, qMuted,
+                code = new Rectangle(0, 0, W, H);
+                using (Font lf = new Font("Segoe UI", 9F)) TextRenderer.DrawText(g, "Loading QR...", lf, code, qMuted,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             }
 
-            // bhagwa corner brackets OUTSIDE the code (in the frame margin)
+            // Corner brackets are drawn on the white card's padding ring (ByteNovaPaint), so the
+            // code keeps its full quiet zone. Here only the animated side markers are drawn, and
+            // only when there is spare white so their inner edge stays >= 3 modules from the code.
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.PixelOffsetMode = PixelOffsetMode.Default;
-            float b0 = 3.5f, bl = 26f;
+            float gapPx = qModPx > 0 ? 3 * qModPx : 6;
+            float b0 = code.Left - gapPx - 2f;
+            if (b0 < 2.5f) { qMarkX = -1; return; }                 // no spare white: keep the code clean
+            float bl = Math.Max(12f, Math.Min(26f, qModPx > 0 ? 3.5f * qModPx : side / 9f));
             RectangleF fr = new RectangleF(b0, b0, W - 1 - b0 * 2, H - 1 - b0 * 2);
-            using (Pen bp = new Pen(qOrange, 3.2F))
-            {
-                bp.StartCap = LineCap.Round; bp.EndCap = LineCap.Round; bp.LineJoin = LineJoin.Round;
-                g.DrawLines(bp, new[] { new PointF(fr.Left, fr.Top + bl), new PointF(fr.Left, fr.Top), new PointF(fr.Left + bl, fr.Top) });
-                g.DrawLines(bp, new[] { new PointF(fr.Right - bl, fr.Top), new PointF(fr.Right, fr.Top), new PointF(fr.Right, fr.Top + bl) });
-                g.DrawLines(bp, new[] { new PointF(fr.Right, fr.Bottom - bl), new PointF(fr.Right, fr.Bottom), new PointF(fr.Right - bl, fr.Bottom) });
-                g.DrawLines(bp, new[] { new PointF(fr.Left + bl, fr.Bottom), new PointF(fr.Left, fr.Bottom), new PointF(fr.Left, fr.Bottom - bl) });
-            }
+            qMarkX = b0;
 
             // animated scan markers that glide up and down on the LEFT and RIGHT margins only
             double t = (Math.Sin(qPhase * 0.06) + 1) / 2;                 // 0..1
-            float my = (float)(fr.Top + bl + 6 + t * (fr.Height - bl * 2 - 12));
-            using (LinearGradientBrush mk = new LinearGradientBrush(new RectangleF(0, my - 14, 6, 28),
+            float mh = Math.Min(28f, Math.Max(12f, fr.Height - bl * 2 - 16));
+            float my = (float)(fr.Top + bl + 4 + mh / 2 + t * Math.Max(0, fr.Height - bl * 2 - 8 - mh));
+            using (LinearGradientBrush mk = new LinearGradientBrush(new RectangleF(0, my - mh / 2 - 1, 6, mh + 2),
                 Color.FromArgb(0, qOrange), qOrange, LinearGradientMode.Vertical))
             {
                 ColorBlend cb = new ColorBlend();
                 cb.Positions = new[] { 0f, 0.5f, 1f };
                 cb.Colors = new[] { Color.FromArgb(0, qOrange), qOrange, Color.FromArgb(0, qOrange) };
                 mk.InterpolationColors = cb;
-                g.FillRectangle(mk, fr.Left - 1.5f, my - 14, 3, 28);
-                g.FillRectangle(mk, fr.Right - 1.5f, my - 14, 3, 28);
+                g.FillRectangle(mk, fr.Left - 1.5f, my - mh / 2, 3, mh);
+                g.FillRectangle(mk, fr.Right - 1.5f, my - mh / 2, 3, mh);
             }
         };
 
@@ -301,18 +312,19 @@ public class frmShowQR : Form
             if (IsDisposed || !Visible) return;
             qPhase++;
             int W = pictureBox1.Width, H = pictureBox1.Height;
-            pictureBox1.Invalidate(new Rectangle(0, 0, 9, H));            // only the side margins repaint
-            pictureBox1.Invalidate(new Rectangle(W - 9, 0, 9, H));
+            if (qMarkX < 0) return;                                        // markers not shown at this size
+            int mx = (int)qMarkX + 4;                                      // only the marker strips repaint
+            pictureBox1.Invalidate(new Rectangle(Math.Max(0, mx - 8), 0, 8, H));
+            pictureBox1.Invalidate(new Rectangle(Math.Max(0, W - mx), 0, 8, H));
         };
         qTimer.Start();
         FormClosed += (s, fe) => { qTimer.Stop(); qTimer.Dispose(); };
         Disposed += (s, de) => { qTimer.Stop(); if (qCrisp != null) { qCrisp.Dispose(); qCrisp = null; } };
 
-        // ---------------- payment info ----------------
+        // ---------------- payment info (right-hand panel) ----------------
         // label1.Text is set by the logic ("Pay Using QR :- <upi>  Amt=  <amount>");
-        // it is drawn as a clean two-column card: PAY TO | AMOUNT.
+        // the label paints it as a vertical info panel: Scan & Pay / PAY TO / AMOUNT / hint.
         label1.AutoSize = false;
-        label1.SetBounds(22, 442, 360, 50);
         label1.BackColor = Color.White;
         label1.ForeColor = qText;
         label1.Font = new Font("Segoe UI Semibold", 9F);
@@ -322,15 +334,18 @@ public class frmShowQR : Form
         {
             Graphics g = le.Graphics;
             g.Clear(Color.White);
+            g.SmoothingMode = SmoothingMode.AntiAlias;
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
             string raw = label1.Text ?? "";
+            if (raw == "label1") raw = "";
             int ai = raw.IndexOf("Amt=", StringComparison.OrdinalIgnoreCase);
-            int W = label1.Width, H = label1.Height;
+            int W = label1.Width, H = label1.Height, x0 = 6, cw = Math.Max(20, W - 12);
+            TextFormatFlags one = TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix;
 
-            Func<string, float, FontStyle, int, Font> fit = (text, start, style, maxW) =>
+            Func<string, float, FontStyle, int, float, Font> fit = (text, start, style, maxW, minSz) =>
             {
                 float sz = start;
-                while (sz > 7f)
+                while (sz > minSz)
                 {
                     using (Font f = new Font("Segoe UI", sz, style))
                         if (TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding).Width <= maxW) break;
@@ -338,65 +353,224 @@ public class frmShowQR : Form
                 }
                 return new Font("Segoe UI", sz, style);
             };
-
-            if (ai < 0 || raw.Trim().Length == 0 || raw == "label1")
+            // character wrap (UPI ids have no spaces); prefers breaking before "@"
+            Func<string, Font, int, int, System.Collections.Generic.List<string>> wrap = (text, f, maxW, maxLines) =>
             {
+                var lines = new System.Collections.Generic.List<string>();
+                string rest = text;
+                while (rest.Length > 0 && lines.Count < maxLines)
+                {
+                    int cut = rest.Length;
+                    while (cut > 1 && TextRenderer.MeasureText(g, rest.Substring(0, cut), f, Size.Empty, TextFormatFlags.NoPadding).Width > maxW) cut--;
+                    if (cut < rest.Length)
+                    {
+                        int at = rest.LastIndexOf('@', Math.Max(0, cut - 1));
+                        if (at > cut / 2) cut = at;
+                    }
+                    lines.Add(rest.Substring(0, cut));
+                    rest = rest.Substring(cut);
+                }
+                if (rest.Length > 0 && lines.Count > 0) lines[lines.Count - 1] += rest;   // drawn with EndEllipsis as a last resort
+                return lines;
+            };
+
+            int y = 4;
+            // title row: scan icon + "Scan & Pay"
+            using (Pen ip = new Pen(Color.FromArgb(214, 96, 4), 1.8F))
+            {
+                ip.StartCap = LineCap.Round; ip.EndCap = LineCap.Round; ip.LineJoin = LineJoin.Round;
+                float ix = x0, iy = y + 3, sz = 14, c = 4.5f;
+                g.DrawLines(ip, new[] { new PointF(ix, iy + c), new PointF(ix, iy), new PointF(ix + c, iy) });
+                g.DrawLines(ip, new[] { new PointF(ix + sz - c, iy), new PointF(ix + sz, iy), new PointF(ix + sz, iy + c) });
+                g.DrawLines(ip, new[] { new PointF(ix + sz, iy + sz - c), new PointF(ix + sz, iy + sz), new PointF(ix + sz - c, iy + sz) });
+                g.DrawLines(ip, new[] { new PointF(ix + c, iy + sz), new PointF(ix, iy + sz), new PointF(ix, iy + sz - c) });
+                g.DrawLine(ip, ix + 2.5f, iy + sz / 2, ix + sz - 2.5f, iy + sz / 2);
+            }
+            using (Font tf = fit("Scan & Pay", 12F, FontStyle.Bold, cw - 22, 9F))
+                TextRenderer.DrawText(g, "Scan & Pay", tf, new Rectangle(x0 + 22, y, cw - 22, 22), qNavy, one | TextFormatFlags.VerticalCenter);
+            y += 24;
+            using (Font hf = new Font("Segoe UI", 7.75F))
+            {
+                string hint = "Open any UPI app and scan the QR";
+                TextFormatFlags wb = TextFormatFlags.Left | TextFormatFlags.Top | TextFormatFlags.WordBreak | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix;
+                int hh = Math.Min(30, TextRenderer.MeasureText(g, hint, hf, new Size(cw, 0), wb).Height);
+                TextRenderer.DrawText(g, hint, hf, new Rectangle(x0, y, cw, hh + 1), qMuted, wb);
+                y += hh;
+            }
+            y += 4;
+            using (Pen sep = new Pen(Color.FromArgb(226, 232, 240)))
+                g.DrawLine(sep, x0, y, x0 + cw, y);
+            y += 7;
+
+            if (ai < 0)
+            {
+                // unknown text format: show it whole, wrapped
                 using (Font f = new Font("Segoe UI Semibold", 9F))
-                    TextRenderer.DrawText(g, raw == "label1" ? "" : raw, f, new Rectangle(4, 0, W - 8, H), qText,
-                        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak);
+                    TextRenderer.DrawText(g, raw, f, new Rectangle(x0, y, cw, H - y - 4), qText,
+                        TextFormatFlags.Left | TextFormatFlags.Top | TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix);
                 return;
             }
 
             string left = raw.Substring(0, ai);
             int ci = left.IndexOf(":-");
             string payTo = (ci >= 0 ? left.Substring(ci + 2) : left).Trim();
-            string amt = raw.Substring(ai + 4).Trim();
+            string amtText = ((char)0x20B9).ToString() + " " + raw.Substring(ai + 4).Trim();   // rupee sign
 
-            // amount column (right)
-            string amtText = ((char)0x20B9).ToString() + " " + amt;   // rupee sign
-            int amtW;
-            using (Font af0 = new Font("Segoe UI", 14F, FontStyle.Bold))
-                amtW = Math.Min(120, TextRenderer.MeasureText(g, amtText, af0, Size.Empty, TextFormatFlags.NoPadding).Width + 6);
-            int colR = W - amtW - 4;
             using (Font cap = new Font("Segoe UI", 7F, FontStyle.Bold))
             {
-                TextRenderer.DrawText(g, "PAY TO", cap, new Rectangle(8, 6, colR - 16, 14), qMuted,
-                    TextFormatFlags.Left | TextFormatFlags.NoPadding);
-                TextRenderer.DrawText(g, "AMOUNT", cap, new Rectangle(colR, 6, amtW, 14), qMuted,
-                    TextFormatFlags.Right | TextFormatFlags.NoPadding);
-            }
-            // UPI ids have no spaces, so wrap by characters (max 2 lines) instead of cutting them.
-            int maxW = colR - 16;
-            using (Font vf = fit(payTo, 9.5f, FontStyle.Bold, maxW))
-            {
-                if (TextRenderer.MeasureText(g, payTo, vf, Size.Empty, TextFormatFlags.NoPadding).Width <= maxW)
+                // AMOUNT block is anchored to the bottom so it is always fully visible
+                int amtH;
+                using (Font af = fit(amtText, 20F, FontStyle.Bold, cw, 9F))
                 {
-                    TextRenderer.DrawText(g, payTo, vf, new Rectangle(8, 21, maxW + 2, 20), qNavy,
-                        TextFormatFlags.Left | TextFormatFlags.Top | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+                    amtH = TextRenderer.MeasureText(g, amtText, af, Size.Empty, TextFormatFlags.NoPadding).Height;
+                    int ay = H - 4 - amtH;
+                    TextRenderer.DrawText(g, "AMOUNT", cap, new Rectangle(x0, ay - 15, cw, 13), qMuted, one);
+                    TextRenderer.DrawText(g, amtText, af, new Rectangle(x0, ay, cw, amtH + 2), Color.FromArgb(214, 96, 4), one);
+                    amtH += 15;
                 }
-                else
+
+                // PAY TO fills the space between the divider and the amount
+                TextRenderer.DrawText(g, "PAY TO", cap, new Rectangle(x0, y, cw, 13), qMuted, one);
+                y += 15;
+                int room = Math.Max(14, H - 4 - amtH - 6 - y);
+                using (Font vf = fit(payTo, 10F, FontStyle.Bold, cw, 8F))
                 {
-                    using (Font wf = new Font("Segoe UI", 8F, FontStyle.Bold))
+                    if (TextRenderer.MeasureText(g, payTo, vf, Size.Empty, TextFormatFlags.NoPadding).Width <= cw)
+                        TextRenderer.DrawText(g, payTo, vf, new Rectangle(x0, y, cw, 20), qNavy, one);
+                    else
+                        using (Font wf = new Font("Segoe UI", 8.5F, FontStyle.Bold))
+                        {
+                            int lh = TextRenderer.MeasureText(g, "Ag", wf, Size.Empty, TextFormatFlags.NoPadding).Height + 1;
+                            var lines = wrap(payTo, wf, cw, Math.Max(1, Math.Min(4, room / lh)));
+                            foreach (string l in lines)
+                            {
+                                TextRenderer.DrawText(g, l, wf, new Rectangle(x0, y, cw, lh), qNavy, one | TextFormatFlags.EndEllipsis);
+                                y += lh;
+                            }
+                        }
+                }
+            }
+        };
+
+        // ---------------- close (X) button in the header ----------------
+        // Always visible (harmless). It HIDES the popup instead of closing it: the owner code
+        // keeps this instance and calls method_1 -> method_0 -> Show() for the next QR, so a
+        // disposed form would make the next QR silently never appear.
+        int xState = 0;                                     // 0 normal, 1 hover, 2 pressed
+        PictureBox xBtn = new PictureBox                    // PictureBox is double-buffered: no flicker
+        {
+            Size = new Size(26, 20),
+            BackColor = Color.FromArgb(248, 158, 44),
+            Cursor = Cursors.Hand,
+            TabStop = false
+        };
+        xBtn.Paint += (s, xe) =>
+        {
+            Graphics g = xe.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            int fw = ClientSize.Width;
+            // repaint the header gradient + gloss underneath so the button blends into the ribbon
+            using (LinearGradientBrush hb = new LinearGradientBrush(new Rectangle(-xBtn.Left, -xBtn.Top, Math.Max(1, fw), 26),
+                Color.FromArgb(214, 96, 4), Color.FromArgb(248, 158, 44), LinearGradientMode.Horizontal))
+                g.FillRectangle(hb, 0, 0, xBtn.Width, xBtn.Height);
+            using (SolidBrush gloss = new SolidBrush(Color.FromArgb(22, 255, 255, 255)))
+                g.FillRectangle(gloss, 0, 0, xBtn.Width, Math.Max(0, 13 - xBtn.Top));
+
+            RectangleF r = new RectangleF(0.5f, xState == 2 ? 1.5f : 0.5f, xBtn.Width - 1.5f, xBtn.Height - 2f);
+            Color fill = xState == 2 ? Color.FromArgb(153, 27, 27) : xState == 1 ? Color.White : Color.FromArgb(220, 38, 38);
+            Color line = xState == 2 ? Color.FromArgb(127, 29, 29) : xState == 1 ? Color.FromArgb(220, 38, 38) : Color.FromArgb(185, 28, 28);
+            Color glyph = xState == 1 ? Color.FromArgb(220, 38, 38) : Color.White;
+            float rad = 5f, d = rad * 2;
+            using (GraphicsPath p = new GraphicsPath())
+            {
+                p.AddArc(r.X, r.Y, d, d, 180, 90);
+                p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+                p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+                p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+                p.CloseFigure();
+                using (SolidBrush fb = new SolidBrush(fill)) g.FillPath(fb, p);
+                using (Pen lp = new Pen(line, 1F)) g.DrawPath(lp, p);
+            }
+            float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f, k = 4f;
+            using (Pen xp = new Pen(glyph, 2F))
+            {
+                xp.StartCap = LineCap.Round; xp.EndCap = LineCap.Round;
+                g.DrawLine(xp, cx - k, cy - k, cx + k, cy + k);
+                g.DrawLine(xp, cx + k, cy - k, cx - k, cy + k);
+            }
+        };
+        xBtn.MouseEnter += (s, xe) => { xState = 1; xBtn.Invalidate(); };
+        xBtn.MouseLeave += (s, xe) => { xState = 0; xBtn.Invalidate(); };
+        xBtn.MouseDown += (s, xe) => { if (xe.Button == MouseButtons.Left) { xState = 2; xBtn.Invalidate(); } };
+        xBtn.MouseUp += (s, xe) =>
+        {
+            if (xBtn.IsDisposed) return;
+            xState = xBtn.ClientRectangle.Contains(xe.Location) ? 1 : 0;
+            xBtn.Invalidate();
+        };
+        xBtn.Click += (s, xe) =>
+        {
+            xState = 0;
+            Hide();                                         // the next QR (method_0 -> Show) brings it back
+        };
+        Controls.Add(xBtn);
+        xBtn.BringToFront();
+
+        // ---------------- adaptive horizontal layout ----------------
+        // slim header | QR card (square, as tall as possible) on the left | info panel on the right
+        Action qLayout = () =>
+        {
+            if (IsDisposed) return;
+            int W = ClientSize.Width, H = ClientSize.Height;
+            const int hdr = 26, top = 3, bottom = 2, pad = 6;       // minimal clean gaps
+            int side = Math.Max(100, H - hdr - top - bottom);         // white QR card = full available height
+            side = Math.Min(side, Math.Max(100, W - pad * 3 - 140));   // info panel keeps >= ~140px
+            pictureBox1.SetBounds(pad + 3, hdr + top + 3, side - 6, side - 6);
+            int ix = pad + side + pad;
+            label1.SetBounds(ix + 8, hdr + top + 6, Math.Max(60, W - ix - pad - 14), side - 12);
+            xBtn.SetBounds(W - 26 - 5, (hdr - 3 - 20) / 2 + 1, 26, 20);   // right end of the header
+            xBtn.BringToFront();
+            Invalidate();
+        };
+        qLayout();
+        Resize += (s, re) => qLayout();
+
+        // ---------------- sit exactly on the window behind ----------------
+        // method_0 places this form at the covered window's location; once shown, take that
+        // window's exact bounds (Owner first, else the smallest visible form under us).
+        bool qMatching = false;
+        Action qMatch = () =>
+        {
+            if (qMatching || IsDisposed || !Visible) return;
+            qMatching = true;
+            try
+            {
+                Form target = (Owner != null && Owner.Visible) ? Owner : null;
+                if (target == null)
+                {
+                    Point loc = Location;
+                    Point ctr = new Point(Left + Width / 2, Top + Height / 2);
+                    long best = long.MaxValue;
+                    foreach (Form f in Application.OpenForms)
                     {
-                        int cut = payTo.Length;
-                        while (cut > 1 && TextRenderer.MeasureText(g, payTo.Substring(0, cut), wf, Size.Empty, TextFormatFlags.NoPadding).Width > maxW)
-                            cut--;
-                        int at = payTo.LastIndexOf('@', Math.Max(0, cut - 1));
-                        if (at > cut / 2) cut = at;                       // prefer breaking before "@bank"
-                        string l1 = payTo.Substring(0, cut), l2 = payTo.Substring(cut);
-                        TextRenderer.DrawText(g, l1, wf, new Rectangle(8, 19, maxW + 2, 15), qNavy,
-                            TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
-                        TextRenderer.DrawText(g, l2, wf, new Rectangle(8, 33, maxW + 2, 15), qNavy,
-                            TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
+                        if (f == this || f.IsDisposed || !f.Visible || f.WindowState == FormWindowState.Minimized) continue;
+                        Rectangle b = f.Bounds;
+                        if (b.Width < 200 || b.Height < 150) continue;
+                        if (b.Location == loc) { target = f; break; }
+                        if (b.Contains(loc) || b.Contains(ctr))
+                        {
+                            long a = (long)b.Width * b.Height;
+                            if (a < best) { best = a; target = f; }
+                        }
                     }
                 }
+                if (target != null && Bounds != target.Bounds) Bounds = target.Bounds;
             }
-            using (Font af = fit(amtText, 14F, FontStyle.Bold, amtW))
-                TextRenderer.DrawText(g, amtText, af, new Rectangle(colR, 18, amtW, H - 20), Color.FromArgb(214, 96, 4),
-                    TextFormatFlags.Right | TextFormatFlags.Top | TextFormatFlags.NoPadding);
-            using (Pen sep = new Pen(Color.FromArgb(226, 232, 240)))
-                g.DrawLine(sep, colR - 6, 8, colR - 6, H - 8);
+            catch { }
+            finally { qMatching = false; }
         };
+        Shown += (s, se) => qMatch();
+        Activated += (s, ae) => qMatch();
 
         // Paint custom Express UI
         Paint += ByteNovaPaint;
@@ -445,42 +619,36 @@ public class frmShowQR : Form
             }
         };
 
-        // ---------------- header ribbon (bhagwa + navy underline) ----------------
-        Rectangle header = new Rectangle(0, 0, W, 48);
+        // ---------------- slim header ribbon (bhagwa + navy underline) ----------------
+        const int hdrH = 26;
+        Rectangle header = new Rectangle(0, 0, W, hdrH);
         using (LinearGradientBrush hb = new LinearGradientBrush(header,
             Color.FromArgb(214, 96, 4), Color.FromArgb(248, 158, 44), LinearGradientMode.Horizontal))
             g.FillRectangle(hb, header);
         using (SolidBrush gloss = new SolidBrush(Color.FromArgb(22, 255, 255, 255)))
-            g.FillRectangle(gloss, 0, 0, W, 22);
+            g.FillRectangle(gloss, 0, 0, W, hdrH / 2);
         using (SolidBrush ul = new SolidBrush(navy))
-            g.FillRectangle(ul, 0, 45, W, 3);
+            g.FillRectangle(ul, 0, hdrH - 3, W, 3);
 
-        // scan icon (Lucide "scan-line") on a white badge
-        RectangleF badge = new RectangleF(12, 8, 30, 30);
-        using (SolidBrush sh = new SolidBrush(Color.FromArgb(50, 0, 0, 0))) g.FillEllipse(sh, badge.X, badge.Y + 1, badge.Width, badge.Height);
+        // QR badge (Lucide "qr-code"-ish) + title
+        RectangleF badge = new RectangleF(7, 3, 18, 18);
         using (SolidBrush wb = new SolidBrush(Color.White)) g.FillEllipse(wb, badge);
-        using (Pen ip = new Pen(Color.FromArgb(214, 96, 4), 1.8F))
+        using (SolidBrush ib = new SolidBrush(Color.FromArgb(214, 96, 4)))
         {
-            ip.StartCap = LineCap.Round; ip.EndCap = LineCap.Round; ip.LineJoin = LineJoin.Round;
-            float x = badge.X + 8, y = badge.Y + 8, s = 14, c = 4.5f;
-            g.DrawLines(ip, new[] { new PointF(x, y + c), new PointF(x, y), new PointF(x + c, y) });
-            g.DrawLines(ip, new[] { new PointF(x + s - c, y), new PointF(x + s, y), new PointF(x + s, y + c) });
-            g.DrawLines(ip, new[] { new PointF(x + s, y + s - c), new PointF(x + s, y + s), new PointF(x + s - c, y + s) });
-            g.DrawLines(ip, new[] { new PointF(x + c, y + s), new PointF(x, y + s), new PointF(x, y + s - c) });
-            g.DrawLine(ip, x + 2.5f, y + s / 2, x + s - 2.5f, y + s / 2);
+            float bx = badge.X + 4.5f, by = badge.Y + 4.5f;
+            g.FillRectangle(ib, bx, by, 3.5f, 3.5f); g.FillRectangle(ib, bx + 5.5f, by, 3.5f, 3.5f);
+            g.FillRectangle(ib, bx, by + 5.5f, 3.5f, 3.5f); g.FillRectangle(ib, bx + 6, by + 6, 2.5f, 2.5f);
         }
-        using (Font tf = new Font("Segoe UI Semibold", 11.5F))
-            TextRenderer.DrawText(g, "Scan & Pay", tf, new Point(50, 6), Color.White, TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
-        using (Font sf = new Font("Segoe UI", 7.75F))
-            TextRenderer.DrawText(g, "Open any UPI app and scan this code", sf, new Point(51, 27),
-                Color.FromArgb(255, 240, 222), TextFormatFlags.NoPadding);
+        using (Font tf = new Font("Segoe UI Semibold", 9.5F))
+            TextRenderer.DrawText(g, "Payment QR", tf, new Rectangle(31, 0, W - 110, hdrH - 3), Color.White,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
 
         // UPI pill on the right of the header
         using (Font pf = new Font("Segoe UI", 7.5F, FontStyle.Bold))
         {
             Size ps = TextRenderer.MeasureText(g, "UPI", pf, Size.Empty, TextFormatFlags.NoPadding);
-            RectangleF pill = new RectangleF(W - ps.Width - 32, 14, ps.Width + 20, 19);
-            using (GraphicsPath pp = round(pill, 9.5f))
+            RectangleF pill = new RectangleF(W - ps.Width - 24 - 32, (hdrH - 3 - 16) / 2f, ps.Width + 16, 16);
+            using (GraphicsPath pp = round(pill, 8f))
             {
                 using (SolidBrush b = new SolidBrush(Color.FromArgb(48, 255, 255, 255))) g.FillPath(b, pp);
                 using (Pen p = new Pen(Color.FromArgb(110, 255, 255, 255))) g.DrawPath(p, pp);
@@ -489,23 +657,54 @@ public class frmShowQR : Form
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
         }
 
-        // ---------------- QR card ----------------
-        // pictureBox1 sits at (22,64,360,360) inside this card.
-        RectangleF qrCard = new RectangleF(12, 56, W - 24, 376);
-        card(qrCard, 14, Color.White, Color.FromArgb(220, 228, 241));
-        using (SolidBrush acc = new SolidBrush(orange))
-            g.FillRectangle(acc, qrCard.X + 1, qrCard.Y + 18, 3, qrCard.Height - 36);
+        // ---------------- QR card (frames pictureBox1, left) ----------------
+        Rectangle pbR = pictureBox1.Bounds;
+        RectangleF qrCard = new RectangleF(pbR.X - 3, pbR.Y - 3, pbR.Width + 6, pbR.Height + 6);
+        card(qrCard, 12, Color.White, Color.FromArgb(220, 228, 241));
 
-        // ---------------- payment info card ----------------
-        // label1 sits at (22,442,360,50); the card frames it.
-        RectangleF info = new RectangleF(12, 438, W - 24, 58);
+        // bhagwa corner brackets hugging the card corners, inside its 3px white padding ring.
+        // The code is centred with >= 4 modules of white to the card edge, so a <= 3px bracket
+        // stays >= 3 modules away from it (modules are >= 3px).
+        {
+            float inset = 1.5f, rr = 12f - inset;
+            RectangleF c = RectangleF.Inflate(qrCard, -inset, -inset);
+            float bl = Math.Max(16f, Math.Min(34f, c.Width / 7f));
+            using (Pen bp = new Pen(orange, 2.4F))
+            {
+                bp.StartCap = LineCap.Round; bp.EndCap = LineCap.Round; bp.LineJoin = LineJoin.Round;
+                using (GraphicsPath p = new GraphicsPath())
+                {
+                    p.AddLine(c.Left, c.Top + bl, c.Left, c.Top + rr); p.AddArc(c.Left, c.Top, rr * 2, rr * 2, 180, 90); p.AddLine(c.Left + rr, c.Top, c.Left + bl, c.Top);
+                    g.DrawPath(bp, p);
+                }
+                using (GraphicsPath p = new GraphicsPath())
+                {
+                    p.AddLine(c.Right - bl, c.Top, c.Right - rr, c.Top); p.AddArc(c.Right - rr * 2, c.Top, rr * 2, rr * 2, 270, 90); p.AddLine(c.Right, c.Top + rr, c.Right, c.Top + bl);
+                    g.DrawPath(bp, p);
+                }
+                using (GraphicsPath p = new GraphicsPath())
+                {
+                    p.AddLine(c.Right, c.Bottom - bl, c.Right, c.Bottom - rr); p.AddArc(c.Right - rr * 2, c.Bottom - rr * 2, rr * 2, rr * 2, 0, 90); p.AddLine(c.Right - rr, c.Bottom, c.Right - bl, c.Bottom);
+                    g.DrawPath(bp, p);
+                }
+                using (GraphicsPath p = new GraphicsPath())
+                {
+                    p.AddLine(c.Left + bl, c.Bottom, c.Left + rr, c.Bottom); p.AddArc(c.Left, c.Bottom - rr * 2, rr * 2, rr * 2, 90, 90); p.AddLine(c.Left, c.Bottom - rr, c.Left, c.Bottom - bl);
+                    g.DrawPath(bp, p);
+                }
+            }
+        }
+
+        // ---------------- info card (frames label1, right) ----------------
+        Rectangle lbR = label1.Bounds;
+        RectangleF info = new RectangleF(lbR.X - 8, qrCard.Y, lbR.Width + 14, qrCard.Height);
         card(info, 12, Color.White, Color.FromArgb(253, 186, 116));
         using (SolidBrush acc = new SolidBrush(orange))
-            g.FillRectangle(acc, info.X + 1, info.Y + 12, 3, info.Height - 24);
+            g.FillRectangle(acc, info.X + 1, info.Y + 14, 3, info.Height - 28);
 
         // smooth outer border (masks the rounded window edge)
         using (Pen fr = new Pen(Color.FromArgb(178, 196, 226), 1.4F))
-        using (GraphicsPath op = round(new RectangleF(0.7f, 0.7f, W - 1.4f, H - 1.4f), 12))
+        using (GraphicsPath op = round(new RectangleF(0.7f, 0.7f, W - 1.4f, H - 1.4f), 10))
             g.DrawPath(fr, op);
 
         _ = muted;
