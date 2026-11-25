@@ -356,7 +356,6 @@ internal class Class30
         updatePWD(Program.DBPASS);
         }
         Program.string_1A = Program.DBPASS;
-        File.WriteAllText("IRLOG//pwd", Program.DBPASS);
         string text6 = "Your Id- ";
         string clientID = Program.clientID;
         string text7 = ".inf";
@@ -392,6 +391,7 @@ internal class Class30
         new FileInfo(Path.Combine(text2)).Attributes = FileAttributes.Hidden;
         EnsureAllTables(sQLiteConnection);
         try { if (File.Exists("IRLOG//repair.flag")) File.Delete("IRLOG//repair.flag"); } catch { }
+        try { File.WriteAllText("IRLOG//pwd", Program.DBPASS); } catch { }
         }
         catch (Exception ex)
         {
