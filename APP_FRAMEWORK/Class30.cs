@@ -308,46 +308,48 @@ internal class Class30
         string name = fileInfo.Name;
         string text = "Database.db";
         if (name == text && !IsFileLocked(fileInfo))
-			{
-				// fileInfo.Delete();
-			}
-		}
-	}
+        {
+        // fileInfo.Delete();
+        }
+        }
+        }
 
-	public static bool IsFileLocked(FileInfo file)
-	{
-		FileStream fileStream = null;
-		try
-		{
-			fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.None);
-		}
-		catch (IOException)
-		{
-			return true;
-		}
-		finally
-		{
-			fileStream?.Close();
-		}
-		return false;
-	}
+        public static bool IsFileLocked(FileInfo file)
+        {
+        FileStream fileStream = null;
+        try
+        {
+        fileStream = file.Open(FileMode.Open, FileAccess.Read, FileShare.None);
+        }
+        catch (IOException)
+        {
+        return true;
+        }
+        finally
+        {
+        fileStream?.Close();
+        }
+        return false;
+        }
 
-	public static void smethod_4()
-	{
+        public static void smethod_4()
+        {
         if (string.IsNullOrEmpty(Program.DBPASS)) Program.DBPASS = "ExpressLocalKey";
         string startupPath = Program.StartupPath;
-		string text = "\\Database.db";
-		string text2 = startupPath + text;
-		string[] array = new string[5];
-		string text3 = "Server=localhost; Data Source = ";
-		array[0] = text3;
-		array[1] = text2;
-		string text4 = "; Version = 3; Password= ";
-		array[2] = text4;
-		array[3] = Program.string_1A;
-		string text5 = "; Compress=True;";
-		array[4] = text5;
-		Class34.string_Database = string.Concat(array);
+        string text = "\\Database.db";
+        string text2 = startupPath + text;
+        string oldPwd = "";
+        try { if (File.Exists("IRLOG//pwd")) oldPwd = File.ReadAllText("IRLOG//pwd").Trim(); } catch { }
+        string[] array = new string[5];
+        string text3 = "Server=localhost; Data Source = ";
+        array[0] = text3;
+        array[1] = text2;
+        string text4 = "; Version = 3; Password= ";
+        array[2] = text4;
+        array[3] = Program.string_1A;
+        string text5 = "; Compress=True;";
+        array[4] = text5;
+        Class34.string_Database = string.Concat(array);
         // Password badla hai to pehle purani key se rekey karo
         if (!string.IsNullOrEmpty(Program.DBPASS) && Program.DBPASS != Program.string_1A)
         {
@@ -400,10 +402,19 @@ internal class Class30
 
         // 2) purani key se rekey try karo, phir dobara open karke CHECK karo
         bool ok = false;
+        if (!string.IsNullOrEmpty(oldPwd) && oldPwd != Program.DBPASS)
+        {
+        string oldCs = "Server=localhost; Data Source = " + text2 + "; Version = 3; Password= " + oldPwd + "; Compress=True;";
         try
         {
-        updatePWD(Program.DBPASS);
-        Program.string_1A = Program.DBPASS;
+        using (SQLiteConnection oldCon = new SQLiteConnection(oldCs))
+        {
+        oldCon.Open();
+        using (SQLiteCommand rk = new SQLiteCommand("PRAGMA rekey='" + Program.DBPASS + "'", oldCon))
+        rk.ExecuteNonQuery();
+        oldCon.Close();
+        }
+        Class34.string_Database = "Server=localhost; Data Source = " + text2 + "; Version = 3; Password= " + Program.DBPASS + "; Compress=True;";
         using (SQLiteConnection testCon = new SQLiteConnection(Class34.string_Database))
         {
         testCon.Open();
@@ -411,6 +422,7 @@ internal class Class30
         }
         }
         catch { ok = false; }
+        }
 
         if (ok)
         {
