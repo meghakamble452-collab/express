@@ -21,7 +21,8 @@ internal class TLSSession
 	public TLSSession(Dictionary<string, string> headers = null, string TlsClientIdentifier = "chrome_133", int TimeoutSeconds = 60, bool FollowRedirects = false, string proxy = null)
 	{
 		sessionID = Guid.NewGuid().ToString();
-		sessionPayload = new RequestPayload
+        try { System.IO.Directory.CreateDirectory("IRLOG"); System.IO.File.AppendAllText("IRLOG\\tls.log", DateTime.Now.ToString("HH:mm:ss") + " CTOR" + Environment.NewLine); } catch { }
+        sessionPayload = new RequestPayload
 		{
 			TlsClientIdentifier = TlsClientIdentifier,
 			FollowRedirects = FollowRedirects,
@@ -104,6 +105,14 @@ internal class TLSSession
             throw;
         }
         freeMemory(requestResult.Id);
+        try
+        {
+            System.IO.Directory.CreateDirectory("IRLOG");
+            string dbg = requestResult.Body ?? "";
+            if (dbg.Length > 200) dbg = dbg.Substring(0, 200);
+            System.IO.File.AppendAllText("IRLOG\\tls.log", DateTime.Now.ToString("HH:mm:ss") + " " + method + " " + url + " -> " + requestResult.Status + " len=" + (requestResult.Body == null ? -1 : requestResult.Body.Length) + " " + dbg.Replace("\r", " ").Replace("\n", " ") + Environment.NewLine);
+        }
+        catch { }
         return requestResult;
     }
 
