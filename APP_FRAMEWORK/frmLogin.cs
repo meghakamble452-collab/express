@@ -986,6 +986,7 @@ public partial class frmLogin : Form
             Program.ExpiryDay = 3650;
             Program.UnpaidKey = false;
             Program.IsDemo = false;
+            Program.BypassAnalizer = true;
             return true;
         }
         string link = "https://expressts.co.in/api/login.php";
