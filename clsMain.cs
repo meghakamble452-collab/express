@@ -12242,6 +12242,7 @@ internal class clsMain
                                 string status14 = "Checking System Files...";
                                 updTStatus.BeginInvoke(1, status14, tCntrlName, null, null);
                                 updTStatus.BeginInvoke(1, "Checking System Files...", tCntrlName, null, null);
+
                                 this.page = playwright_Automation.StartEdgeAndConnect_new(ref userDataDir00, directlogin, rect, ref this.page);
                                 if (!playwright_Automation.BrowserLoded)
                                 {
@@ -12249,6 +12250,8 @@ internal class clsMain
                                     updTStatus.BeginInvoke(2, status15, tCntrlName, null, null);
                                     return false;
                                 }
+
+                                updTStatus.BeginInvoke(1, "Opening IRCTC Login Page...", tCntrlName, null, null);
                                 Thread.Sleep(500);
                                 Point point = new Point(0, 0);
                                 try
