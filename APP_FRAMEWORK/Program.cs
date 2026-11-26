@@ -143,152 +143,155 @@ public static class Program
 
 	internal static List<string> list_Proxy;
 
-	internal static List<string> list_3;
+	internal static List<string>
+        list_3;
 
-	private static Thread C0AA0;
+        private static Thread C0AA0;
 
-	private static bool bool_1;
+        private static bool bool_1;
 
-	public static frmMain frmMain_0;
+        public static frmMain frmMain_0;
 
-	internal static bool bool_3;
+        internal static bool bool_3;
 
-	internal static bool bool_SystemIP;
+        internal static bool bool_SystemIP;
 
-	internal static int int_4;
+        internal static int int_4;
 
-	internal static string string_bhim_exist;
+        internal static string string_bhim_exist;
 
-	internal static string string_pdf_exist;
+        internal static string string_pdf_exist;
 
-	internal static string string_ocr_exist;
+        internal static string string_ocr_exist;
 
-	internal static string string_Weblogger_exist;
+        internal static string string_Weblogger_exist;
 
-	internal static string string_5;
+        internal static string string_5;
 
-	internal static string string_6;
+        internal static string string_6;
 
-	internal static byte[] response;
+        internal static byte[] response;
 
-	internal static string string_7;
+        internal static string string_7;
 
-	internal static string string_8;
+        internal static string string_8;
 
-	internal static int ExpiryDay;
+        internal static int ExpiryDay;
 
-	internal static string string_9;
+        internal static string string_9;
 
-	internal static string string_10;
+        internal static string string_10;
 
-	internal static string string_11;
+        internal static string string_11;
 
-	internal static bool bool_5;
+        internal static bool bool_5;
 
-	internal static string string_updat_exist;
+        internal static string string_updat_exist;
 
-	internal static string string_13;
+        internal static string string_13;
 
-	internal static string string_14;
+        internal static string string_14;
 
-	internal static string PaidStatus;
+        internal static string PaidStatus;
 
-	internal static string LicStatus;
+        internal static string LicStatus;
 
-	public static string KeyStatus;
+        public static string KeyStatus;
 
-	public static string KeyType;
+        public static string KeyType;
 
-	internal static string string_15;
+        internal static string string_15;
 
-	internal static Process process_0;
+        internal static Process process_0;
 
-	internal static bool bool_6;
+        internal static bool bool_6;
 
-	internal static bool bool_7;
+        internal static bool bool_7;
 
-	internal static bool bool_VSC;
+        internal static bool bool_VSC;
 
-	public static bool token_;
+        public static bool token_;
 
-	public static string NewVersion;
+        public static string NewVersion;
 
-	public static string Localip;
+        public static string VpsVersion;
 
-	public static string ispdetails;
+        public static string Localip;
 
-	public static string ExeName;
+        public static string ispdetails;
 
-	public static string AppName;
+        public static string ExeName;
 
-	internal static bool bool_8;
+        public static string AppName;
 
-	internal static bool bool_UpdtAvl;
+        internal static bool bool_8;
 
-	internal static bool bool_IsFileUpdtAvl;
+        internal static bool bool_UpdtAvl;
 
-	internal static bool bool_IsExeUpdtAvl;
+        internal static bool bool_IsFileUpdtAvl;
 
-	internal static bool BypassAnalizer;
+        internal static bool bool_IsExeUpdtAvl;
 
-	internal static bool OfflineValidation;
+        internal static bool BypassAnalizer;
 
-	public static string Parameters;
+        internal static bool OfflineValidation;
 
-	public static string ErPlce;
+        public static string Parameters;
 
-	public static string exitNAME;
+        public static string ErPlce;
 
-	public static int paidpair;
+        public static string exitNAME;
 
-	public static int unpaidpair;
+        public static int paidpair;
 
-	public static int WindowCount;
+        public static int unpaidpair;
 
-	internal static string FontLink;
+        public static int WindowCount;
 
-	internal static string Nexusjpg;
+        internal static string FontLink;
 
-	internal static string Windowsjpg;
+        internal static string Nexusjpg;
 
-	public static string batchNumber;
+        internal static string Windowsjpg;
 
-	public static bool BookingAllowEdge;
+        public static string batchNumber;
 
-	public static bool BookingAllowChrome;
+        public static bool BookingAllowEdge;
 
-	public static bool BookingAllowChromeBeta;
-    internal static bool stopipblock;
-    internal static string appversion;
+        public static bool BookingAllowChrome;
 
-    public static string BackUpRestoreURL { get; internal set; }
+        public static bool BookingAllowChromeBeta;
+        internal static bool stopipblock;
+        internal static string appversion;
 
-	public static string ProxyUrl { get; internal set; }
+        public static string BackUpRestoreURL { get; internal set; }
 
-	public static bool UnpaidKey { get; internal set; }
+        public static string ProxyUrl { get; internal set; }
 
-	public static bool PaymentIPBloack { get; internal set; }
+        public static bool UnpaidKey { get; internal set; }
 
-	public static bool FixIPBloack { get; internal set; }
+        public static bool PaymentIPBloack { get; internal set; }
 
-	public static bool autoSubmitCaptcha { get; internal set; }
+        public static bool FixIPBloack { get; internal set; }
 
-	public static bool AutofillOCR { get; internal set; }
+        public static bool autoSubmitCaptcha { get; internal set; }
 
-	public static bool AutoFillAPI { get; internal set; }
+        public static bool AutofillOCR { get; internal set; }
 
-	public static bool showCaptcha { get; internal set; }
+        public static bool AutoFillAPI { get; internal set; }
 
-	public static string ValidateResponse { get; internal set; }
+        public static bool showCaptcha { get; internal set; }
 
-	[STAThread]
-	private static void Main(string[] args)
-	{
-		Application.EnableVisualStyles();
-		Application.SetCompatibleTextRenderingDefault(defaultValue: false);
-		Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
-		EmbeddedAssembly.Assembly_Load();
-		if (false && !CheckChromeDriver())
+        public static string ValidateResponse { get; internal set; }
+
+        [STAThread]
+        private static void Main(string[] args)
+        {
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(defaultValue: false);
+        Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+        EmbeddedAssembly.Assembly_Load();
+        if (false && !CheckChromeDriver())
 		{
 			Form owner = new Form
 			{
@@ -1490,14 +1493,14 @@ public static class Program
 
 	private static bool Download_Data()
 	{
-		string path = "HttpClient.dll";
-		if (!File.Exists(path))
-		{
-			frmDownloasData frmDownloasData2 = new frmDownloasData();
-			string pUri = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/HttpClient.dll";
-			string pFile = "HttpClient.dll";
-			frmDownloasData2.startDownload(pUri, pFile);
-		}
+		//string path = "HttpClient.dll";
+		//if (!File.Exists(path))
+		//{
+			//frmDownloasData frmDownloasData2 = new frmDownloasData();
+			//string pUri = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/HttpClient.dll";
+			//string pFile = "HttpClient.dll";
+			//frmDownloasData2.startDownload(pUri, pFile);
+		//}
 		string path2 = "Select.Html.dep";
 		bool flag = !File.Exists(path2);
 		string path3 = "Select.HtmlToPdf.dll";
@@ -1571,7 +1574,8 @@ public static class Program
 				string pDFURL = "https://raw.githubusercontent.com/meghakamble452-collab/masterdata/refs/heads/main/QRCoder.zip";
 				PDFURL = pDFURL;
 			}
-			if (!File.Exists("QRCoder.dll"))
+			// if (!File.Exists("QRCoder.dll"))
+            if (!File.Exists("Select.HtmlToPdf.dll"))
 			{
 				frmDownloasData frmDownloasData3 = new frmDownloasData();
 				string pDFURL2 = PDFURL;

@@ -1345,6 +1345,7 @@ public partial class frmLogin : Form
                                 }
                             }
                             File.AppendAllText("IRLOG\\v.log", appversion + " vs " + Program.NewVersion + Environment.NewLine);
+                            if (!string.IsNullOrEmpty(Program.VpsVersion)) Program.NewVersion = Program.VpsVersion;
                             if (appversion != Program.NewVersion)
                             {
                                 Program.bool_IsExeUpdtAvl = true;
@@ -1625,6 +1626,7 @@ public partial class frmLogin : Form
                 remote = wc.DownloadString("https://expressts.co.in/api/version.txt").Trim();
             }
             if (remote.Length == 0) return;
+            Program.VpsVersion = remote;
             if (remote == appversion) return;
 
             try { File.AppendAllText("IRLOG\\v.log", "VPS-UPD " + appversion + " -> " + remote + Environment.NewLine); } catch { }

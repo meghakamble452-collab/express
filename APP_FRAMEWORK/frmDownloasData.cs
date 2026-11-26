@@ -420,6 +420,22 @@ internal class frmDownloasData : Form
 
     private void method_2(object sender, AsyncCompletedEventArgs e)
     {
+        if (e.Error != null || e.Cancelled)
+        {
+            try
+            {
+                string logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Express");
+                Directory.CreateDirectory(logDir);
+                File.AppendAllText(Path.Combine(logDir, "download.log"),
+                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  FAIL " + URLL + "  " +
+                    (e.Error != null ? e.Error.Message : "cancelled") + Environment.NewLine);
+            }
+            catch { }
+            try { Close(); } catch { }
+            return;
+        }
+
+
         if (e.Error == null && !e.Cancelled)
         {
             try
