@@ -52853,6 +52853,7 @@ internal class clsMain
                     break;
                 }
                 JObject jObject = JObject.Parse(result2);
+                try { Directory.CreateDirectory("IRLOG"); File.AppendAllText("IRLOG\\pw.log", DateTime.Now.ToString("HH:mm:ss") + " " + url + " st=" + jObject["status"] + " " + (jObject["body"] == null ? "" : jObject["body"].ToString().Substring(0, Math.Min(250, jObject["body"].ToString().Length))) + Environment.NewLine); } catch { }
                 string propertyName = "body";
                 if (jObject[propertyName] != null)
                 {
