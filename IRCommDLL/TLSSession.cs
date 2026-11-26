@@ -75,8 +75,10 @@ internal class TLSSession
                         req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
                         req.KeepAlive = true;
                         req.Proxy = BuildProxy(sessionPayload.ProxyUrl);
+            CookieContainer cookieJar = new CookieContainer();
+            req.CookieContainer = cookieJar;
 
-                        if (headers != null)
+            if (headers != null)
                         {
                                 foreach (KeyValuePair<string, string> h in headers)
                                 {
@@ -87,16 +89,33 @@ internal class TLSSession
                                         }
                                         catch
                                         {
-                                                switch (h.Key.ToLowerInvariant())
-                                                {
-                                                        case "user-agent": req.UserAgent = h.Value; break;
-                                                        case "accept": req.Accept = h.Value; break;
-                                                        case "referer": req.Referer = h.Value; break;
-                                                        case "content-type": req.ContentType = h.Value; break;
-                                                        case "host": req.Host = h.Value; break;
-                                                        case "connection": req.KeepAlive = h.Value.ToLowerInvariant().Contains("keep-alive"); break;
-                                                }
-                                        }
+                        switch (h.Key.ToLowerInvariant())
+                        {
+                            case "user-agent": req.UserAgent = h.Value; break;
+                            case "accept": req.Accept = h.Value; break;
+                            case "referer": req.Referer = h.Value; break;
+                            case "content-type": req.ContentType = h.Value; break;
+                            case "host": req.Host = h.Value; break;
+                            case "connection": req.KeepAlive = h.Value.ToLowerInvariant().Contains("keep-alive"); break;
+                            case "cookie":
+                                foreach (string ck in h.Value.Split(';'))
+                                {
+                                    string pair = ck.Trim();
+                                    int eqi = pair.IndexOf('=');
+                                    if (eqi > 0)
+                                    {
+                                        try { cookieJar.Add(new Uri(url), new Cookie(pair.Substring(0, eqi).Trim(), pair.Substring(eqi + 1).Trim())); }
+                                        catch { }
+                                    }
+                                }
+                                break;
+                            case "accept-encoding": break;
+                            case "content-length": break;
+                            case "expect": break;
+                            case "date": break;
+                            case "if-modified-since": break;
+                        }
+                    }
                                 }
                         }
 
