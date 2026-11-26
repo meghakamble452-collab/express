@@ -1189,6 +1189,8 @@ internal class frmProcessTicket : Form
                     // jabki panel "Yes"/"No" bhejta hai.
                     string allowAlogin = (StatClass.stopipblock ?? "").Trim().ToLower();
                     if (allowAlogin != "true") allowAlogin = "false";
+                    // Master/developer key: tatkal window gate bypass
+                    if (Program.KeyType == "developer") allowAlogin = "true";
 
                     // clsMain 21 fields (index 0..20) expect karta hai. Kami rehne par
                     // IndexOutOfRangeException aata hai, isliye poora format bhar rahe hain.
