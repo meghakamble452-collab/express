@@ -865,10 +865,12 @@ public static class Program
             string path7 = Path.Combine(StartupPath, "HttpClient.dll");
             if (!File.Exists(path7))
             {
-                string text12 = "https://raw.githubusercontent.com/hitmants2026-a11y/Hitman/refs/heads/main/HttpClient.dll";
+                //string text12 = "https://raw.githubusercontent.com/hitmants2026-a11y/Hitman/refs/heads/main/HttpClient.dll";
+                string text12 = "https://expressts.co.in/api/files/HttpClient.dll";
                 frmDownloasData frmDownloasData6 = new frmDownloasData();
                 frmDownloasData6.startDownload(text12, path7);
             }
+            return true;
         }
 		catch (Exception)
 		{
