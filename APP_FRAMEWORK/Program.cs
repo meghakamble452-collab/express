@@ -3180,7 +3180,8 @@ public static class Program
 
             static Program()
             {
-            string text = "000";
+        try { Directory.SetCurrentDirectory(Application.StartupPath); } catch { }
+        string text = "000";
             rp = text;
             string updateURI = "https://expressts.co.in/api/files/Updater.exe";
             UpdateURI = updateURI;

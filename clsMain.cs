@@ -52848,6 +52848,7 @@ internal class clsMain
                 string text2 = "async (args) => {\r\n    const resp = await fetch(args.url, {\r\n        method:'POST',\r\n        headers: args.headers,\r\n        body: args.body,\r\n        credentials:'include'\r\n    });\r\n\r\n    const text = await resp.text();\r\n\r\n    let headersReceived = {};\r\n    resp.headers.forEach((v,k)=>{\r\n        headersReceived[k] = v;\r\n    });\r\n\r\n    // Yahan JSON.stringify laga diya, taaki C# ko ek simple string mile\r\n    return JSON.stringify({\r\n        status: resp.status,\r\n        body: text,\r\n        headers: headersReceived\r\n    });\r\n}";
                 js = text2;
                 string result2 = Task.Run(() => page.EvaluateAsync<string>(js, new { url, headers, body })).GetAwaiter().GetResult();
+                try { Directory.CreateDirectory("IRLOG"); File.AppendAllText("IRLOG\\pw.log", DateTime.Now.ToString("HH:mm:ss") + " " + url + " raw=" + (result2 == null ? "NULL" : result2.Length.ToString()) + Environment.NewLine); } catch { }
                 if (string.IsNullOrEmpty(result2))
                 {
                     break;
