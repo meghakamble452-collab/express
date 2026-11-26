@@ -1190,6 +1190,7 @@ internal class frmSerch_Train : Form
     private LinkLabel novaPressLink;
     private bool novaPressBusy, novaPressClicked;
     private bool novaCloseHot, novaCloseDown;
+    private ExpressCloseSticker closeSticker;
 
     private static readonly string[] NV_QUOTA_NAMES = { "Tatkal", "Premium Tatkal", "General", "Ladies", "GN Premium" };
 
@@ -1258,6 +1259,12 @@ internal class frmSerch_Train : Form
             btnClose.MouseLeave += delegate { novaCloseHot = false; novaCloseDown = false; btnClose.Invalidate(); };
             btnClose.MouseDown += delegate { novaCloseDown = true; btnClose.Invalidate(); };
             btnClose.MouseUp += delegate { novaCloseDown = false; btnClose.Invalidate(); };
+
+            // Close is shown as a "sticker" badge on the window's top-right corner (half outside the popup).
+            // The in-header button is only hidden; the sticker raises its own Click (same handlers, same sender).
+            btnClose.Visible = false;
+            if (closeSticker == null)
+                closeSticker = ExpressCloseSticker.Attach(this, delegate { if (!btnClose.IsDisposed) InvokeOnClick(btnClose, EventArgs.Empty); });
 
             // ---- toolbar card (quota / legend / fare / select) ----
             grpOpen.FlatStyle = FlatStyle.Flat;
@@ -1412,7 +1419,7 @@ internal class frmSerch_Train : Form
             pnlHeader.SetBounds(0, 0, W, 46);
             pnlHeader.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             label2.SetBounds(48, 0, 150, 43);
-            btnClose.SetBounds(W - 30 - 12, (43 - 26) / 2, 30, 26);
+            btnClose.SetBounds(W - CB_BOX, CB_TOP, CB_BOX, CB_BOX);   // round badge patched on the top-right corner
             btnClose.BringToFront();
 
             // toolbar
@@ -1573,6 +1580,7 @@ internal class frmSerch_Train : Form
                     novaPressLink = lnk;
                     novaPressBusy = C1AA0;
                     novaPressClicked = false;
+                    NovaSetLoadLink(lnk);   // visual only: inline loader shows on this pill
                 };
                 lnk.MouseUp += delegate (object s, MouseEventArgs me)
                 {
@@ -1640,6 +1648,7 @@ internal class frmSerch_Train : Form
         Rectangle r = l.ClientRectangle;
         bool hotRow = row == novaHotRow;
         Color bg = hotRow ? NV_Hover : (row % 2 == 0 ? NV_Card : NV_Alt);
+        if (NovaIsLoadingRow(row)) bg = Color.FromArgb(255, 249, 240);   // subtle tint on the row being checked
         using (SolidBrush b = new SolidBrush(bg)) g.FillRectangle(b, r);
         using (Pen p = new Pen(NV_Row, 1f)) g.DrawLine(p, 0, r.Height - 1, r.Width, r.Height - 1);
 
@@ -1727,6 +1736,11 @@ internal class frmSerch_Train : Form
             bool sel = lnk == novaSelLink;
             bool hot = lnk == novaHotCell;
             Rectangle pill = new Rectangle(2, (r.Height - 22) / 2, r.Width - 5, 22);
+            if (novaSeatBusy && lnk == novaLoadLink)
+            {
+                NovaDrawLoadingPill(g, pill, t);
+                return;
+            }
             Color fill = sel ? NV_Orange : (hot ? NV_Link : Color.FromArgb(238, 245, 255));
             Color line = sel ? NovaMix(NV_Orange, Color.Black, 0.10f) : (hot ? NV_Link : Color.FromArgb(190, 212, 244));
             Color fg = sel || hot ? Color.White : NV_Link;
@@ -2010,35 +2024,66 @@ internal class frmSerch_Train : Form
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-        Color top = Color.FromArgb(239, 68, 68), bot = Color.FromArgb(205, 32, 38);
-        if (novaCloseDown) { top = Color.FromArgb(185, 28, 28); bot = Color.FromArgb(160, 20, 24); }
-        else if (novaCloseHot) { top = Color.FromArgb(248, 100, 100); bot = Color.FromArgb(226, 48, 52); }
+        CbDrawCloseBadge(g, novaCloseHot, novaCloseDown);
+    }
 
-        Rectangle r = new Rectangle(1, 1, c.Width - 3, c.Height - 3);
-        if (novaCloseDown) r.Offset(0, 1);
-        if (r.Width < 4 || r.Height < 4) return;
-        using (GraphicsPath p = NovaPath(r, 7))
+    // ---- round red close badge, patched on the popup's top-right corner ----
+    // Control is CB_BOX square; circle (30px, 32px on hover) centred at (CB_C, CB_C) leaves room for the shadow.
+    private const int CB_BOX = 36, CB_TOP = 2;
+    private const float CB_C = 17f;
+
+    private static void CbDrawCloseBadge(Graphics g, bool hot, bool down)
+    {
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+        float R = hot && !down ? 16f : 15f;
+        float cx = CB_C, cy = CB_C + (down ? 1f : 0f);
+
+        if (!down)
         {
-            using (LinearGradientBrush b = new LinearGradientBrush(r, top, bot, LinearGradientMode.Vertical)) g.FillPath(b, p);
-            using (Pen edge = new Pen(Color.FromArgb(90, 255, 255, 255), 1f)) g.DrawPath(edge, p);
+            using (SolidBrush s1 = new SolidBrush(Color.FromArgb(28, 0, 0, 0)))
+                g.FillEllipse(s1, cx - R - 1.5f, cy - R + 0.5f, (R + 1.5f) * 2, (R + 1.5f) * 2);
+            using (SolidBrush s2 = new SolidBrush(Color.FromArgb(55, 60, 0, 0)))
+                g.FillEllipse(s2, cx - R, cy - R + 1.6f, R * 2, R * 2);
         }
-        float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f, a = 4.5f;
-        using (Pen x = new Pen(Color.White, 2f))
+
+        RectangleF disc = new RectangleF(cx - R, cy - R, R * 2, R * 2);
+        Color ring = hot && !down ? Color.FromArgb(220, 38, 38) : Color.White;
+        Color glyph = hot && !down ? Color.FromArgb(220, 38, 38) : Color.White;
+        if (down)
+            using (SolidBrush b = new SolidBrush(Color.FromArgb(153, 27, 27))) g.FillEllipse(b, disc);
+        else if (hot)
+            using (SolidBrush b = new SolidBrush(Color.White)) g.FillEllipse(b, disc);
+        else
+            using (LinearGradientBrush b = new LinearGradientBrush(disc, Color.FromArgb(239, 68, 68), Color.FromArgb(220, 38, 38), LinearGradientMode.Vertical))
+                g.FillEllipse(b, disc);
+
+        using (Pen p = new Pen(ring, 2f))
+            g.DrawEllipse(p, cx - R + 1f, cy - R + 1f, R * 2 - 2f, R * 2 - 2f);
+
+        float a = R * 0.34f;
+        using (Pen x = new Pen(glyph, 2.6f))
         {
-            x.StartCap = LineCap.Round; x.EndCap = LineCap.Round;
+            x.StartCap = LineCap.Round;
+            x.EndCap = LineCap.Round;
             g.DrawLine(x, cx - a, cy - a, cx + a, cy + a);
             g.DrawLine(x, cx + a, cy - a, cx - a, cy + a);
         }
     }
 
     // ---------------- "Checking seats..." loader ----------------
+    // GetSeatAvlPic stays the logic's "checking" flag (method_6 shows it, method_5 hides it from the
+    // seat thread). It is parked off-screen; while it is visible the class pill the user clicked is
+    // drawn as an inline loader. Nothing here blocks input - every other control stays usable.
+
+    private LinkLabel novaLoadLink;          // pill that was clicked last (visual only)
+    private bool novaSeatBusy;               // mirror of GetSeatAvlPic.Visible on the UI thread
+    private DateTime novaSeatStart;
 
     private void InitializeSeatAvailabilityLoader()
     {
         if (GetSeatAvlPic == null) return;
 
-        // GetSeatAvlPic stays the logic's "checking" flag (method_6 shows it, method_5 hides it).
-        // It is parked off-screen; its Visible state drives a centred overlay over a blurred page.
         GetSeatAvlPic.Image = null;
         GetSeatAvlPic.BackColor = NV_Card;
         GetSeatAvlPic.Paint -= GetSeatAvlPic_LoaderPaint;
@@ -2046,17 +2091,12 @@ internal class frmSerch_Train : Form
         GetSeatAvlPic.VisibleChanged -= NovaSeatFlagChanged;
         GetSeatAvlPic.VisibleChanged += NovaSeatFlagChanged;
 
-        novaSeatOv = new NovaSeatOverlay();
-        novaSeatOv.Visible = false;
-        novaSeatOv.Paint += NovaSeatOverlayPaint;
-        Controls.Add(novaSeatOv);
-
         byteNovaSeatLoaderTimer = new System.Windows.Forms.Timer();
-        byteNovaSeatLoaderTimer.Interval = 16;
+        byteNovaSeatLoaderTimer.Interval = 33;   // ~30fps, repaints only the loading pill
         byteNovaSeatLoaderTimer.Tick += delegate
         {
-            if (novaSeatOv != null && !novaSeatOv.IsDisposed && novaSeatOv.Visible)
-                novaSeatOv.Invalidate(novaSeatCard);
+            if (novaSeatBusy && novaLoadLink != null && !novaLoadLink.IsDisposed)
+                novaLoadLink.Invalidate();
             else
                 byteNovaSeatLoaderTimer.Stop();
         };
@@ -2064,7 +2104,6 @@ internal class frmSerch_Train : Form
         {
             byteNovaSeatLoaderTimer.Stop();
             byteNovaSeatLoaderTimer.Dispose();
-            if (novaSeatBlur != null) { novaSeatBlur.Dispose(); novaSeatBlur = null; }
         };
     }
 
@@ -2074,23 +2113,34 @@ internal class frmSerch_Train : Form
         e.Graphics.Clear(NV_Card);
     }
 
-    // ---- centred overlay ----
-
-    private sealed class NovaSeatOverlay : Control
+    // visual only: remember which pill was pressed so the loader shows on it
+    private void NovaSetLoadLink(LinkLabel lnk)
     {
-        public NovaSeatOverlay()
+        if (lnk == novaLoadLink) return;
+        LinkLabel old = novaLoadLink;
+        novaLoadLink = lnk;
+        if (novaSeatBusy)
         {
-            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer |
-                     ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
-            TabStop = false;
-            Cursor = Cursors.WaitCursor;
+            NovaInvalidateRowOf(old);
+            NovaInvalidateRowOf(lnk);
         }
     }
 
-    private NovaSeatOverlay novaSeatOv;
-    private Bitmap novaSeatBlur;
-    private Rectangle novaSeatCard;
-    private DateTime novaSeatStart;
+    private void NovaInvalidateRowOf(Control cell)
+    {
+        if (cell == null || cell.IsDisposed) return;
+        int row;
+        List<Control> list;
+        if (novaCellRow.TryGetValue(cell, out row) && novaRows.TryGetValue(row, out list))
+        {
+            foreach (Control c in list)
+                if (!c.IsDisposed) c.Invalidate();
+        }
+        else
+        {
+            cell.Invalidate();
+        }
+    }
 
     private void NovaSeatFlagChanged(object sender, EventArgs e)
     {
@@ -2106,177 +2156,88 @@ internal class frmSerch_Train : Form
 
     private void NovaSeatSync()
     {
-        if (IsDisposed || novaSeatOv == null || novaSeatOv.IsDisposed) return;
-        bool show = GetSeatAvlPic != null && GetSeatAvlPic.Visible;
-        if (show == novaSeatOv.Visible) return;
-
-        if (show)
+        if (IsDisposed) return;
+        bool busy = GetSeatAvlPic != null && GetSeatAvlPic.Visible;
+        if (busy == novaSeatBusy) return;
+        novaSeatBusy = busy;
+        if (busy)
         {
-            Rectangle cr = ClientRectangle;
-            if (cr.Width < 20 || cr.Height < 20) return;
-            if (novaSeatBlur != null) { novaSeatBlur.Dispose(); novaSeatBlur = null; }
-            novaSeatBlur = NovaSeatSnapshotBlur(cr.Size);
-
-            int cw = Math.Min(340, cr.Width - 40), ch = 132;
-            novaSeatCard = new Rectangle((cr.Width - cw) / 2 - 8, (cr.Height - ch) / 2 - 8, cw + 16, ch + 18);
-
-            novaSeatOv.Bounds = cr;
-            // keep the header close button usable (not covered, not blurred)
-            Region reg = new Region(new Rectangle(Point.Empty, cr.Size));
-            if (btnClose != null && btnClose.Visible)
-            {
-                Rectangle cb = RectangleToClient(btnClose.RectangleToScreen(btnClose.ClientRectangle));
-                cb.Inflate(2, 2);
-                reg.Exclude(cb);
-            }
-            Region old = novaSeatOv.Region;
-            novaSeatOv.Region = reg;
-            if (old != null) old.Dispose();
-
             novaSeatStart = DateTime.Now;
-            novaSeatOv.Visible = true;
-            novaSeatOv.BringToFront();
-            if (btnClose != null) btnClose.BringToFront();
             byteNovaSeatLoaderTimer.Start();
         }
         else
         {
             byteNovaSeatLoaderTimer.Stop();
-            novaSeatOv.Visible = false;
-            if (novaSeatBlur != null) { novaSeatBlur.Dispose(); novaSeatBlur = null; }
         }
+        NovaInvalidateRowOf(novaLoadLink);   // row tint on/off + pill back to normal
     }
 
-    private Bitmap NovaSeatSnapshotBlur(Size sz)
+    private bool NovaIsLoadingRow(int row)
     {
-        // Snapshot of the form itself (independent of other windows on screen); screen grab as fallback.
-        Bitmap shot = new Bitmap(sz.Width, sz.Height);
-        bool ok = false;
-        try
-        {
-            using (Bitmap full = new Bitmap(Math.Max(1, Width), Math.Max(1, Height)))
-            {
-                DrawToBitmap(full, new Rectangle(0, 0, full.Width, full.Height));
-                Point off = PointToScreen(Point.Empty);
-                off.Offset(-Left, -Top);
-                using (Graphics g = Graphics.FromImage(shot))
-                    g.DrawImage(full, new Rectangle(Point.Empty, sz), new Rectangle(off, sz), GraphicsUnit.Pixel);
-                ok = true;
-            }
-        }
-        catch { }
-        if (!ok)
-        {
-            try
-            {
-                using (Graphics g = Graphics.FromImage(shot))
-                    g.CopyFromScreen(PointToScreen(Point.Empty), Point.Empty, sz);
-            }
-            catch { }
-        }
-
-        // downscale -> upscale twice = soft blur
-        int sw = Math.Max(1, sz.Width / 7), sh = Math.Max(1, sz.Height / 7);
-        Bitmap blurred = new Bitmap(sz.Width, sz.Height);
-        using (Bitmap small = new Bitmap(sw, sh))
-        using (Bitmap mid = new Bitmap(Math.Max(1, sz.Width / 3), Math.Max(1, sz.Height / 3)))
-        {
-            using (Graphics g = Graphics.FromImage(small))
-            {
-                g.InterpolationMode = InterpolationMode.HighQualityBilinear;
-                g.DrawImage(shot, new Rectangle(0, 0, sw, sh));
-            }
-            using (Graphics g = Graphics.FromImage(mid))
-            {
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                g.DrawImage(small, new Rectangle(0, 0, mid.Width, mid.Height));
-            }
-            using (Graphics g = Graphics.FromImage(blurred))
-            {
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                g.DrawImage(mid, new Rectangle(0, 0, sz.Width, sz.Height));
-                using (SolidBrush w = new SolidBrush(Color.FromArgb(70, 255, 255, 255)))
-                    g.FillRectangle(w, 0, 0, sz.Width, sz.Height);
-                using (SolidBrush n = new SolidBrush(Color.FromArgb(46, 15, 42, 92)))
-                    g.FillRectangle(n, 0, 0, sz.Width, sz.Height);
-            }
-        }
-        shot.Dispose();
-        return blurred;
+        int r;
+        return novaSeatBusy && novaLoadLink != null && !novaLoadLink.IsDisposed &&
+               novaCellRow.TryGetValue(novaLoadLink, out r) && r == row;
     }
 
-    private void NovaSeatOverlayPaint(object sender, PaintEventArgs e)
+    // inline loader drawn inside the clicked class pill
+    private void NovaDrawLoadingPill(Graphics g, Rectangle pill, string text)
     {
-        Graphics g = e.Graphics;
-        Control ov = (Control)sender;
-        if (novaSeatBlur != null) g.DrawImageUnscaled(novaSeatBlur, 0, 0);
-        else using (SolidBrush b = new SolidBrush(Color.FromArgb(225, 232, 242))) g.FillRectangle(b, ov.ClientRectangle);
-
-        g.SmoothingMode = SmoothingMode.AntiAlias;
         double t = (DateTime.Now - novaSeatStart).TotalSeconds;
-        Color orange = Color.FromArgb(245, 146, 28), blue = Color.FromArgb(37, 99, 235);
+        float pulse = (float)(0.5 + 0.5 * Math.Sin(t * Math.PI * 2 * 1.1));   // 0..1
 
-        // frosted card (novaSeatCard includes an 8px margin for the shadow)
-        Rectangle card = new Rectangle(novaSeatCard.X + 8, novaSeatCard.Y + 8, novaSeatCard.Width - 16, novaSeatCard.Height - 18);
-        for (int i = 3; i >= 1; i--)
-            using (GraphicsPath sp = NovaPath(new Rectangle(card.X - i, card.Y - i + 4, card.Width + i * 2, card.Height + i * 2), 16 + i))
-            using (SolidBrush sb = new SolidBrush(Color.FromArgb(14, 15, 42, 92)))
-                g.FillPath(sb, sp);
-        using (GraphicsPath cp = NovaPath(card, 16))
+        using (GraphicsPath pp = NovaPath(pill, 7))
         {
-            using (SolidBrush cb = new SolidBrush(Color.FromArgb(246, 255, 255, 255))) g.FillPath(cb, cp);
-            using (Pen pen = new Pen(Color.FromArgb(214, 224, 240), 1f)) g.DrawPath(pen, cp);
-            // blue -> bhagwa top strip
+            // soft bhagwa glow + pulsing outline
+            using (Pen glow = new Pen(Color.FromArgb((int)(40 + 70 * pulse), NV_Orange), 3.5f))
+                g.DrawPath(glow, pp);
+            using (SolidBrush pb = new SolidBrush(Color.FromArgb(255, 243, 228)))
+                g.FillPath(pb, pp);
+            using (Pen pen = new Pen(NovaMix(NV_Orange, Color.White, 0.35f * (1 - pulse)), 1.4f))
+                g.DrawPath(pen, pp);
+
+            // moving shimmer across the pill
             Region oldClip = g.Clip;
-            g.SetClip(cp, CombineMode.Intersect);
-            using (LinearGradientBrush tb = new LinearGradientBrush(new Rectangle(card.X, card.Y, card.Width, 4), blue, orange, 0f))
-                g.FillRectangle(tb, card.X, card.Y, card.Width, 4);
+            g.SetClip(pp, CombineMode.Intersect);
+            double p = (t * 0.9) % 1.0;
+            int sw = Math.Max(8, pill.Width / 2);
+            int sx = pill.X - sw + (int)((pill.Width + sw) * p);
+            Rectangle sr = new Rectangle(sx, pill.Y, sw, pill.Height);
+            using (LinearGradientBrush sb = new LinearGradientBrush(new Rectangle(sr.X - 1, sr.Y, sr.Width + 2, sr.Height),
+                Color.FromArgb(0, 255, 255, 255), Color.FromArgb(0, 255, 255, 255), 0f))
+            {
+                ColorBlend cb = new ColorBlend();
+                cb.Positions = new[] { 0f, 0.5f, 1f };
+                cb.Colors = new[] { Color.FromArgb(0, 255, 255, 255), Color.FromArgb(150, 255, 255, 255), Color.FromArgb(0, 255, 255, 255) };
+                sb.InterpolationColors = cb;
+                g.FillRectangle(sb, sr);
+            }
             g.Clip = oldClip;
         }
 
-        // three bouncing dots (bhagwa, blue, bhagwa)
-        int dotsY = card.Y + 34;
-        int cx = card.X + card.Width / 2;
-        Color[] dc = { orange, blue, orange };
-        for (int i = 0; i < 3; i++)
+        // class text fades softly, three tiny bouncing dots sit under it
+        int fade = (int)(110 + 90 * pulse);
+        using (Font f = new Font("Segoe UI Semibold", 7.5F, FontStyle.Bold))
         {
-            double ph = t * 2 * Math.PI * 1.3 - i * 0.7;
-            float lift = (float)Math.Max(0, Math.Sin(ph)) * 9f;
-            float d = 10f;
-            float dx = cx + (i - 1) * 18 - d / 2;
-            using (SolidBrush sh = new SolidBrush(Color.FromArgb(30, 15, 42, 92)))
-                g.FillEllipse(sh, dx + 1 + lift * 0.1f, dotsY + d - 1, d - 2 - lift * 0.15f, 3);
-            using (SolidBrush db = new SolidBrush(dc[i]))
-                g.FillEllipse(db, dx, dotsY - lift, d, d);
-        }
+            const TextFormatFlags C = TextFormatFlags.HorizontalCenter | TextFormatFlags.Top |
+                                      TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine;
+            Size ts = TextRenderer.MeasureText(g, text, f, new Size(200, 40), C);
+            // text + 1px gap + dots, centred as one block inside the pill
+            int block = ts.Height + 1 + 4;
+            int ty = pill.Y + Math.Max(2, (pill.Height - block) / 2 + 1);
+            TextRenderer.DrawText(g, text, f, new Rectangle(pill.X, ty, pill.Width, ts.Height),
+                NovaMix(Color.FromArgb(176, 92, 6), Color.FromArgb(255, 243, 228), 1f - fade / 255f), C);
 
-        // title + message
-        using (Font tf = new Font("Segoe UI Semibold", 11.5F))
-            TextRenderer.DrawText(g, "Checking seats...", tf, new Rectangle(card.X + 10, card.Y + 50, card.Width - 20, 24),
-                Color.FromArgb(15, 42, 92), TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
-        using (Font mf = new Font("Segoe UI", 8.75F))
-            TextRenderer.DrawText(g, "Fetching live seat availability, please wait", mf,
-                new Rectangle(card.X + 10, card.Y + 74, card.Width - 20, 18),
-                Color.FromArgb(100, 116, 139), TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
-                TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
-
-        // indeterminate sliding gradient bar
-        Rectangle track = new Rectangle(card.X + 26, card.Bottom - 22, card.Width - 52, 6);
-        using (GraphicsPath tp = NovaPath(track, 3))
-        {
-            using (SolidBrush tb = new SolidBrush(Color.FromArgb(229, 236, 246))) g.FillPath(tb, tp);
-            Region oldClip = g.Clip;
-            g.SetClip(tp, CombineMode.Intersect);
-            double p = (t * 0.65) % 1.0;
-            int segW = (int)(track.Width * 0.38);
-            int sx = track.X - segW + (int)((track.Width + segW) * (p < 0.5 ? 2 * p * p : 1 - Math.Pow(-2 * p + 2, 2) / 2));
-            Rectangle seg = new Rectangle(sx, track.Y, segW, track.Height);
-            using (LinearGradientBrush sb = new LinearGradientBrush(new Rectangle(seg.X - 1, seg.Y, seg.Width + 2, seg.Height), blue, orange, 0f))
-            using (GraphicsPath segp = NovaPath(seg, 3))
-                g.FillPath(sb, segp);
-            g.Clip = oldClip;
+            float d = 3.2f, gap = 2.6f;
+            float total = d * 3 + gap * 2;
+            float dx0 = pill.X + (pill.Width - total) / 2f;
+            float baseY = Math.Min(pill.Bottom - d - 2.5f, ty + ts.Height + 1f);
+            for (int i = 0; i < 3; i++)
+            {
+                double ph = t * Math.PI * 2 * 1.6 - i * 0.75;
+                float lift = (float)Math.Max(0, Math.Sin(ph)) * 2.2f;
+                using (SolidBrush db = new SolidBrush(i == 1 ? NV_Link : NV_Orange))
+                    g.FillEllipse(db, dx0 + i * (d + gap), baseY - lift, d, d);
+            }
         }
     }
 

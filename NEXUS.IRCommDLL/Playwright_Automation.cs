@@ -1666,13 +1666,18 @@ internal class Playwright_Automation
                 }
                 Thread.Sleep(1000);
                 Convert.ToBase64String(Encoding.UTF8.GetBytes(blankHtml));
+
+                // purani Edge window / restored session clear
+                try { KillAllEdgeProcesses(); } catch { }
+
                 string edgePath = GetEdgePath();
                 string format = "--remote-debugging-port={0} ";
                 string text3 = string.Format(format, freeTcpPort);
                 string text4 = "--remote-debugging-address=127.0.0.1 --user-data-dir=\"";
                 string text5 = userDataDir00;
-                string text6 = "\" --no-first-run --no-default-browser-check --disable-save-password-bubble --disable-features=PasswordManagerEnabled --disable-sync --password-store=basic --disable-features=msEdgeSync --app=https://www.irctc.co.in/nget/assets/images/logo.png";
-                string text7 = text3 + text4 + text5 + text6;
+                string text6 = "\" --no-first-run --no-default-browser-check --disable-session-crashed-bubble --disable-save-password-bubble --disable-infobars --disable-sync --password-store=basic --disable-features=msEdgeSync,PasswordManagerEnabled --app=about:blank";
+                int offsetY = random.Next(900, 1550);
+                string text7 = text3 + text4 + text5 + text6 + " --window-position=" + rect.X + "," + (rect.Y + offsetY);
                 if (num == 0)
                 {
                     string text8 = "/c start \"\" \"";
@@ -1728,13 +1733,14 @@ internal class Playwright_Automation
                 string format2 = "http://127.0.0.1:{0}";
                 IBrowserContext val = chromium.ConnectOverCDPAsync(string.Format(format2, freeTcpPort), (BrowserTypeConnectOverCDPOptions)null).GetAwaiter().GetResult()
                     .Contexts[0];
-                if (val.Pages.Count <= 0)
+                // hamesha fresh tab; purane restored tab band karo
+                page = val.NewPageAsync().GetAwaiter().GetResult();
+                foreach (IPage oldPg in val.Pages.ToList())
                 {
-                    page = val.NewPageAsync().GetAwaiter().GetResult();
-                }
-                else
-                {
-                    page = val.Pages[0];
+                    if (oldPg != page)
+                    {
+                        try { oldPg.CloseAsync().GetAwaiter().GetResult(); } catch { }
+                    }
                 }
                 IntPtr intPtr = EdgeTaskbarHider.FindEdgeWindowByUserDataDir(userDataDir00);
                 if (intPtr != IntPtr.Zero)
@@ -1764,7 +1770,7 @@ internal class Playwright_Automation
                         string key3 = "left";
                         dictionary2.Add(key3, x);
                         string key4 = "top";
-                        dictionary2.Add(key4, y);
+                        dictionary2.Add(key4, y + offsetY);
                         string key5 = "width";
                         dictionary2.Add(key5, width);
                         string key6 = "height";
@@ -1801,8 +1807,8 @@ internal class Playwright_Automation
                     Console.WriteLine("URL : " + url);
                     Console.WriteLine("Status : " + status);
                 }
-                string result4 = val2.ContentAsync().GetAwaiter().GetResult();
-                if (!result4.Contains("Book train tickets online instantly on IRCTC") && !result4.Contains("DOWNTIME MESSAGE"))
+                string result4 = (val2.ContentAsync().GetAwaiter().GetResult() ?? "").ToLowerInvariant();
+                if (!result4.Contains("book train tickets online instantly on irctc") && !result4.Contains("downtime message"))
                 {
                     continue;
                 }

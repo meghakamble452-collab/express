@@ -2547,40 +2547,59 @@ internal class TCntrl : UserControl
 
         // ---- status strip (same rectangle the blink timer repaints) ----
         bool statusBlinking = timer_1 != null && timer_1.Enabled;
-        // Bhagwa strip; while blinking it alternates between deep and bright bhagwa.
-        bool brightPhase = statusBlinking && !_byteNovaStatusBlinkOn;
-        Color sL = brightPhase ? Color.FromArgb(251, 166, 60) : Color.FromArgb(214, 96, 4);
-        Color sR = brightPhase ? Color.FromArgb(253, 196, 112) : Color.FromArgb(247, 152, 38);
+        // Dark glossy LED panel like the header clock: subtle bezel, glowing bhagwa DS-Digital text.
+        // While blinking, the "hot" phase turns the bezel bhagwa with an outer glow and brightens the text glow.
+        bool hotPhase = statusBlinking && !_byteNovaStatusBlinkOn;
         Rectangle sr = XT_STATUS;
-        XtFill(g, new RectangleF(sr.X, sr.Y + 1.5f, sr.Width - 1, sr.Height - 1), 9, Color.FromArgb(70, 194, 84, 0), Color.Empty);
-        using (GraphicsPath sp = XtRound(new RectangleF(sr.X, sr.Y, sr.Width - 1, sr.Height - 1), 9))
+        RectangleF srf = new RectangleF(sr.X, sr.Y, sr.Width - 1, sr.Height - 1);
+        // soft shadow (fits inside XtStatusRepaintRect)
+        XtFill(g, new RectangleF(srf.X - 1, srf.Y + 1, srf.Width + 2, srf.Height + 2.5f), 10, Color.FromArgb(30, 15, 23, 42), Color.Empty);
+        XtFill(g, new RectangleF(srf.X, srf.Y + 1.5f, srf.Width, srf.Height), 9, Color.FromArgb(55, 15, 23, 42), Color.Empty);
+        if (hotPhase)   // bhagwa outer glow around the bezel
+            using (GraphicsPath gp = XtRound(RectangleF.Inflate(srf, 1.5f, 1.5f), 10.5f))
+            using (Pen glowPen = new Pen(Color.FromArgb(110, 245, 146, 28), 3F))
+                g.DrawPath(glowPen, gp);
+        using (GraphicsPath body = XtRound(srf, 9))
         {
-            using (LinearGradientBrush sb = new LinearGradientBrush(sr, sL, sR, LinearGradientMode.Horizontal))
-                g.FillPath(sb, sp);
-            Region oldClip = g.Clip;
-            g.SetClip(sp, CombineMode.Intersect);
-            using (SolidBrush gloss = new SolidBrush(Color.FromArgb(34, 255, 255, 255)))
-                g.FillRectangle(gloss, sr.X, sr.Y, sr.Width, sr.Height / 2);
-            g.Clip = oldClip;
+            // bezel ring
+            using (LinearGradientBrush bz = new LinearGradientBrush(sr, Color.FromArgb(74, 66, 60), Color.FromArgb(22, 20, 18), LinearGradientMode.Vertical))
+                g.FillPath(bz, body);
+            // recessed screen
+            RectangleF scr = RectangleF.Inflate(srf, -2f, -2f);
+            using (GraphicsPath sp = XtRound(scr, 7))
+            {
+                using (LinearGradientBrush sb = new LinearGradientBrush(scr, Color.FromArgb(30, 26, 23), Color.FromArgb(8, 7, 6), LinearGradientMode.Vertical))
+                    g.FillPath(sb, sp);
+                // glass reflection on the upper half
+                Region oc = g.Clip;
+                g.SetClip(sp, CombineMode.Intersect);
+                using (LinearGradientBrush gl = new LinearGradientBrush(new RectangleF(scr.X, scr.Y, scr.Width, scr.Height / 2f + 1),
+                    Color.FromArgb(34, 255, 255, 255), Color.FromArgb(4, 255, 255, 255), LinearGradientMode.Vertical))
+                    g.FillRectangle(gl, scr.X, scr.Y, scr.Width, scr.Height / 2f);
+                g.Clip = oc;
+            }
+            Color rim = hotPhase ? Color.FromArgb(245, 146, 28) : statusBlinking ? Color.FromArgb(150, 92, 40) : Color.FromArgb(96, 88, 80);
+            using (Pen rp = new Pen(rim, hotPhase ? 1.6F : 1F))
+                g.DrawPath(rp, body);
         }
 
-        // live dot on a white disc
-        int dcx = sr.X + 18, dcy = sr.Y + sr.Height / 2;
-        using (SolidBrush disc = new SolidBrush(Color.White))
-            g.FillEllipse(disc, dcx - 8, dcy - 8, 16, 16);
-        Color dotC = statusBlinking ? Color.FromArgb(234, 88, 12) : Color.FromArgb(22, 163, 74);
-        using (SolidBrush halo = new SolidBrush(Color.FromArgb(60, dotC)))
+        // live LED dot with glow
+        int dcx = sr.X + 20, dcy = sr.Y + sr.Height / 2;
+        Color dotC = !statusBlinking ? Color.FromArgb(34, 197, 94) : hotPhase ? Color.FromArgb(239, 68, 68) : Color.FromArgb(251, 146, 60);
+        using (SolidBrush halo2 = new SolidBrush(Color.FromArgb(40, dotC)))
+            g.FillEllipse(halo2, dcx - 9, dcy - 9, 18, 18);
+        using (SolidBrush halo = new SolidBrush(Color.FromArgb(90, dotC)))
             g.FillEllipse(halo, dcx - 6, dcy - 6, 12, 12);
         using (SolidBrush dot = new SolidBrush(dotC))
             g.FillEllipse(dot, dcx - 4, dcy - 4, 8, 8);
+        using (SolidBrush spec = new SolidBrush(Color.FromArgb(170, 255, 255, 255)))
+            g.FillEllipse(spec, dcx - 2.5f, dcy - 3, 3, 2.5f);
 
         string liveStatus = (lblStatus != null && !string.IsNullOrWhiteSpace(lblStatus.Text))
             ? lblStatus.Text.Trim()
             : "Ready [ Bkg Fare Limit : 0 ]";
-        TextRenderer.DrawText(g, liveStatus, xtFStatus,
-            new Rectangle(sr.X + 34, sr.Y, sr.Width - 42, sr.Height - 1), Color.White,
-            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis |
-            TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
+        // LED look like the header clock: DS-Digital (fallback Digital-7 / Consolas Bold), glowing bhagwa.
+        XtDrawLedText(g, liveStatus, new Rectangle(sr.X + 34, sr.Y + 1, sr.Width - 44, sr.Height - 2), hotPhase, statusBlinking);
 
         // ---- row 1 : Journey + Train / Quota ----
         XtCard(g, XT_ROW1);
@@ -3626,7 +3645,7 @@ internal class TCntrl : UserControl
 
     private static Rectangle XtStatusRepaintRect
     {
-        get { return Rectangle.Inflate(XT_STATUS, 2, 2); }
+        get { return new Rectangle(XT_STATUS.X - 3, XT_STATUS.Y - 3, XT_STATUS.Width + 6, XT_STATUS.Height + 8); }
     }
 
     private readonly Font xtFStatus = XtPx("Segoe UI Semibold", 10.5F);
@@ -3726,7 +3745,13 @@ internal class TCntrl : UserControl
         catch { }
         int want = widest + 12 + 30 + SystemInformation.VerticalScrollBarWidth;
         combo.DropDownWidth = Math.Min(420, Math.Max(combo.Width + 6, want));
-        combo.MaxDropDownItems = 10;
+
+        // Owner-drawn rows are 24px (MeasureItem) but ItemHeight is 16, so the native list sizing
+        // (IntegralHeight / MaxDropDownItems) opened with room for ~1 row. Size the list explicitly:
+        // every item up to 12 rows, scroll only beyond that. Recomputed on every DropDown.
+        int rows = Math.Max(1, Math.Min(combo.Items.Count, 12));
+        combo.IntegralHeight = false;
+        combo.DropDownHeight = rows * 24 + 2;
         if (combo.Parent != null) combo.Parent.Invalidate(Rectangle.Inflate(XtBox(combo), 2, 2));
     }
 
@@ -4100,6 +4125,224 @@ internal class TCntrl : UserControl
             price.StartsWith("Rs", StringComparison.OrdinalIgnoreCase) || !char.IsDigit(price[0]))
             return avl;
         return avl.Substring(0, bar).TrimEnd() + "  |  " + (char)0x20B9 + " " + price;
+    }
+
+    // ---------- LED status text (same feel as the header's digital clock) ----------
+
+    private static FontFamily _xtLedFamily;
+    private static FontStyle _xtLedStyle;
+    private static bool _xtLedIsDigital;
+
+    // DS-Digital if installed, else Digital-7, else Consolas Bold.
+    private static FontFamily XtLedFamily(out FontStyle style, out bool digital)
+    {
+        if (_xtLedFamily == null)
+        {
+            string[] names = { "DS-Digital", "Digital-7", "Consolas" };
+            try
+            {
+                using (System.Drawing.Text.InstalledFontCollection ifc = new System.Drawing.Text.InstalledFontCollection())
+                {
+                    foreach (string n in names)
+                    {
+                        foreach (FontFamily ff in ifc.Families)
+                        {
+                            if (!string.Equals(ff.Name, n, StringComparison.OrdinalIgnoreCase)) continue;
+                            FontFamily pick = new FontFamily(ff.Name);
+                            _xtLedStyle = pick.IsStyleAvailable(FontStyle.Bold) ? FontStyle.Bold
+                                        : pick.IsStyleAvailable(FontStyle.Regular) ? FontStyle.Regular
+                                        : FontStyle.Italic;
+                            _xtLedIsDigital = n != "Consolas";
+                            _xtLedFamily = pick;
+                            break;
+                        }
+                        if (_xtLedFamily != null) break;
+                    }
+                }
+            }
+            catch { }
+            if (_xtLedFamily == null)
+            {
+                _xtLedFamily = FontFamily.GenericMonospace;
+                _xtLedStyle = FontStyle.Bold;
+                _xtLedIsDigital = false;
+            }
+        }
+        style = _xtLedStyle;
+        digital = _xtLedIsDigital;
+        return _xtLedFamily;
+    }
+
+    private static GraphicsPath XtLedPath(string text, FontFamily fam, FontStyle st, float emPx)
+    {
+        GraphicsPath p = new GraphicsPath();
+        using (StringFormat sf = (StringFormat)StringFormat.GenericTypographic.Clone())
+        {
+            sf.FormatFlags |= StringFormatFlags.NoWrap | StringFormatFlags.MeasureTrailingSpaces;
+            p.AddString(text, fam, (int)st, emPx, new PointF(0, 0), sf);
+        }
+        return p;
+    }
+
+    // Glowing bhagwa LED text on the dark panel.
+    // The string is split into WORD runs and NUMBER runs (digits, plus ':' / '.' between digits):
+    // words are drawn lighter (thinner strokes, softer glow), numbers heavier (same-colour outline, stronger glow).
+    // All runs share one baseline; each run is measured for exact spacing. Shrinks to fit; ellipsis last.
+    private static void XtDrawLedText(Graphics g, string text, Rectangle r, bool hot, bool blinking)
+    {
+        if (string.IsNullOrEmpty(text) || r.Width < 10 || r.Height < 8) return;
+        FontStyle st; bool digital;
+        FontFamily fam = XtLedFamily(out st, out digital);
+
+        float maxPx = digital ? 22f : 17f, minPx = digital ? 13f : 11f;
+        string s = text;
+        GraphicsPath words = null, nums = null;
+        RectangleF b = RectangleF.Empty;
+        for (float px = maxPx; ; px -= 0.5f)
+        {
+            if (words != null) words.Dispose();
+            if (nums != null) nums.Dispose();
+            XtLedRuns(g, s, fam, st, px, out words, out nums);
+            b = XtUnionBounds(words, nums);
+            if (b.Width <= r.Width - 6 && b.Height <= r.Height - 4) break;
+            if (px <= minPx)
+            {
+                if (s.Length <= 2) break;
+                string core = s.EndsWith("...") ? s.Substring(0, s.Length - 3) : s;
+                s = core.Substring(0, core.Length - 1).TrimEnd() + "...";
+                px = minPx + 0.5f;
+            }
+        }
+
+        using (words)
+        using (nums)
+        {
+            // place: left aligned, vertically centred on the glyph box (pixel-snapped); same shift for both runs
+            float dx = (float)Math.Round(r.X + 3 - b.X);
+            float dy = (float)Math.Round(r.Y + (r.Height - b.Height) / 2f - b.Y);
+            using (Matrix m = new Matrix())
+            {
+                m.Translate(dx, dy);
+                words.Transform(m);
+                nums.Transform(m);
+            }
+            b = XtUnionBounds(words, nums);
+
+            SmoothingMode sm = g.SmoothingMode;
+            PixelOffsetMode pm = g.PixelOffsetMode;
+            CompositingQuality cq = g.CompositingQuality;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            g.CompositingQuality = CompositingQuality.HighQuality;
+
+            float boost = hot ? 1.6f : blinking ? 1.2f : 1f;
+            Color glowC = hot ? Color.FromArgb(255, 160, 40) : Color.FromArgb(255, 140, 20);
+
+            // glow: soft for words, stronger for numbers
+            XtGlow(g, words, glowC, new[] { 5f, 3f, 1.4f }, new[] { 12, 22, 38 }, boost);
+            XtGlow(g, nums, glowC, new[] { 6f, 4f, 2.4f }, new[] { 16, 28, 50 }, boost);
+
+            // gradient fill shared by both runs
+            RectangleF gb = new RectangleF(b.X, b.Y - 1, Math.Max(1, b.Width), Math.Max(2, b.Height + 2));
+            using (LinearGradientBrush fb = new LinearGradientBrush(gb, Color.White, Color.Black, LinearGradientMode.Vertical))
+            {
+                ColorBlend cb = new ColorBlend();
+                cb.Positions = new[] { 0f, 0.5f, 1f };
+                cb.Colors = hot
+                    ? new[] { Color.FromArgb(255, 214, 130), Color.FromArgb(255, 150, 36), Color.FromArgb(236, 104, 10) }
+                    : new[] { Color.FromArgb(255, 196, 90), Color.FromArgb(245, 130, 20), Color.FromArgb(214, 96, 4) };
+                fb.InterpolationColors = cb;
+
+                g.FillPath(fb, words);
+                g.FillPath(fb, nums);
+
+                // NUMBERS heavier: same-colour outline thickens the strokes
+                using (Pen heavy = new Pen(fb, 0.75f))
+                {
+                    heavy.LineJoin = LineJoin.Round;
+                    g.DrawPath(heavy, nums);
+                }
+            }
+
+            // WORDS lighter: a hairline in the panel colour erodes the strokes slightly
+            using (Pen thin = new Pen(Color.FromArgb(150, 14, 12, 10), 0.55f))
+            {
+                thin.LineJoin = LineJoin.Round;
+                g.DrawPath(thin, words);
+            }
+
+            // shiny highlight on the top half of all glyphs
+            Region old = g.Clip;
+            using (Region clip = new Region(words))
+            {
+                clip.Union(nums);
+                clip.Intersect(new RectangleF(b.X - 2, b.Y - 2, b.Width + 4, b.Height * 0.45f + 2));
+                g.Clip = clip;
+                using (LinearGradientBrush hb = new LinearGradientBrush(
+                    new RectangleF(b.X, b.Y - 2, Math.Max(1, b.Width), Math.Max(2, b.Height * 0.45f + 3)),
+                    Color.FromArgb(80, 255, 255, 255), Color.FromArgb(0, 255, 255, 255), LinearGradientMode.Vertical))
+                    g.FillRectangle(hb, b.X - 2, b.Y - 2, b.Width + 4, b.Height * 0.45f + 2);
+            }
+            g.Clip = old;
+
+            g.SmoothingMode = sm;
+            g.PixelOffsetMode = pm;
+            g.CompositingQuality = cq;
+        }
+    }
+
+    private static void XtGlow(Graphics g, GraphicsPath p, Color c, float[] widths, int[] alphas, float boost)
+    {
+        if (p.PointCount == 0) return;
+        for (int i = 0; i < widths.Length; i++)
+            using (Pen gp = new Pen(Color.FromArgb(Math.Min(255, (int)(alphas[i] * boost)), c), widths[i]))
+            {
+                gp.LineJoin = LineJoin.Round;
+                g.DrawPath(gp, p);
+            }
+    }
+
+    private static RectangleF XtUnionBounds(GraphicsPath a, GraphicsPath b)
+    {
+        bool ha = a != null && a.PointCount > 0, hb = b != null && b.PointCount > 0;
+        if (ha && hb) return RectangleF.Union(a.GetBounds(), b.GetBounds());
+        if (ha) return a.GetBounds();
+        if (hb) return b.GetBounds();
+        return RectangleF.Empty;
+    }
+
+    private static bool XtIsNumChar(string s, int i)
+    {
+        char c = s[i];
+        if (char.IsDigit(c)) return true;
+        if ((c == ':' || c == '.') && i > 0 && i < s.Length - 1)
+            return char.IsDigit(s[i - 1]) && char.IsDigit(s[i + 1]);
+        return false;
+    }
+
+    // Builds the word-run path and the number-run path on one baseline, advancing by each run's measured width.
+    private static void XtLedRuns(Graphics g, string s, FontFamily fam, FontStyle st, float px,
+        out GraphicsPath words, out GraphicsPath nums)
+    {
+        words = new GraphicsPath();
+        nums = new GraphicsPath();
+        using (StringFormat sf = (StringFormat)StringFormat.GenericTypographic.Clone())
+        using (Font f = new Font(fam, px, st, GraphicsUnit.Pixel))
+        {
+            sf.FormatFlags |= StringFormatFlags.NoWrap | StringFormatFlags.MeasureTrailingSpaces;
+            float x = 0;
+            int i = 0;
+            while (i < s.Length)
+            {
+                bool isNum = XtIsNumChar(s, i);
+                int j = i + 1;
+                while (j < s.Length && XtIsNumChar(s, j) == isNum) j++;
+                string run = s.Substring(i, j - i);
+                (isNum ? nums : words).AddString(run, fam, (int)st, px, new PointF(x, 0), sf);
+                x += g.MeasureString(run, f, new PointF(0, 0), sf).Width;
+                i = j;
+            }
+        }
     }
 
     // DPI-independent fonts: sizes are given in points-at-96-DPI and created in PIXELS, so text keeps

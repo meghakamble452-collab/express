@@ -11,6 +11,7 @@ public partial class frmAddID
     private Label exHistTitle;
     private bool exCloseHot;
     private bool exCloseDown;
+    private ExpressCloseSticker closeSticker;
 
     private static GraphicsPath ExPath(Rectangle r, int rad)
     {
@@ -74,6 +75,13 @@ public partial class frmAddID
         // keep the button INSIDE the header bar so it sits on the header colour
         if (btnClose.Parent != pnlHeader) pnlHeader.Controls.Add(btnClose);
 
+        // Close is shown as a "sticker" badge on the window's top-right corner (half outside the popup);
+        // the ticket-history view uses this same window, so it gets the same sticker.
+        // The in-header button is only hidden; the sticker raises its own Click (same handlers, same sender).
+        btnClose.Visible = false;
+        if (closeSticker == null)
+            closeSticker = ExpressCloseSticker.Attach(this, delegate { if (!btnClose.IsDisposed) InvokeOnClick(btnClose, EventArgs.Empty); });
+
         PnlBase.AutoSize = false;
         PnlBase.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         PnlBase.Padding = new Padding(6);
@@ -128,11 +136,11 @@ public partial class frmAddID
             pnlHeader.Size = new Size(w - 12, 40);
 
             formName.Location = new Point(16, 10);
-            formName.Size = new Size(w - 150, 20);
+            formName.Size = new Size(w - 60, 20);   // close is a corner sticker now, only its overlap is kept clear
 
-            // bigger close button: 38x30, vertically centred in the 40px header, 6px from its right edge
-            btnClose.Size = new Size(38, 30);
-            btnClose.Location = new Point(pnlHeader.Width - 38 - 6, (pnlHeader.Height - 30) / 2);
+            // round red close badge patched on the header's top-right corner (fully inside the header)
+            btnClose.Size = new Size(CB_BOX, CB_BOX);
+            btnClose.Location = new Point(Math.Max(0, pnlHeader.Width - CB_BOX), Math.Max(0, Math.Min(CB_TOP, pnlHeader.Height - CB_BOX)));
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
             // body starts right under the header and uses every remaining pixel
@@ -313,44 +321,45 @@ public partial class frmAddID
         Control c = sender as Control;
         if (c == null) return;
 
-        Graphics g = e.Graphics;
+        CbDrawCloseBadge(e.Graphics, exCloseHot, exCloseDown);
+    }
+
+    // ---- round red close badge, patched on the popup's top-right corner ----
+    // Control is CB_BOX square; circle (30px, 32px on hover) centred at (CB_C, CB_C) leaves room for the shadow.
+    private const int CB_BOX = 36, CB_TOP = 2;
+    private const float CB_C = 17f;
+
+    private static void CbDrawCloseBadge(Graphics g, bool hot, bool down)
+    {
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+        float R = hot && !down ? 16f : 15f;
+        float cx = CB_C, cy = CB_C + (down ? 1f : 0f);
 
-        // default: red with white X | hover: white with red X + red border | pressed: dark red, shifted down
-        Color top = Color.FromArgb(239, 68, 68), bot = Color.FromArgb(220, 38, 38);
-        Color edgeC = Color.FromArgb(185, 28, 28), glyph = Color.White;
-        if (exCloseDown)
+        if (!down)
         {
-            top = Color.FromArgb(170, 26, 26); bot = Color.FromArgb(140, 20, 20);
-            edgeC = Color.FromArgb(127, 29, 29);
-        }
-        else if (exCloseHot)
-        {
-            top = Color.White; bot = Color.FromArgb(254, 242, 242);
-            edgeC = Color.FromArgb(220, 38, 38); glyph = Color.FromArgb(220, 38, 38);
+            using (SolidBrush s1 = new SolidBrush(Color.FromArgb(28, 0, 0, 0)))
+                g.FillEllipse(s1, cx - R - 1.5f, cy - R + 0.5f, (R + 1.5f) * 2, (R + 1.5f) * 2);
+            using (SolidBrush s2 = new SolidBrush(Color.FromArgb(55, 60, 0, 0)))
+                g.FillEllipse(s2, cx - R, cy - R + 1.6f, R * 2, R * 2);
         }
 
-        Rectangle r = new Rectangle(1, 1, c.Width - 3, c.Height - 4);
-        if (exCloseDown) r.Offset(0, 1);
-        if (r.Width < 4 || r.Height < 4) return;
+        RectangleF disc = new RectangleF(cx - R, cy - R, R * 2, R * 2);
+        Color ring = hot && !down ? Color.FromArgb(220, 38, 38) : Color.White;
+        Color glyph = hot && !down ? Color.FromArgb(220, 38, 38) : Color.White;
+        if (down)
+            using (SolidBrush b = new SolidBrush(Color.FromArgb(153, 27, 27))) g.FillEllipse(b, disc);
+        else if (hot)
+            using (SolidBrush b = new SolidBrush(Color.White)) g.FillEllipse(b, disc);
+        else
+            using (LinearGradientBrush b = new LinearGradientBrush(disc, Color.FromArgb(239, 68, 68), Color.FromArgb(220, 38, 38), LinearGradientMode.Vertical))
+                g.FillEllipse(b, disc);
 
-        if (!exCloseDown)
-            using (GraphicsPath sp = ExPath(new Rectangle(r.X, r.Y + 2, r.Width, r.Height), 8))
-            using (SolidBrush sh = new SolidBrush(Color.FromArgb(55, 60, 10, 10)))
-                g.FillPath(sh, sp);
+        using (Pen p = new Pen(ring, 2f))
+            g.DrawEllipse(p, cx - R + 1f, cy - R + 1f, R * 2 - 2f, R * 2 - 2f);
 
-        using (GraphicsPath p = ExPath(r, 8))
-        {
-            using (LinearGradientBrush bg = new LinearGradientBrush(r, top, bot, LinearGradientMode.Vertical))
-                g.FillPath(bg, p);
-            using (Pen edge = new Pen(edgeC, exCloseHot && !exCloseDown ? 1.6f : 1f))
-                g.DrawPath(edge, p);
-        }
-
-        // square, centred X (same arm length both ways)
-        float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f, a = 6f;
-        using (Pen x = new Pen(glyph, 2.4f))
+        float a = R * 0.34f;
+        using (Pen x = new Pen(glyph, 2.6f))
         {
             x.StartCap = LineCap.Round;
             x.EndCap = LineCap.Round;

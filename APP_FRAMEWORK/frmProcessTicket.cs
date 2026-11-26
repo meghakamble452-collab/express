@@ -2134,7 +2134,7 @@ internal class frmProcessTicket : Form
         if (btnClose != null)
         {
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-            btnClose.Size = new Size(30, 24);
+            btnClose.Size = new Size(XH_BADGE_BOX, XH_BADGE_BOX);   // round corner badge + shadow room
             btnClose.BackColor = Color.Transparent;
             btnClose.Image = null;
             btnClose.ImageActive = null;
@@ -2147,6 +2147,12 @@ internal class frmProcessTicket : Form
             btnClose.MouseDown += delegate { xhCloseDown = true; btnClose.Invalidate(); };
             btnClose.MouseUp += delegate { xhCloseDown = false; if (!btnClose.IsDisposed) btnClose.Invalidate(); };
             XhPlaceClose(null, EventArgs.Empty);
+
+            // PROTOTYPE: the close is shown as a "sticker" badge on the window's top-right corner
+            // (a separate layered owned window, half outside the popup). The in-header button is only
+            // hidden; its Click handler is what the sticker calls, so closing behaves exactly the same.
+            btnClose.Visible = false;
+            XhInitSticker();
         }
 
         // Body begins below the header.
@@ -2189,16 +2195,315 @@ internal class frmProcessTicket : Form
     private static readonly Color XH_HEAD_R = Color.FromArgb(248, 158, 44);
     private static readonly Color XH_ORANGE = Color.FromArgb(245, 146, 28);
     private static readonly Color XH_NAVY = Color.FromArgb(15, 42, 92);
-    private const int XH_HEAD = 36;
+    private const int XH_HEAD = 39;   // 36px band (30px close badge + 3px margins) + 3px navy underline
     private bool xhCloseHot, xhCloseDown;
     private readonly Font xhFInfo = new Font("Segoe UI Semibold", 9F);
+
+    // Close button = round red badge in the header's top-right corner: 30px disc, 3px from the top
+    // and right edges, vertically centred in the band above the underline (box = disc + shadow room).
+    private const int XH_BADGE_BOX = 36;
 
     private void XhPlaceClose(object sender, EventArgs e)
     {
         if (btnClose == null || btnClose.IsDisposed || PanelHelder == null) return;
-        btnClose.Location = new Point(Math.Max(0, PanelHelder.Width - btnClose.Width - 8),
-            Math.Max(0, (PanelHelder.Height - 3 - btnClose.Height) / 2));
+        if (btnClose.Width != XH_BADGE_BOX || btnClose.Height != XH_BADGE_BOX)
+            btnClose.Size = new Size(XH_BADGE_BOX, XH_BADGE_BOX);
+        btnClose.Location = new Point(Math.Max(0, PanelHelder.Width - XH_BADGE_BOX),
+            Math.Max(0, (PanelHelder.Height - 3 - XH_BADGE_BOX) / 2));
         btnClose.BringToFront();
+    }
+
+    // ===== PROTOTYPE: close "sticker" =====
+    // A round red X badge whose centre sits ON the popup's top-right corner (about half of it outside
+    // the window). WinForms can't paint outside a form, so it is a tiny owned layered window
+    // (WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE) drawn with per-pixel alpha.
+    // Its click calls the existing btnClose_Click, so the close behaviour is unchanged.
+    private XhSticker xhSticker;
+
+    private void XhInitSticker()
+    {
+        if (xhSticker != null) return;
+        xhSticker = new XhSticker(this, delegate { btnClose_Click(btnClose, EventArgs.Empty); });
+        EventHandler sync = delegate { XhSyncSticker(); };
+        Move += sync;
+        Resize += sync;
+        LocationChanged += sync;
+        SizeChanged += sync;
+        VisibleChanged += sync;
+        Activated += sync;
+        Shown += sync;
+        HandleDestroyed += delegate { if (xhSticker != null) xhSticker.DropHandle(); };   // recreated on next sync
+        FormClosed += delegate { XhKillSticker(); };
+        Disposed += delegate { XhKillSticker(); };
+    }
+
+    private void XhSyncSticker()
+    {
+        if (xhSticker == null || IsDisposed || Disposing || !IsHandleCreated) return;
+        xhSticker.Sync(Visible && WindowState != FormWindowState.Minimized);
+    }
+
+    private void XhKillSticker()
+    {
+        if (xhSticker == null) return;
+        xhSticker.Dispose();
+        xhSticker = null;
+    }
+
+    private sealed class XhSticker : NativeWindow, IDisposable
+    {
+        private const int WS_POPUP = unchecked((int)0x80000000);
+        private const int WS_EX_LAYERED = 0x80000, WS_EX_TOOLWINDOW = 0x80, WS_EX_NOACTIVATE = 0x8000000;
+        private const int SW_HIDE = 0, SW_SHOWNOACTIVATE = 4;
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct XPoint { public int X, Y; }
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct XSize { public int CX, CY; }
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential, Pack = 1)]
+        private struct XBlend { public byte Op, Flags, Alpha, Format; }
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct XTrack { public int cbSize, dwFlags; public IntPtr hwnd; public int dwHoverTime; }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern IntPtr GetDC(IntPtr h);
+        [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern int ReleaseDC(IntPtr h, IntPtr dc);
+        [System.Runtime.InteropServices.DllImport("gdi32.dll")] private static extern IntPtr CreateCompatibleDC(IntPtr dc);
+        [System.Runtime.InteropServices.DllImport("gdi32.dll")] private static extern bool DeleteDC(IntPtr dc);
+        [System.Runtime.InteropServices.DllImport("gdi32.dll")] private static extern IntPtr SelectObject(IntPtr dc, IntPtr o);
+        [System.Runtime.InteropServices.DllImport("gdi32.dll")] private static extern bool DeleteObject(IntPtr o);
+        [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern bool UpdateLayeredWindow(IntPtr h, IntPtr dst, ref XPoint pt, ref XSize sz, IntPtr src, ref XPoint srcPt, int key, ref XBlend blend, int flags);
+        [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern bool ShowWindow(IntPtr h, int cmd);
+        [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern bool IsWindowVisible(IntPtr h);
+        [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern IntPtr SetCapture(IntPtr h);
+        [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern bool ReleaseCapture();
+        [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern IntPtr SetCursor(IntPtr c);
+        [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern bool TrackMouseEvent(ref XTrack t);
+
+        private readonly Form owner;
+        private readonly MethodInvoker click;
+        private bool hot, down, tracking, dead;
+        private float k = 1f;
+        private int size;
+
+        public XhSticker(Form owner, MethodInvoker click)
+        {
+            this.owner = owner;
+            this.click = click;
+        }
+
+        public bool Hot { get { return hot; } set { hot = value; Render(); } }
+        public IntPtr Hwnd { get { return Handle; } }
+
+        public void Sync(bool show)
+        {
+            if (dead) return;
+            if (!show)
+            {
+                if (Handle != IntPtr.Zero) ShowWindow(Handle, SW_HIDE);
+                hot = down = false;
+                return;
+            }
+            if (Handle == IntPtr.Zero)
+            {
+                try { using (Graphics g = Graphics.FromHwnd(owner.Handle)) k = Math.Max(1f, g.DpiX / 96f); }
+                catch { k = 1f; }
+                size = (int)Math.Ceiling(46f * k);          // 32px disc + hover growth + shadow
+                CreateParams cp = new CreateParams();
+                cp.Caption = "";
+                cp.X = 0; cp.Y = 0; cp.Width = size; cp.Height = size;
+                cp.Style = WS_POPUP;
+                cp.ExStyle = WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
+                cp.Parent = owner.Handle;                     // = owner for a popup: stays above it, hides/minimises with it
+                CreateHandle(cp);
+            }
+            Render();
+            if (!IsWindowVisible(Handle)) ShowWindow(Handle, SW_SHOWNOACTIVATE);
+        }
+
+        public void DropHandle()
+        {
+            if (Handle != IntPtr.Zero) DestroyHandle();
+        }
+
+        public void Dispose()
+        {
+            dead = true;
+            DropHandle();
+        }
+
+        // Badge centre sits on the owner's top-right corner, (Right - 8, Top + 8) in screen pixels.
+        private Point Origin()
+        {
+            Rectangle ob = owner.Bounds;
+            int cx = ob.Right - (int)Math.Round(8f * k), cy = ob.Top + (int)Math.Round(8f * k);
+            return new Point(cx - size / 2, cy - size / 2);
+        }
+
+        private void Render()
+        {
+            if (dead || Handle == IntPtr.Zero || size <= 0) return;
+            using (Bitmap bmp = new Bitmap(size, size, PixelFormat.Format32bppArgb))
+            {
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
+                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                    g.Clear(Color.Transparent);
+                    Draw(g);
+                }
+                IntPtr screen = GetDC(IntPtr.Zero);
+                IntPtr mem = CreateCompatibleDC(screen);
+                IntPtr hbmp = bmp.GetHbitmap(Color.FromArgb(0));   // 32bpp, premultiplied for UpdateLayeredWindow
+                IntPtr old = SelectObject(mem, hbmp);
+                try
+                {
+                    Point o = Origin();
+                    XPoint dst = new XPoint { X = o.X, Y = o.Y };
+                    XPoint src = new XPoint();
+                    XSize sz = new XSize { CX = size, CY = size };
+                    XBlend bl = new XBlend { Op = 0, Flags = 0, Alpha = 255, Format = 1 };   // AC_SRC_OVER, AC_SRC_ALPHA
+                    UpdateLayeredWindow(Handle, screen, ref dst, ref sz, mem, ref src, 0, ref bl, 2);  // ULW_ALPHA
+                }
+                finally
+                {
+                    SelectObject(mem, old);
+                    DeleteObject(hbmp);
+                    DeleteDC(mem);
+                    ReleaseDC(IntPtr.Zero, screen);
+                }
+            }
+        }
+
+        private float Radius() { return (16f + (hot && !down ? 1f : 0f)) * k; }
+
+        private bool InDisc(int x, int y)
+        {
+            float c = size / 2f, r = Radius() + 1f * k;
+            float dx = x - c, dy = y - c;
+            return dx * dx + dy * dy <= r * r;
+        }
+
+        private void Draw(Graphics g)
+        {
+            bool h = hot && !down;
+            float r = Radius();
+            float cx = size / 2f, cy = size / 2f + (down ? k : 0f);
+            RectangleF disc = new RectangleF(cx - r, cy - r, r * 2, r * 2);
+            if (!down)
+            {
+                using (SolidBrush s1 = new SolidBrush(Color.FromArgb(40, 0, 0, 0)))
+                    g.FillEllipse(s1, disc.X - 0.8f * k, disc.Y + 2.6f * k, disc.Width + 1.6f * k, disc.Height + 0.6f * k);
+                using (SolidBrush s2 = new SolidBrush(Color.FromArgb(55, 0, 0, 0)))
+                    g.FillEllipse(s2, disc.X + 0.4f * k, disc.Y + 1.5f * k, disc.Width - 0.8f * k, disc.Height - 0.4f * k);
+            }
+            Color red = Color.FromArgb(220, 38, 38);
+            using (SolidBrush rb = new SolidBrush(h ? red : Color.White)) g.FillEllipse(rb, disc);
+            RectangleF inner = RectangleF.Inflate(disc, -2f * k, -2f * k);
+            using (SolidBrush fb = new SolidBrush(down ? Color.FromArgb(153, 27, 27) : h ? Color.White : red)) g.FillEllipse(fb, inner);
+            if (!h && !down)
+                using (SolidBrush gl = new SolidBrush(Color.FromArgb(40, 255, 255, 255)))
+                    g.FillEllipse(gl, inner.X + inner.Width * 0.18f, inner.Y + 1.5f * k, inner.Width * 0.64f, inner.Height * 0.42f);
+            float a = r * 0.34f;
+            using (Pen x = new Pen(h ? red : Color.White, 2.8f * k))
+            {
+                x.StartCap = LineCap.Round;
+                x.EndCap = LineCap.Round;
+                g.DrawLine(x, cx - a, cy - a, cx + a, cy + a);
+                g.DrawLine(x, cx + a, cy - a, cx - a, cy + a);
+            }
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            switch (m.Msg)
+            {
+                case 0x0021:   // WM_MOUSEACTIVATE -> never take focus from the popup
+                    m.Result = (IntPtr)3;   // MA_NOACTIVATE
+                    return;
+                case 0x0020:   // WM_SETCURSOR
+                    SetCursor(Cursors.Hand.Handle);
+                    m.Result = (IntPtr)1;
+                    return;
+                case 0x0084:   // WM_NCHITTEST: only the disc is clickable, the rest is see-through
+                {
+                    long lp = m.LParam.ToInt64();
+                    int sx = (short)(lp & 0xFFFF), sy = (short)((lp >> 16) & 0xFFFF);
+                    Point o = Origin();
+                    m.Result = InDisc(sx - o.X, sy - o.Y) ? (IntPtr)1 : (IntPtr)(-1);   // HTCLIENT / HTTRANSPARENT
+                    return;
+                }
+                case 0x0200:   // WM_MOUSEMOVE
+                    if (!tracking)
+                    {
+                        XTrack t = new XTrack { cbSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(XTrack)), dwFlags = 2, hwnd = Handle };
+                        tracking = TrackMouseEvent(ref t);
+                    }
+                    if (!hot) { hot = true; Render(); }
+                    m.Result = IntPtr.Zero;
+                    return;
+                case 0x02A3:   // WM_MOUSELEAVE
+                    tracking = false;
+                    if (hot || down) { hot = false; down = false; Render(); }
+                    return;
+                case 0x0201:   // WM_LBUTTONDOWN
+                    down = true;
+                    SetCapture(Handle);
+                    Render();
+                    m.Result = IntPtr.Zero;
+                    return;
+                case 0x0202:   // WM_LBUTTONUP
+                {
+                    bool was = down;
+                    down = false;
+                    ReleaseCapture();
+                    long lp = m.LParam.ToInt64();
+                    int x = (short)(lp & 0xFFFF), y = (short)((lp >> 16) & 0xFFFF);
+                    bool inside = InDisc(x, y);
+                    hot = inside;
+                    Render();
+                    if (was && inside && !dead && owner != null && !owner.IsDisposed && owner.IsHandleCreated)
+                        owner.BeginInvoke(click);   // exactly the existing btnClose click path
+                    m.Result = IntPtr.Zero;
+                    return;
+                }
+            }
+            base.WndProc(ref m);
+        }
+    }
+
+    // Corner badge painter: soft shadow, white ring, red disc, bold white X (2.6px, round caps).
+    // hot = white disc / red X / red ring (grows 2px); down = dark red, 1px lower.
+    private static void XhDrawBadge(Graphics g, int box, bool hot, bool down)
+    {
+        bool h = hot && !down;
+        float d = 30f + (h ? 2f : 0f);
+        float cx = box / 2f, cy = box / 2f + (down ? 1f : 0f);
+        RectangleF disc = new RectangleF(cx - d / 2f, cy - d / 2f, d, d);
+        if (!down)
+        {
+            using (SolidBrush s1 = new SolidBrush(Color.FromArgb(34, 0, 0, 0)))
+                g.FillEllipse(s1, disc.X - 0.5f, disc.Y + 2.4f, disc.Width + 1f, disc.Height + 0.4f);
+            using (SolidBrush s2 = new SolidBrush(Color.FromArgb(46, 0, 0, 0)))
+                g.FillEllipse(s2, disc.X + 0.5f, disc.Y + 1.4f, disc.Width - 1f, disc.Height - 0.4f);
+        }
+        Color red = Color.FromArgb(220, 38, 38);
+        Color ring = h ? red : Color.White;
+        Color fill = down ? Color.FromArgb(153, 27, 27) : h ? Color.White : red;
+        Color glyph = h ? red : Color.White;
+        using (SolidBrush rb = new SolidBrush(ring)) g.FillEllipse(rb, disc);
+        RectangleF inner = RectangleF.Inflate(disc, -2f, -2f);
+        using (SolidBrush fb = new SolidBrush(fill)) g.FillEllipse(fb, inner);
+        if (!h && !down)
+            using (SolidBrush gl = new SolidBrush(Color.FromArgb(38, 255, 255, 255)))
+                g.FillEllipse(gl, inner.X + inner.Width * 0.18f, inner.Y + 1.5f, inner.Width * 0.64f, inner.Height * 0.42f);
+        float a = d * 0.17f;
+        using (Pen x = new Pen(glyph, 2.6F))
+        {
+            x.StartCap = LineCap.Round;
+            x.EndCap = LineCap.Round;
+            g.DrawLine(x, cx - a, cy - a, cx + a, cy + a);
+            g.DrawLine(x, cx + a, cy - a, cx - a, cy + a);
+        }
     }
 
     private void XhNameChanged(object sender, EventArgs e)
@@ -2240,7 +2545,8 @@ internal class frmProcessTicket : Form
         if (info.Length > 0)
         {
             int px = c.Padding.Left + ns.Width + 10;
-            int maxRight = (btnClose != null ? btnClose.Left : c.Width) - 8;
+            // leave room for the corner sticker (it covers the header's top-right corner)
+            int maxRight = (btnClose != null && btnClose.Visible ? btnClose.Left : c.Width - 26) - 8;
             Size isz = TextRenderer.MeasureText(g, info, xhFInfo, Size.Empty, TextFormatFlags.NoPadding);
             int pw = Math.Min(isz.Width + 18, Math.Max(0, maxRight - px));
             if (pw > 24)
@@ -2339,7 +2645,7 @@ internal class frmProcessTicket : Form
         Graphics g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
 
-        // Repaint the ribbon gradient underneath so the old image never shows through.
+        // Repaint the ribbon (gradient + gloss + navy underline) underneath so no square edge shows.
         Control p = c.Parent;
         int pw = p != null ? Math.Max(1, p.Width) : c.Width;
         int ph = p != null ? Math.Max(1, p.Height) : c.Height;
@@ -2348,28 +2654,13 @@ internal class frmProcessTicket : Form
             g.FillRectangle(bg, 0, 0, c.Width, c.Height);
         using (SolidBrush shine = new SolidBrush(Color.FromArgb(18, 255, 255, 255)))
             g.FillRectangle(shine, 0, 0, c.Width, Math.Max(0, (ph - 3) / 2 - c.Top));
+        int uy = ph - 3 - c.Top;
+        if (uy < c.Height)
+            using (SolidBrush nb = new SolidBrush(XH_NAVY))
+                g.FillRectangle(nb, 0, uy, c.Width, 3);
 
-        RectangleF r = new RectangleF(0.5f, xhCloseDown ? 1.5f : 0.5f, c.Width - 2, c.Height - 2);
-        // Default: solid red with a white X. Hover: white with a red X and red border. Pressed: dark red.
-        Color fill = xhCloseDown ? Color.FromArgb(153, 27, 27)
-                   : xhCloseHot ? Color.White
-                   : Color.FromArgb(220, 38, 38);
-        Color line = xhCloseDown ? Color.FromArgb(127, 29, 29)
-                   : xhCloseHot ? Color.FromArgb(220, 38, 38)
-                   : Color.FromArgb(185, 28, 28);
-        Color glyph = xhCloseHot && !xhCloseDown ? Color.FromArgb(220, 38, 38) : Color.White;
-        if (!xhCloseDown)
-            XtArt.Fill(g, new RectangleF(r.X, r.Y + 1.5f, r.Width, r.Height), 7, Color.FromArgb(60, 0, 0, 0), Color.Empty);
-        XtArt.Fill(g, r, 7, fill, line);
-
-        float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f;
-        using (Pen x = new Pen(glyph, 2.2F))
-        {
-            x.StartCap = LineCap.Round;
-            x.EndCap = LineCap.Round;
-            g.DrawLine(x, cx - 5.5f, cy - 5.5f, cx + 5.5f, cy + 5.5f);
-            g.DrawLine(x, cx + 5.5f, cy - 5.5f, cx - 5.5f, cy + 5.5f);
-        }
+        // Round red badge patched on the corner.
+        XhDrawBadge(g, Math.Min(c.Width, c.Height), xhCloseHot, xhCloseDown);
     }
 
     protected override void Dispose(bool disposing)

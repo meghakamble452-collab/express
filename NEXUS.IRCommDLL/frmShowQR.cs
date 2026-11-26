@@ -273,7 +273,7 @@ public class frmShowQR : Form
             else
             {
                 code = new Rectangle(0, 0, W, H);
-                using (Font lf = new Font("Segoe UI", 9F)) TextRenderer.DrawText(g, "Loading QR...", lf, code, qMuted,
+                using (Font lf = new Font("Segoe UI", 9f * 4f / 3f, FontStyle.Regular, GraphicsUnit.Pixel)) TextRenderer.DrawText(g, "Loading QR...", lf, code, qMuted,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             }
 
@@ -321,13 +321,74 @@ public class frmShowQR : Form
         FormClosed += (s, fe) => { qTimer.Stop(); qTimer.Dispose(); };
         Disposed += (s, de) => { qTimer.Stop(); if (qCrisp != null) { qCrisp.Dispose(); qCrisp = null; } };
 
+        // ---------------- corner close badge geometry (shared by layout, paint and hit-test) ----------------
+        // A ~30px (at 96 DPI) red circle sitting on the top-right corner, centre ~(W-19, 19).
+        float qDpiK = 1f;
+        try { using (Graphics sg = Graphics.FromHwnd(IntPtr.Zero)) qDpiK = Math.Max(1f, sg.DpiX / 96f); } catch { }
+        float qBadgeR = 15f * qDpiK;
+        // ---------------- "sticker" close badge: Win32 binding ----------------
+        // The sticker is an owned layered window with per-pixel alpha (UpdateLayeredWindow), like the
+        // ticket popup's. DllImports can't be declared outside these two methods, so the eight Win32
+        // calls are bound at runtime with Reflection.Emit (DefinePInvokeMethod) and cached per AppDomain.
+        // If that is unavailable for any reason, the in-header badge below is used instead.
+        Type qNative = null;
+        try
+        {
+            qNative = AppDomain.CurrentDomain.GetData("Express.QrStickerNative") as Type;
+            if (qNative == null)
+            {
+                var an = new System.Reflection.AssemblyName("Express.QrStickerNative");
+                var ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, System.Reflection.Emit.AssemblyBuilderAccess.Run);
+                var mb = ab.DefineDynamicModule("Express.QrStickerNative");
+                var tb = mb.DefineType("QrStickerNative",
+                    System.Reflection.TypeAttributes.Public | System.Reflection.TypeAttributes.Abstract | System.Reflection.TypeAttributes.Sealed);
+                Action<string, string, Type, Type[]> pinv = (dll, name, ret, args) =>
+                {
+                    var m = tb.DefinePInvokeMethod(name, dll,
+                        System.Reflection.MethodAttributes.Public | System.Reflection.MethodAttributes.Static | System.Reflection.MethodAttributes.PinvokeImpl,
+                        System.Reflection.CallingConventions.Standard, ret, args,
+                        CallingConvention.Winapi, CharSet.Unicode);
+                    m.SetImplementationFlags(m.GetMethodImplementationFlags() | System.Reflection.MethodImplAttributes.PreserveSig);
+                };
+                Type ip = typeof(IntPtr), rp = typeof(Point).MakeByRefType(), rs = typeof(Size).MakeByRefType(), ri = typeof(int).MakeByRefType();
+                pinv("user32.dll", "UpdateLayeredWindow", typeof(bool), new[] { ip, ip, rp, rs, ip, rp, typeof(int), ri, typeof(int) });
+                pinv("user32.dll", "GetWindowLongW", typeof(int), new[] { ip, typeof(int) });
+                pinv("user32.dll", "SetWindowLongW", typeof(int), new[] { ip, typeof(int), typeof(int) });
+                pinv("user32.dll", "ShowWindow", typeof(bool), new[] { ip, typeof(int) });
+                pinv("gdi32.dll", "CreateCompatibleDC", ip, new[] { ip });
+                pinv("gdi32.dll", "SelectObject", ip, new[] { ip, ip });
+                pinv("gdi32.dll", "DeleteDC", typeof(bool), new[] { ip });
+                pinv("gdi32.dll", "DeleteObject", typeof(bool), new[] { ip });
+                qNative = tb.CreateType();
+                AppDomain.CurrentDomain.SetData("Express.QrStickerNative", qNative);
+            }
+        }
+        catch { qNative = null; }
+        bool qSticker = qNative != null;
+        Func<string, object[], object> qCall = (name, args) => qNative.GetMethod(name).Invoke(null, args);
+
+        // The header is tall enough to hold the badge: diameter + 6px (36px at 100%).
+        int qHdrH = qSticker ? 26 : (int)Math.Ceiling(qBadgeR * 2f + 6f);   // sticker sits outside: slim header again
+        // Badge flush in the top-right corner: ~3px from the top and right edges, centred in the header.
+        Func<PointF> qBadgeCentre = () => new PointF(ClientSize.Width - 3f - qBadgeR, qHdrH / 2f);
+        Func<Rectangle> qBadgeBox = () =>
+        {
+            PointF c = qBadgeCentre();
+            int half = (int)Math.Ceiling(qBadgeR + 4f);                 // hover growth + shadow
+            int x = (int)Math.Floor(c.X - half), y = (int)Math.Floor(c.Y - half);
+            int w = half * 2 + 1, h = half * 2 + 1;
+            x = Math.Max(0, Math.Min(x, ClientSize.Width - w));          // must stay inside the window
+            y = Math.Max(0, Math.Min(y, ClientSize.Height - h));
+            return new Rectangle(x, y, w, h);
+        };
+
         // ---------------- payment info (right-hand panel) ----------------
         // label1.Text is set by the logic ("Pay Using QR :- <upi>  Amt=  <amount>");
         // the label paints it as a vertical info panel: Scan & Pay / PAY TO / AMOUNT / hint.
         label1.AutoSize = false;
         label1.BackColor = Color.White;
         label1.ForeColor = qText;
-        label1.Font = new Font("Segoe UI Semibold", 9F);
+        label1.Font = new Font("Segoe UI Semibold", 9f * 4f / 3f, FontStyle.Regular, GraphicsUnit.Pixel);
         label1.TextAlign = ContentAlignment.MiddleCenter;
         label1.UseMnemonic = false;
         label1.Paint += (s, le) =>
@@ -340,74 +401,74 @@ public class frmShowQR : Form
             if (raw == "label1") raw = "";
             int ai = raw.IndexOf("Amt=", StringComparison.OrdinalIgnoreCase);
             int W = label1.Width, H = label1.Height, x0 = 6, cw = Math.Max(20, W - 12);
-            TextFormatFlags one = TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix;
 
-            Func<string, float, FontStyle, int, float, Font> fit = (text, start, style, maxW, minSz) =>
+            // Design unit: label1.Font is 12px (9pt at 96 DPI); every size below is relative to it,
+            // in pixels, so the layout is DPI-independent and fully measured.
+            float u = Math.Max(0.5f, label1.Font.Size / 12f);
+            TextFormatFlags ONE = TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine |
+                                  TextFormatFlags.NoPrefix | TextFormatFlags.NoClipping;
+            Func<float, FontStyle, Font> F = (pt, st) => new Font("Segoe UI", pt * u * 4f / 3f, st, GraphicsUnit.Pixel);
+            Func<string, Font, Size> M = (t, f) => TextRenderer.MeasureText(g, string.IsNullOrEmpty(t) ? " " : t, f, Size.Empty,
+                TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
+
+            // The corner close badge may hang over the panel's top-right: rows in that band get less width.
+            Rectangle bb = qBadgeBox();
+            bb.Offset(-label1.Left, -label1.Top);
+            bb.Inflate(4, 2);
+            Func<int, int, int> widthAt = (top, h) =>
+                (top < bb.Bottom && top + h > bb.Top && bb.Left < x0 + cw) ? Math.Max(24, bb.Left - x0) : cw;
+
+            // Greedy word wrap; a word wider than the line is split by characters (prefers a break
+            // before '@'). Never ellipsis, never drops characters.
+            Func<string, Font, int, List<string>> wrap = (text, f, maxW) =>
             {
-                float sz = start;
-                while (sz > minSz)
+                List<string> lines = new List<string>();
+                string cur = "";
+                foreach (string word in (text ?? "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    using (Font f = new Font("Segoe UI", sz, style))
-                        if (TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding).Width <= maxW) break;
-                    sz -= 0.5f;
-                }
-                return new Font("Segoe UI", sz, style);
-            };
-            // character wrap (UPI ids have no spaces); prefers breaking before "@"
-            Func<string, Font, int, int, System.Collections.Generic.List<string>> wrap = (text, f, maxW, maxLines) =>
-            {
-                var lines = new System.Collections.Generic.List<string>();
-                string rest = text;
-                while (rest.Length > 0 && lines.Count < maxLines)
-                {
-                    int cut = rest.Length;
-                    while (cut > 1 && TextRenderer.MeasureText(g, rest.Substring(0, cut), f, Size.Empty, TextFormatFlags.NoPadding).Width > maxW) cut--;
-                    if (cut < rest.Length)
+                    string trial = cur.Length == 0 ? word : cur + " " + word;
+                    if (M(trial, f).Width <= maxW) { cur = trial; continue; }
+                    if (cur.Length > 0) { lines.Add(cur); cur = ""; }
+                    string w = word;
+                    while (w.Length > 1 && M(w, f).Width > maxW)
                     {
-                        int at = rest.LastIndexOf('@', Math.Max(0, cut - 1));
+                        int cut = w.Length - 1;
+                        while (cut > 1 && M(w.Substring(0, cut), f).Width > maxW) cut--;
+                        int at = w.LastIndexOf('@', cut - 1);
                         if (at > cut / 2) cut = at;
+                        lines.Add(w.Substring(0, cut));
+                        w = w.Substring(cut);
                     }
-                    lines.Add(rest.Substring(0, cut));
-                    rest = rest.Substring(cut);
+                    cur = w;
                 }
-                if (rest.Length > 0 && lines.Count > 0) lines[lines.Count - 1] += rest;   // drawn with EndEllipsis as a last resort
+                if (cur.Length > 0) lines.Add(cur);
+                if (lines.Count == 0) lines.Add("");
                 return lines;
             };
-
-            int y = 4;
-            // title row: scan icon + "Scan & Pay"
-            using (Pen ip = new Pen(Color.FromArgb(214, 96, 4), 1.8F))
+            Func<List<string>, Font, int> blockH = (ls, f) => { int hh = 0; foreach (string l in ls) hh += M(l, f).Height; return hh; };
+            Action<List<string>, Font, int, Color> drawBlock = (ls, f, yy, col) =>
             {
-                ip.StartCap = LineCap.Round; ip.EndCap = LineCap.Round; ip.LineJoin = LineJoin.Round;
-                float ix = x0, iy = y + 3, sz = 14, c = 4.5f;
-                g.DrawLines(ip, new[] { new PointF(ix, iy + c), new PointF(ix, iy), new PointF(ix + c, iy) });
-                g.DrawLines(ip, new[] { new PointF(ix + sz - c, iy), new PointF(ix + sz, iy), new PointF(ix + sz, iy + c) });
-                g.DrawLines(ip, new[] { new PointF(ix + sz, iy + sz - c), new PointF(ix + sz, iy + sz), new PointF(ix + sz - c, iy + sz) });
-                g.DrawLines(ip, new[] { new PointF(ix + c, iy + sz), new PointF(ix, iy + sz), new PointF(ix, iy + sz - c) });
-                g.DrawLine(ip, ix + 2.5f, iy + sz / 2, ix + sz - 2.5f, iy + sz / 2);
-            }
-            using (Font tf = fit("Scan & Pay", 12F, FontStyle.Bold, cw - 22, 9F))
-                TextRenderer.DrawText(g, "Scan & Pay", tf, new Rectangle(x0 + 22, y, cw - 22, 22), qNavy, one | TextFormatFlags.VerticalCenter);
-            y += 24;
-            using (Font hf = new Font("Segoe UI", 7.75F))
-            {
-                string hint = "Open any UPI app and scan the QR";
-                TextFormatFlags wb = TextFormatFlags.Left | TextFormatFlags.Top | TextFormatFlags.WordBreak | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix;
-                int hh = Math.Min(30, TextRenderer.MeasureText(g, hint, hf, new Size(cw, 0), wb).Height);
-                TextRenderer.DrawText(g, hint, hf, new Rectangle(x0, y, cw, hh + 1), qMuted, wb);
-                y += hh;
-            }
-            y += 4;
-            using (Pen sep = new Pen(Color.FromArgb(226, 232, 240)))
-                g.DrawLine(sep, x0, y, x0 + cw, y);
-            y += 7;
+                foreach (string l in ls)
+                {
+                    int lh = M(l, f).Height;
+                    TextRenderer.DrawText(g, l, f, new Rectangle(x0, yy, cw + 4, lh + 1), col, ONE);
+                    yy += lh;
+                }
+            };
 
             if (ai < 0)
             {
-                // unknown text format: show it whole, wrapped
-                using (Font f = new Font("Segoe UI Semibold", 9F))
-                    TextRenderer.DrawText(g, raw, f, new Rectangle(x0, y, cw, H - y - 4), qText,
-                        TextFormatFlags.Left | TextFormatFlags.Top | TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix);
+                // unknown text format: show it all, wrapped, shrinking until it fits
+                float fs = 9f;
+                while (true)
+                {
+                    using (Font f = F(fs, FontStyle.Bold))
+                    {
+                        List<string> ls = wrap(raw, f, cw);
+                        if (blockH(ls, f) <= H - 8 || fs <= 6.5f) { drawBlock(ls, f, 4, qText); break; }
+                    }
+                    fs -= 0.5f;
+                }
                 return;
             }
 
@@ -415,40 +476,75 @@ public class frmShowQR : Form
             int ci = left.IndexOf(":-");
             string payTo = (ci >= 0 ? left.Substring(ci + 2) : left).Trim();
             string amtText = ((char)0x20B9).ToString() + " " + raw.Substring(ai + 4).Trim();   // rupee sign
+            const string title = "Scan & Pay", hint = "Open any UPI app and scan the QR";
 
-            using (Font cap = new Font("Segoe UI", 7F, FontStyle.Bold))
+            // sizes (pt at 96 DPI, scaled by u); shrink order: title -> hint -> pay-to -> drop hint -> amount
+            float tS = 12f, hS = 7.75f, pS = 10f, cS = 7f, aS = 20f;
+            bool showHint = true;
+            while (aS > 10f) { using (Font af = F(aS, FontStyle.Bold)) if (M(amtText, af).Width <= cw) break; aS -= 1f; }
+
+            for (int guard = 0; guard < 80; guard++)
             {
-                // AMOUNT block is anchored to the bottom so it is always fully visible
-                int amtH;
-                using (Font af = fit(amtText, 20F, FontStyle.Bold, cw, 9F))
+                using (Font tf = F(tS, FontStyle.Bold))
+                using (Font hf = F(hS, FontStyle.Regular))
+                using (Font cf = F(cS, FontStyle.Bold))
+                using (Font pf = F(pS, FontStyle.Bold))
+                using (Font af = F(aS, FontStyle.Bold))
                 {
-                    amtH = TextRenderer.MeasureText(g, amtText, af, Size.Empty, TextFormatFlags.NoPadding).Height;
-                    int ay = H - 4 - amtH;
-                    TextRenderer.DrawText(g, "AMOUNT", cap, new Rectangle(x0, ay - 15, cw, 13), qMuted, one);
-                    TextRenderer.DrawText(g, amtText, af, new Rectangle(x0, ay, cw, amtH + 2), Color.FromArgb(214, 96, 4), one);
-                    amtH += 15;
-                }
+                    int capH = M("PAY TO", cf).Height;
+                    int iconW = (int)(22 * u);
+                    int y = 4;
+                    int tH = Math.Max((int)(16 * u), M(title, tf).Height);
+                    int tW = widthAt(y, tH) - iconW;
+                    bool titleFits = M(title, tf).Width <= tW;
+                    y += tH + (int)(3 * u);
+                    List<string> hl = showHint ? wrap(hint, hf, widthAt(y, 2 * M("Ag", hf).Height)) : new List<string>();
+                    int hintH = showHint ? blockH(hl, hf) : 0;
+                    y += hintH + (int)(6 * u);
+                    int divY = y;
+                    y += 1 + (int)(6 * u);
+                    int payCapY = y;
+                    y += capH + (int)(2 * u);
+                    List<string> pl = wrap(payTo, pf, widthAt(y, 2 * M("Ag", pf).Height));
+                    int payY = y;
+                    y += blockH(pl, pf);
+                    int amtH = M(amtText, af).Height;
+                    int need = y + (int)(8 * u) + capH + (int)(2 * u) + amtH + 4;
 
-                // PAY TO fills the space between the divider and the amount
-                TextRenderer.DrawText(g, "PAY TO", cap, new Rectangle(x0, y, cw, 13), qMuted, one);
-                y += 15;
-                int room = Math.Max(14, H - 4 - amtH - 6 - y);
-                using (Font vf = fit(payTo, 10F, FontStyle.Bold, cw, 8F))
-                {
-                    if (TextRenderer.MeasureText(g, payTo, vf, Size.Empty, TextFormatFlags.NoPadding).Width <= cw)
-                        TextRenderer.DrawText(g, payTo, vf, new Rectangle(x0, y, cw, 20), qNavy, one);
-                    else
-                        using (Font wf = new Font("Segoe UI", 8.5F, FontStyle.Bold))
+                    bool fits = need <= H && titleFits && (!showHint || hl.Count <= 3);
+                    bool canShrink = tS > 9f || hS > 6.5f || pS > 7.5f || showHint || aS > 10f;
+                    if (fits || !canShrink)
+                    {
+                        // ---- draw ----
+                        using (Pen ip = new Pen(Color.FromArgb(214, 96, 4), 1.8F * u))
                         {
-                            int lh = TextRenderer.MeasureText(g, "Ag", wf, Size.Empty, TextFormatFlags.NoPadding).Height + 1;
-                            var lines = wrap(payTo, wf, cw, Math.Max(1, Math.Min(4, room / lh)));
-                            foreach (string l in lines)
-                            {
-                                TextRenderer.DrawText(g, l, wf, new Rectangle(x0, y, cw, lh), qNavy, one | TextFormatFlags.EndEllipsis);
-                                y += lh;
-                            }
+                            ip.StartCap = LineCap.Round; ip.EndCap = LineCap.Round; ip.LineJoin = LineJoin.Round;
+                            float sz = 14 * u, c = 4.5f * u, ix = x0, iy = 4 + (tH - sz) / 2f;
+                            g.DrawLines(ip, new[] { new PointF(ix, iy + c), new PointF(ix, iy), new PointF(ix + c, iy) });
+                            g.DrawLines(ip, new[] { new PointF(ix + sz - c, iy), new PointF(ix + sz, iy), new PointF(ix + sz, iy + c) });
+                            g.DrawLines(ip, new[] { new PointF(ix + sz, iy + sz - c), new PointF(ix + sz, iy + sz), new PointF(ix + sz - c, iy + sz) });
+                            g.DrawLines(ip, new[] { new PointF(ix + c, iy + sz), new PointF(ix, iy + sz), new PointF(ix, iy + sz - c) });
+                            g.DrawLine(ip, ix + 2.5f * u, iy + sz / 2, ix + sz - 2.5f * u, iy + sz / 2);
                         }
+                        int titleTextH = M(title, tf).Height;
+                        TextRenderer.DrawText(g, title, tf, new Rectangle(x0 + iconW, 4 + (tH - titleTextH) / 2, cw, titleTextH + 1), qNavy, ONE);
+                        if (showHint) drawBlock(hl, hf, 4 + tH + (int)(3 * u), qMuted);
+                        using (Pen sep = new Pen(Color.FromArgb(226, 232, 240)))
+                            g.DrawLine(sep, x0, divY, x0 + cw, divY);
+                        TextRenderer.DrawText(g, "PAY TO", cf, new Rectangle(x0, payCapY, cw, capH + 1), qMuted, ONE);
+                        drawBlock(pl, pf, payY, qNavy);
+                        // AMOUNT anchored to the bottom, always complete
+                        int ay = Math.Max(payY + blockH(pl, pf) + (int)(4 * u) + capH, H - 4 - amtH);
+                        TextRenderer.DrawText(g, "AMOUNT", cf, new Rectangle(x0, ay - capH - (int)(2 * u), cw, capH + 1), qMuted, ONE);
+                        TextRenderer.DrawText(g, amtText, af, new Rectangle(x0, ay, cw + 4, amtH + 1), Color.FromArgb(214, 96, 4), ONE);
+                        break;
+                    }
                 }
+                if (tS > 9f) tS -= 0.5f;
+                else if (hS > 6.5f) hS -= 0.25f;
+                else if (pS > 7.5f) pS -= 0.5f;
+                else if (showHint) showHint = false;          // secondary text goes before anything is cut
+                else if (aS > 10f) aS -= 1f;
             }
         };
 
@@ -457,10 +553,12 @@ public class frmShowQR : Form
         // keeps this instance and calls method_1 -> method_0 -> Show() for the next QR, so a
         // disposed form would make the next QR silently never appear.
         int xState = 0;                                     // 0 normal, 1 hover, 2 pressed
-        PictureBox xBtn = new PictureBox                    // PictureBox is double-buffered: no flicker
+        // Corner "patch" badge. Transparent PictureBox: WinForms paints the form (header ribbon,
+        // cards) behind it, so there are no square edges around the circle. PictureBox is
+        // double-buffered, so hover/press don't flicker.
+        PictureBox xBtn = new PictureBox
         {
-            Size = new Size(26, 20),
-            BackColor = Color.FromArgb(248, 158, 44),
+            BackColor = Color.Transparent,
             Cursor = Cursors.Hand,
             TabStop = false
         };
@@ -468,31 +566,31 @@ public class frmShowQR : Form
         {
             Graphics g = xe.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
-            int fw = ClientSize.Width;
-            // repaint the header gradient + gloss underneath so the button blends into the ribbon
-            using (LinearGradientBrush hb = new LinearGradientBrush(new Rectangle(-xBtn.Left, -xBtn.Top, Math.Max(1, fw), 26),
-                Color.FromArgb(214, 96, 4), Color.FromArgb(248, 158, 44), LinearGradientMode.Horizontal))
-                g.FillRectangle(hb, 0, 0, xBtn.Width, xBtn.Height);
-            using (SolidBrush gloss = new SolidBrush(Color.FromArgb(22, 255, 255, 255)))
-                g.FillRectangle(gloss, 0, 0, xBtn.Width, Math.Max(0, 13 - xBtn.Top));
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            PointF c0 = qBadgeCentre();
+            float r = qBadgeR + (xState == 1 ? 1f : 0f);                  // hover: grows ~2px
+            float cx = c0.X - xBtn.Left, cy = c0.Y - xBtn.Top + (xState == 2 ? 1f : 0f);
 
-            RectangleF r = new RectangleF(0.5f, xState == 2 ? 1.5f : 0.5f, xBtn.Width - 1.5f, xBtn.Height - 2f);
-            Color fill = xState == 2 ? Color.FromArgb(153, 27, 27) : xState == 1 ? Color.White : Color.FromArgb(220, 38, 38);
-            Color line = xState == 2 ? Color.FromArgb(127, 29, 29) : xState == 1 ? Color.FromArgb(220, 38, 38) : Color.FromArgb(185, 28, 28);
-            Color glyph = xState == 1 ? Color.FromArgb(220, 38, 38) : Color.White;
-            float rad = 5f, d = rad * 2;
-            using (GraphicsPath p = new GraphicsPath())
+            // soft drop shadow
+            if (xState != 2)
             {
-                p.AddArc(r.X, r.Y, d, d, 180, 90);
-                p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
-                p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
-                p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
-                p.CloseFigure();
-                using (SolidBrush fb = new SolidBrush(fill)) g.FillPath(fb, p);
-                using (Pen lp = new Pen(line, 1F)) g.DrawPath(lp, p);
+                using (SolidBrush sh = new SolidBrush(Color.FromArgb(28, 0, 0, 0)))
+                    g.FillEllipse(sh, cx - r - 1f, cy - r + 0.5f, (r + 1f) * 2, (r + 1f) * 2);
+                using (SolidBrush sh = new SolidBrush(Color.FromArgb(46, 0, 0, 0)))
+                    g.FillEllipse(sh, cx - r, cy - r + 1.8f, r * 2, r * 2);
             }
-            float cx = r.X + r.Width / 2f, cy = r.Y + r.Height / 2f, k = 4f;
-            using (Pen xp = new Pen(glyph, 2F))
+
+            Color ring = xState == 1 ? Color.FromArgb(220, 38, 38) : Color.White;
+            Color fill = xState == 2 ? Color.FromArgb(153, 27, 27)
+                       : xState == 1 ? Color.White
+                       : Color.FromArgb(220, 38, 38);
+            Color glyph = xState == 1 ? Color.FromArgb(220, 38, 38) : Color.White;
+            float ringW = 2f * qDpiK;
+            using (SolidBrush rb = new SolidBrush(ring)) g.FillEllipse(rb, cx - r, cy - r, r * 2, r * 2);
+            using (SolidBrush fb = new SolidBrush(fill)) g.FillEllipse(fb, cx - r + ringW, cy - r + ringW, (r - ringW) * 2, (r - ringW) * 2);
+
+            float k = r * 0.34f;
+            using (Pen xp = new Pen(glyph, 2.6f * qDpiK))
             {
                 xp.StartCap = LineCap.Round; xp.EndCap = LineCap.Round;
                 g.DrawLine(xp, cx - k, cy - k, cx + k, cy + k);
@@ -508,10 +606,207 @@ public class frmShowQR : Form
             xState = xBtn.ClientRectangle.Contains(xe.Location) ? 1 : 0;
             xBtn.Invalidate();
         };
-        xBtn.Click += (s, xe) =>
+        // ---- what closing means, and why it is robust ----
+        // Root causes found for "X does nothing" in the real app:
+        //  (1) while any ShowDialog runs in the app, WinForms disables every other top-level
+        //      window of the thread -> this popup receives NO mouse messages at all;
+        //  (2) the app re-sends the QR (method_1 -> method_0 -> Show/Activate), which re-shows
+        //      the popup right after the user hid it.
+        // Fixes: close on MouseUp (not Click); a fallback that reads the real mouse state from
+        // the UI timer (works even while the window is disabled); and the same QR is not
+        // re-shown after the user hid it (a different QR shows normally).
+        string qHiddenSig = null;
+        Func<string> qSig = () =>
         {
+            long hsh = 17;
+            Image im = pictureBox1.Image;
+            if (im != null)
+            {
+                try
+                {
+                    using (Bitmap sb = new Bitmap(im, new Size(40, 40)))
+                        for (int yy = 0; yy < 40; yy++)
+                            for (int xx = 0; xx < 40; xx++)
+                                hsh = unchecked(hsh * 31 + sb.GetPixel(xx, yy).ToArgb());
+                }
+                catch { }
+            }
+            return (label1.Text ?? "") + "|" + hsh;
+        };
+        int qStState = 0;                                   // sticker: 0 normal, 1 hover, 2 pressed
+        bool xPrevDown = false, xArmed = false;             // polling state (reset whenever the popup hides)
+        Action qUserClose = () =>
+        {
+            if (IsDisposed || !Visible) return;
             xState = 0;
-            Hide();                                         // the next QR (method_0 -> Show) brings it back
+            qStState = 0;
+            xPrevDown = false; xArmed = false;
+            qHiddenSig = qSig();
+            Hide();                                         // never Close(): the owner reuses this instance
+        };
+        xBtn.MouseUp += (s, xe) =>
+        {
+            if (xe.Button == MouseButtons.Left && Rectangle.Inflate(xBtn.ClientRectangle, 4, 4).Contains(xe.Location))
+                qUserClose();
+        };
+        VisibleChanged += (s, ve) =>
+        {
+            if (!Visible || qHiddenSig == null || IsDisposed) return;
+            if (qSig() == qHiddenSig)
+                BeginInvoke((Action)(() => { if (!IsDisposed) Hide(); }));   // same QR again: stay closed
+            else
+                qHiddenSig = null;                                           // new QR: show normally
+        };
+
+        // ---------------- "sticker" close badge: owned layered window on the top-right corner ----------------
+        // 32px red disc (96 DPI) with a white ring, soft shadow and white X, centred at
+        // (Right - 8, Top + 8): about half of it sits outside the popup. Per-pixel alpha gives perfectly
+        // smooth edges over anything behind it. WS_EX_NOACTIVATE: clicking it never steals focus.
+        Form qSt = null;
+        bool qStShown = false;
+        float qStR = 16f * qDpiK;
+        int qStS = (int)Math.Ceiling(qStR * 2f + 12f * qDpiK);           // disc + hover growth + shadow
+        Func<Point> qStCentre = () => new Point(Right - 8, Top + 8);       // screen pixels, like the ticket popup
+        Action qStRender = () =>
+        {
+            if (!qSticker || qSt == null || qSt.IsDisposed || !qSt.IsHandleCreated) return;
+            try
+            {
+                using (Bitmap bmp = new Bitmap(qStS, qStS, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+                {
+                    using (Graphics g = Graphics.FromImage(bmp))
+                    {
+                        g.Clear(Color.Transparent);
+                        g.SmoothingMode = SmoothingMode.AntiAlias;
+                        g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                        float r = qStR + (qStState == 1 ? 1f : 0f);
+                        float cx = qStS / 2f, cy = qStS / 2f - 1.5f * qDpiK + (qStState == 2 ? 1f : 0f);
+                        if (qStState != 2)
+                            for (int i = 4; i >= 1; i--)                              // soft drop shadow
+                                using (SolidBrush sh = new SolidBrush(Color.FromArgb(14 + (4 - i) * 10, 0, 0, 0)))
+                                {
+                                    float rr = r + i * 0.7f * qDpiK;
+                                    g.FillEllipse(sh, cx - rr, cy - rr + 2f * qDpiK, rr * 2, rr * 2);
+                                }
+                        Color ring = qStState == 1 ? Color.FromArgb(220, 38, 38) : Color.White;
+                        Color fill = qStState == 2 ? Color.FromArgb(153, 27, 27)
+                                   : qStState == 1 ? Color.White
+                                   : Color.FromArgb(220, 38, 38);
+                        Color glyph = qStState == 1 ? Color.FromArgb(220, 38, 38) : Color.White;
+                        float ringW = 2f * qDpiK;
+                        using (SolidBrush rb = new SolidBrush(ring)) g.FillEllipse(rb, cx - r, cy - r, r * 2, r * 2);
+                        using (SolidBrush fb = new SolidBrush(fill)) g.FillEllipse(fb, cx - r + ringW, cy - r + ringW, (r - ringW) * 2, (r - ringW) * 2);
+                        float k = r * 0.33f;
+                        using (Pen xp = new Pen(glyph, 2.6f * qDpiK))
+                        {
+                            xp.StartCap = LineCap.Round; xp.EndCap = LineCap.Round;
+                            g.DrawLine(xp, cx - k, cy - k, cx + k, cy + k);
+                            g.DrawLine(xp, cx + k, cy - k, cx - k, cy + k);
+                        }
+                    }
+                    // make sure the window is layered + non-activating (WinForms may create or refresh the
+                    // handle before/after our HandleCreated hook, e.g. when Owner is assigned)
+                    int exs = (int)qCall("GetWindowLongW", new object[] { qSt.Handle, -20 });
+                    const int want = 0x80000 | 0x80 | 0x8000000;           // LAYERED | TOOLWINDOW | NOACTIVATE
+                    if ((exs & want) != want) qCall("SetWindowLongW", new object[] { qSt.Handle, -20, exs | want });
+                    using (Graphics sg = Graphics.FromHwnd(IntPtr.Zero))
+                    {
+                        IntPtr sdc = sg.GetHdc();
+                        IntPtr mem = (IntPtr)qCall("CreateCompatibleDC", new object[] { sdc });
+                        IntPtr hbmp = bmp.GetHbitmap(Color.FromArgb(0));           // 32bpp premultiplied
+                        IntPtr old = (IntPtr)qCall("SelectObject", new object[] { mem, hbmp });
+                        Point c = qStCentre();
+                        object[] a = { qSt.Handle, sdc, new Point(c.X - qStS / 2, c.Y - qStS / 2), new Size(qStS, qStS),
+                                       mem, new Point(0, 0), 0, 0x01FF0000, 2 };      // AC_SRC_OVER, alpha 255, AC_SRC_ALPHA; ULW_ALPHA
+                        qCall("UpdateLayeredWindow", a);
+                        qCall("SelectObject", new object[] { mem, old });
+                        qCall("DeleteObject", new object[] { hbmp });
+                        qCall("DeleteDC", new object[] { mem });
+                        sg.ReleaseHdc(sdc);
+                    }
+                }
+            }
+            catch { }
+        };
+        Action qStSync = () =>
+        {
+            if (!qSticker || qSt == null || qSt.IsDisposed) return;
+            try
+            {
+                bool want = Visible && !IsDisposed && WindowState != FormWindowState.Minimized;
+                IntPtr h = qSt.Handle;
+                if (want)
+                {
+                    qStRender();
+                    if (!qStShown) { qCall("ShowWindow", new object[] { h, 4 }); qStShown = true; }   // SW_SHOWNOACTIVATE
+                }
+                else if (qStShown) { qCall("ShowWindow", new object[] { h, 0 }); qStShown = false; qStState = 0; }
+            }
+            catch { }
+        };
+        if (qSticker)
+        {
+            try
+            {
+                qSt = new Form
+                {
+                    FormBorderStyle = FormBorderStyle.None,
+                    ShowInTaskbar = false,
+                    StartPosition = FormStartPosition.Manual,
+                    ControlBox = false, MinimizeBox = false, MaximizeBox = false,
+                    Text = "",
+                    TopMost = true,
+                    Cursor = Cursors.Hand,
+                    Size = new Size(qStS, qStS)
+                };
+                qSt.Owner = this;                                                // stays above the popup, goes with it
+                qSt.HandleCreated += (s, he) =>
+                {
+                    try
+                    {
+                        int ex = (int)qCall("GetWindowLongW", new object[] { qSt.Handle, -20 });
+                        qCall("SetWindowLongW", new object[] { qSt.Handle, -20, ex | 0x80000 | 0x80 | 0x8000000 });   // LAYERED | TOOLWINDOW | NOACTIVATE
+                    }
+                    catch { }
+                };
+                Func<Point, bool> onDisc = p =>
+                {
+                    float dx = p.X - qStS / 2f, dy = p.Y - (qStS / 2f - 1.5f * qDpiK);
+                    return dx * dx + dy * dy <= (qStR + 2f) * (qStR + 2f);
+                };
+                qSt.MouseMove += (s, me) => { int ns = onDisc(me.Location) ? (me.Button == MouseButtons.Left ? 2 : 1) : 0; if (ns != qStState) { qStState = ns; qStRender(); } };
+                qSt.MouseLeave += (s, me) => { if (qStState != 0) { qStState = 0; qStRender(); } };
+                qSt.MouseDown += (s, me) => { if (me.Button == MouseButtons.Left && onDisc(me.Location)) { qStState = 2; qStRender(); } };
+                qSt.MouseUp += (s, me) => { if (me.Button == MouseButtons.Left && onDisc(me.Location)) qUserClose(); };
+                IntPtr forceHandle = qSt.Handle;                                 // create now (ex-style applied)
+                // follow the popup: position, visibility; destroyed with it
+                Move += (s, e2) => qStSync();
+                Resize += (s, e2) => qStSync();
+                VisibleChanged += (s, e2) => qStSync();
+                Shown += (s, e2) => qStSync();
+                Disposed += (s, e2) => { try { if (qSt != null && !qSt.IsDisposed) qSt.Dispose(); } catch { } };
+            }
+            catch { qSticker = false; if (qSt != null) { try { qSt.Dispose(); } catch { } qSt = null; } }
+        }
+
+        // ---------------- polling fallback (works even while a modal dialog disables our windows) ----------------
+        qTimer.Tick += (s, te) =>
+        {
+            if (IsDisposed || !Visible || xBtn.IsDisposed) { xPrevDown = false; xArmed = false; return; }
+            Point ms = Control.MousePosition;                                   // screen pixels
+            PointF bc; float br;
+            if (qSticker && qSt != null && !qSt.IsDisposed) { Point c = qStCentre(); bc = new PointF(c.X, c.Y - 1.5f * qDpiK); br = qStR; }
+            else { PointF lc = qBadgeCentre(); Point sp = PointToScreen(Point.Empty); bc = new PointF(sp.X + lc.X, sp.Y + lc.Y); br = qBadgeR; }
+            float ddx = ms.X - bc.X, ddy = ms.Y - bc.Y;
+            bool inside = ddx * ddx + ddy * ddy <= (br + 2f) * (br + 2f);       // circle hit-test
+            bool down = (Control.MouseButtons & MouseButtons.Left) != 0;
+            if (down && !xPrevDown) xArmed = inside;                             // press must start on the X
+            if (!down && xPrevDown && xArmed && inside) { xArmed = false; xPrevDown = false; qUserClose(); return; }
+            if (!down) xArmed = false;
+            xPrevDown = down;
+            int ns = inside ? (down && xArmed ? 2 : 1) : 0;
+            if (qSticker && qSt != null) { if (ns != qStState) { qStState = ns; qStRender(); } }
+            else if (ns != xState) { xState = ns; xBtn.Invalidate(); }
         };
         Controls.Add(xBtn);
         xBtn.BringToFront();
@@ -522,13 +817,14 @@ public class frmShowQR : Form
         {
             if (IsDisposed) return;
             int W = ClientSize.Width, H = ClientSize.Height;
-            const int hdr = 26, top = 3, bottom = 2, pad = 6;       // minimal clean gaps
+            int hdr = qHdrH; const int top = 3, bottom = 2, pad = 6; // header holds the badge; minimal clean gaps
             int side = Math.Max(100, H - hdr - top - bottom);         // white QR card = full available height
             side = Math.Min(side, Math.Max(100, W - pad * 3 - 140));   // info panel keeps >= ~140px
             pictureBox1.SetBounds(pad + 3, hdr + top + 3, side - 6, side - 6);
             int ix = pad + side + pad;
             label1.SetBounds(ix + 8, hdr + top + 6, Math.Max(60, W - ix - pad - 14), side - 12);
-            xBtn.SetBounds(W - 26 - 5, (hdr - 3 - 20) / 2 + 1, 26, 20);   // right end of the header
+            if (qSticker) xBtn.Visible = false;                         // the corner sticker replaces the in-header badge
+            else { xBtn.Visible = true; xBtn.Bounds = qBadgeBox(); }      // fallback: corner patch badge in the header
             xBtn.BringToFront();
             Invalidate();
         };
@@ -620,7 +916,9 @@ public class frmShowQR : Form
         };
 
         // ---------------- slim header ribbon (bhagwa + navy underline) ----------------
-        const int hdrH = 26;
+        float hk = 1f;
+        try { using (Graphics sg = Graphics.FromHwnd(IntPtr.Zero)) hk = Math.Max(1f, sg.DpiX / 96f); } catch { }
+        int hdrH = Math.Max(20, pictureBox1.Top - 6);                  // same header height the layout used
         Rectangle header = new Rectangle(0, 0, W, hdrH);
         using (LinearGradientBrush hb = new LinearGradientBrush(header,
             Color.FromArgb(214, 96, 4), Color.FromArgb(248, 158, 44), LinearGradientMode.Horizontal))
@@ -631,7 +929,7 @@ public class frmShowQR : Form
             g.FillRectangle(ul, 0, hdrH - 3, W, 3);
 
         // QR badge (Lucide "qr-code"-ish) + title
-        RectangleF badge = new RectangleF(7, 3, 18, 18);
+        RectangleF badge = new RectangleF(7, (hdrH - 3 - 18) / 2f, 18, 18);
         using (SolidBrush wb = new SolidBrush(Color.White)) g.FillEllipse(wb, badge);
         using (SolidBrush ib = new SolidBrush(Color.FromArgb(214, 96, 4)))
         {
@@ -639,15 +937,20 @@ public class frmShowQR : Form
             g.FillRectangle(ib, bx, by, 3.5f, 3.5f); g.FillRectangle(ib, bx + 5.5f, by, 3.5f, 3.5f);
             g.FillRectangle(ib, bx, by + 5.5f, 3.5f, 3.5f); g.FillRectangle(ib, bx + 6, by + 6, 2.5f, 2.5f);
         }
-        using (Font tf = new Font("Segoe UI Semibold", 9.5F))
+        using (Font tf = new Font("Segoe UI Semibold", 9.5f * 4f / 3f, FontStyle.Regular, GraphicsUnit.Pixel))
             TextRenderer.DrawText(g, "Payment QR", tf, new Rectangle(31, 0, W - 110, hdrH - 3), Color.White,
                 TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
 
         // UPI pill on the right of the header
-        using (Font pf = new Font("Segoe UI", 7.5F, FontStyle.Bold))
+        using (Font pf = new Font("Segoe UI", (7.5f) * 4f / 3f, FontStyle.Bold, GraphicsUnit.Pixel))
         {
             Size ps = TextRenderer.MeasureText(g, "UPI", pf, Size.Empty, TextFormatFlags.NoPadding);
-            RectangleF pill = new RectangleF(W - ps.Width - 24 - 32, (hdrH - 3 - 16) / 2f, ps.Width + 16, 16);
+            float bk = 1f;
+            try { using (Graphics sg = Graphics.FromHwnd(IntPtr.Zero)) bk = Math.Max(1f, sg.DpiX / 96f); } catch { }
+            bool headerBadge = false;
+            foreach (Control hc in Controls) if (hc is PictureBox && hc != pictureBox1 && hc.Visible) headerBadge = true;
+            float pillRight = headerBadge ? W - 3f - 30f * bk - 10f : W - 30f * bk;   // clear of the in-header badge, or of the corner sticker
+            RectangleF pill = new RectangleF(pillRight - (ps.Width + 16), (hdrH - 3 - 16) / 2f, ps.Width + 16, 16);
             using (GraphicsPath pp = round(pill, 8f))
             {
                 using (SolidBrush b = new SolidBrush(Color.FromArgb(48, 255, 255, 255))) g.FillPath(b, pp);

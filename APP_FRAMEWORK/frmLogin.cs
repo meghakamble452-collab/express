@@ -987,6 +987,19 @@ public partial class frmLogin : Form
             Program.UnpaidKey = false;
             Program.IsDemo = false;
             Program.BypassAnalizer = true;
+
+            try { Staticm.Method_3500(); } catch { }
+
+            Program.paidpair = 20;
+            Program.unpaidpair = 12;
+
+            Program.list_0 = StatClass.GetPType();
+            Program.dictionary_2 = StatClass.GetNet();
+            Program.dictionary_3 = StatClass.GetDebit();
+            Program.dictionary_4 = StatClass.GetCredit();
+
+            return true;
+
             return true;
         }
         string link = "https://expressts.co.in/api/login.php";

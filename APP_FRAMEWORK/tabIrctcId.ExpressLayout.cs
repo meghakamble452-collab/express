@@ -1907,20 +1907,13 @@ internal partial class tabIrctcId
             }
             ExRound(btnIDSave, P(10));
 
-            // title band: check boxes right after the painted title, CREATE NEW ID (if shown) at the far right
-            int titleW;
-            using (Graphics tg = CreateGraphics())
-                titleW = TextRenderer.MeasureText(tg, grpAddID.Text ?? "", grpAddID.Font, new Size(800, 60), TextFormatFlags.NoPadding).Width;
+            // title band: CREATE NEW ID (if shown) at the far right.
+            // The three option check boxes are hidden in this compact layout (visual only:
+            // their Checked values and handlers are untouched; "Validate" stays checked).
             int b5W = P(150);
             ExPut(button5, innerW - GX - b5W, rowCk + P(1), b5W, P(26));
             ExRound(button5, P(8));
-
-            int ckX = P(28) + titleW + P(26);
-            int ck1 = ExTextW(chkValidate) + P(24);
-            ExPut(chkValidate, ckX, rowCk, ck1, P(26)); ckX += ck1 + P(22);
-            int ck2 = ExTextW(chkShowPwd) + P(24);
-            ExPut(chkShowPwd, ckX, rowCk, ck2, P(26)); ckX += ck2 + P(22);
-            ExPut(checkBox1, ckX, rowCk, ExTextW(checkBox1) + P(24), P(26));
+            ExHideOptionChecks();
 
             // saved list: card fills ALL remaining height, grid scrolls inside it
             int cardY = topY + topH + P(8);
@@ -1946,6 +1939,27 @@ internal partial class tabIrctcId
             PerformLayout();
             Invalidate();
         }
+    }
+
+    // Lite layout hides the Validate / Show Password / Add Bulk ID check boxes.
+    // Only Visible is touched; a guard keeps them hidden if anything re-shows them.
+    private bool exChecksGuarded;
+
+    private void ExHideOptionChecks()
+    {
+        foreach (CheckBox c in new[] { chkValidate, chkShowPwd, checkBox1 })
+        {
+            if (c == null) continue;
+            if (!exChecksGuarded) c.VisibleChanged += ExOptionCheckVisibleGuard;
+            if (c.Visible) c.Visible = false;
+        }
+        exChecksGuarded = true;
+    }
+
+    private void ExOptionCheckVisibleGuard(object sender, EventArgs e)
+    {
+        CheckBox c = sender as CheckBox;
+        if (c != null && exLite && !exMin && c.Visible) c.Visible = false;
     }
 
     private void ExFieldInner(Control box, int w, int h)
