@@ -87,10 +87,25 @@ internal class TLSSession
 		sessionPayload.Headers = headers;
 		sessionPayload.RequestBody = body;
 		string s = JsonConvert.SerializeObject(sessionPayload);
-		RequestResult requestResult = JsonConvert.DeserializeObject<RequestResult>(Marshal.PtrToStringAnsi(request(Encoding.UTF8.GetBytes(s), sessionID)));
-		freeMemory(requestResult.Id);
-		return requestResult;
-	}
+        RequestResult requestResult;
+        try
+        {
+            string raw = Marshal.PtrToStringAnsi(request(Encoding.UTF8.GetBytes(s), sessionID));
+            requestResult = JsonConvert.DeserializeObject<RequestResult>(raw);
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                System.IO.Directory.CreateDirectory("IRLOG");
+                System.IO.File.AppendAllText("IRLOG\\tls.log", DateTime.Now.ToString("HH:mm:ss") + " ERR " + method + " " + url + " : " + ex.GetType().Name + " " + ex.Message + Environment.NewLine);
+            }
+            catch { }
+            throw;
+        }
+        freeMemory(requestResult.Id);
+        return requestResult;
+    }
 
 	private Dictionary<string, string> MergeHeaders(Dictionary<string, string> originalHeaders, Dictionary<string, string> additionalHeaders)
 	{
