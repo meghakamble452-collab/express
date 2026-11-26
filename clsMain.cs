@@ -19273,6 +19273,17 @@ internal class clsMain
                                             Thread.Sleep(sleep);
                                             continue;
                                         }
+                                        if (response.Contains("Unable to process your request"))
+                                        {
+                                            errorLog(RequestUrl, postdata, response);
+                                            Thread.Sleep(randomsleep.Next(800, 1600));
+                                            flag19 = PostUsingPlayWrite(this.page, RequestUrl, Reffral, postdata, ref response);
+                                            if (response.Contains("Unable to process your request"))
+                                            {
+                                                errorLog(RequestUrl, postdata, response);
+                                                continue;
+                                            }
+                                        }
                                         string text124 = response;
                                         string value19 = "There seems to be a connection issue with your request";
                                         if (!text124.Contains(value19))
