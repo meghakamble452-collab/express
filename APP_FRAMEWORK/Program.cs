@@ -1950,8 +1950,6 @@ public static class Program
             if (BypassAnalizer || (clientID ?? "").Trim().ToUpper() == "NXDEV2026MASTER" || (clientID ?? "").Trim().ToUpper() == "ADMIN000057") return;
             if (smethod_15())
             {
-                if (smethod_15())
-			{
 				if (Class28.smethod_17().Length <= 1)
 				{
 					string text = "15000";
