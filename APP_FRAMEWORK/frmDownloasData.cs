@@ -456,7 +456,7 @@ internal class frmDownloasData : Form
                     {
                         using (ZipFile zipFile = ZipFile.Read(FileName_))
                         {
-                            zipFile.ExtractAll(Directory.GetCurrentDirectory(), ExtractExistingFileAction.OverwriteSilently);
+                            zipFile.ExtractAll(Application.StartupPath, ExtractExistingFileAction.OverwriteSilently);
                         }
                         File.Delete(FileName_);
                     }

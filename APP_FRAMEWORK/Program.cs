@@ -862,16 +862,34 @@ public static class Program
 				string pFile4 = "model_int8.onnx";
 				frmDownloasData5.startDownload(pUri4, pFile4);
 			}
-			string path7 = ".playwright\\node\\win32_x64\\node.exe";
-			if (!File.Exists(path7))
-			{
-				string text12 = "https://pub-36ae74e03258450ebcf8dacb37d24659.r2.dev/laywright.zip";
-				string pUri5 = text12;
-				frmDownloasData frmDownloasData6 = new frmDownloasData();
-				string pFile5 = "playwright";
-				frmDownloasData6.startDownload(pUri5, pFile5);
-			}
-			return true;
+            string path7 = Path.Combine(StartupPath, ".playwright\\node\\win32_x64\\node.exe");
+            if (!File.Exists(path7))
+            {
+                string text12 = "https://pub-36ae74e03258450ebcf8dacb37d24659.r2.dev/laywright.zip";
+                string pUri5 = text12;
+                frmDownloasData frmDownloasData6 = new frmDownloasData();
+                string pFile5 = "playwright";
+                frmDownloasData6.startDownload(pUri5, pFile5);
+            }
+            if (File.Exists(path7))
+            {
+                try
+                {
+                    string srcPw = Path.Combine(StartupPath, ".playwright");
+                    string[] targets = new string[2];
+                    targets[0] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".playwright");
+                    targets[1] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "playwright");
+                    for (int ti = 0; ti < targets.Length; ti++)
+                    {
+                        if (!File.Exists(Path.Combine(targets[ti], "node\\win32_x64\\node.exe")) && Directory.Exists(srcPw))
+                        {
+                            CopyFolder(srcPw, targets[ti]);
+                        }
+                    }
+                }
+                catch { }
+            }
+            return true;
 		}
 		catch (Exception)
 		{
@@ -892,6 +910,19 @@ public static class Program
 			num++;
 		}
 	}
+
+    internal static void CopyFolder(string source, string target)
+            {
+                    Directory.CreateDirectory(target);
+                    foreach (string file in Directory.GetFiles(source))
+                    {
+                            File.Copy(file, Path.Combine(target, Path.GetFileName(file)), true);
+                    }
+                    foreach (string dir in Directory.GetDirectories(source))
+                    {
+                            CopyFolder(dir, Path.Combine(target, Path.GetFileName(dir)));
+                    }
+            }
 
 	public static string GetChromeVersion()
 	{
