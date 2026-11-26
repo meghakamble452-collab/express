@@ -1675,7 +1675,7 @@ internal class Playwright_Automation
                 string text3 = string.Format(format, freeTcpPort);
                 string text4 = "--remote-debugging-address=127.0.0.1 --user-data-dir=\"";
                 string text5 = userDataDir00;
-                string text6 = "\" --no-first-run --no-default-browser-check --disable-session-crashed-bubble --disable-save-password-bubble --disable-infobars --disable-sync --password-store=basic --disable-features=msEdgeSync,PasswordManagerEnabled --app=about:blank";
+                string text6 = "\" --no-first-run --no-default-browser-check --disable-session-crashed-bubble --disable-save-password-bubble --disable-infobars --disable-sync --password-store=basic --disable-features=msEdgeFirstRunExperience,msEdgeSync,PasswordManagerEnabled --app=https://www.irctc.co.in/nget/train-search";
                 int offsetY = random.Next(900, 1550);
                 string text7 = text3 + text4 + text5 + text6 + " --window-position=" + rect.X + "," + (rect.Y + offsetY);
                 if (num == 0)
@@ -1733,8 +1733,8 @@ internal class Playwright_Automation
                 string format2 = "http://127.0.0.1:{0}";
                 IBrowserContext val = chromium.ConnectOverCDPAsync(string.Format(format2, freeTcpPort), (BrowserTypeConnectOverCDPOptions)null).GetAwaiter().GetResult()
                     .Contexts[0];
-                // hamesha fresh tab; purane restored tab band karo
-                page = val.NewPageAsync().GetAwaiter().GetResult();
+                // app window ka pehla tab use karo; extra restored tab band karo
+                page = (val.Pages.Count > 0) ? val.Pages[0] : val.NewPageAsync().GetAwaiter().GetResult();
                 foreach (IPage oldPg in val.Pages.ToList())
                 {
                     if (oldPg != page)
@@ -1810,6 +1810,13 @@ internal class Playwright_Automation
                 string result4 = (val2.ContentAsync().GetAwaiter().GetResult() ?? "").ToLowerInvariant();
                 if (!result4.Contains("book train tickets online instantly on irctc") && !result4.Contains("downtime message"))
                 {
+                    num++;
+                    if (num >= 3)
+                    {
+                        BrowserLoded = false;
+                        break;
+                    }
+                    try { if (process != null && !process.HasExited) process.Kill(); } catch { }
                     continue;
                 }
                 BrowserLoded = true;
