@@ -39224,13 +39224,14 @@ internal class Bank
 		}
 	}
 
-	private string GetUpiQr(string token)
-	{
+    private string GetUpiQr(string token, string orderId)
+    {
 		ServicePointManager.Expect100Continue = false;
 		ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 		string text = "https://api.phonepe.com/apis/pg/checkout/ui/v2/upi-qr?t=";
 		string text2 = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
         string text3 = "__5&paymentMode=UPI_QR";
+        if (!string.IsNullOrEmpty(orderId)) text3 = text3 + "&merchantOrderId=" + orderId;
         HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(text + text2 + text3);
         string method = "GET";
         httpWebRequest.Method = method;
@@ -39957,8 +39958,8 @@ internal class Bank
 				clsMain clsMain3 = this.clsMain;
 				string text43 = "x-auth-token#";
 				string text44 = text39;
-				string text45 = "&x-browser-fingerprint#641c941b36b27e3f485118a04bd13bdd";
-				clsMain3.extraHeaders = text43 + text44 + text45;
+                string text45 = "&x-browser-fingerprint#d18637fe447b1038bbaff0872e125da9";
+                clsMain3.extraHeaders = text43 + text44 + text45;
 				UpdateTStatus updateTStatus2 = updateTStatus_1;
 				string text46 = "PhonePe. ";
 				string text47 = text5;
@@ -40008,7 +40009,15 @@ internal class Bank
 						decimal num = (decimal)int.Parse(class3_0.Txnamt) / 100m;
 						class3_0.Txnamt = num.ToString();
 					}
-					response = GetUpiQr(text39);
+                    string ordId = "";
+                    int oi = response.IndexOf("merchantOrderId\":\"");
+                    if (oi >= 0)
+                    {
+                        int os = oi + 18;
+                        int oe = response.IndexOf('"', os);
+                        if (oe > os) ordId = response.Substring(os, oe - os);
+                    }
+                    response = GetUpiQr(text39, ordId);
                     try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "qr_log.txt"), DateTime.Now.ToString("HH:mm:ss") + " QR: " + response + Environment.NewLine); } catch { }
                     string text63 = response;
 					string value19 = "qrCode";
@@ -40081,8 +40090,8 @@ internal class Bank
 					clsMain clsMain4 = this.clsMain;
 					string text79 = "x-auth-token#";
 					string text80 = text39;
-					string text81 = "&x-browser-fingerprint#641c941b36b27e3f485118a04bd13bdd&Authorization#Bearer ";
-					clsMain4.extraHeaders = text79 + text80 + text81 + text39;
+                    string text81 = "&x-browser-fingerprint#d18637fe447b1038bbaff0872e125da9&Authorization#Bearer ";
+                    clsMain4.extraHeaders = text79 + text80 + text81 + text39;
 					UpdateTStatus updateTStatus4 = updateTStatus_1;
 					string text82 = "Init. ";
 					string text83 = text5;
@@ -40115,8 +40124,8 @@ internal class Bank
 					clsMain clsMain5 = this.clsMain;
 					string text94 = "x-auth-token#";
 					string text95 = text39;
-					string text96 = "&x-browser-fingerprint#641c941b36b27e3f485118a04bd13bdd&Authorization#Bearer ";
-					clsMain5.extraHeaders = text94 + text95 + text96 + text39;
+                    string text96 = "&x-browser-fingerprint#d18637fe447b1038bbaff0872e125da9&Authorization#Bearer ";
+                    clsMain5.extraHeaders = text94 + text95 + text96 + text39;
 					UpdateTStatus updateTStatus5 = updateTStatus_1;
 					string text97 = "Init. ";
 					string text98 = text5;
