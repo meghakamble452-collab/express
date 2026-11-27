@@ -39995,6 +39995,7 @@ internal class Bank
                     }
                     try { response = GetUpiQr(text39, ordId); }
                     catch (Exception qex) { response = "EXC " + qex.GetType().Name + ": " + qex.Message; }
+                    try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "qr_log.txt"), DateTime.Now.ToString("HH:mm:ss") + " QR: " + response + Environment.NewLine); } catch { }
                     string qrStr = "";
                     int qi = response.IndexOf("\"intentUrl\":\"");
                     if (qi >= 0)
