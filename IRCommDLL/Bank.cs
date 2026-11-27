@@ -39021,7 +39021,7 @@ internal class Bank
 		headers5.Add(name5, text4 + token);
 		WebHeaderCollection headers6 = httpWebRequest.Headers;
 		string name6 = "x-browser-fingerprint";
-		string value4 = "641c941b36b27e3f485118a04bd13bdd";
+		string value4 = "d18637fe447b1038bbaff0872e125da9";
 		headers6.Add(name6, value4);
 		WebHeaderCollection headers7 = httpWebRequest.Headers;
 		string name7 = "sec-ch-ua-platform";
@@ -39153,7 +39153,7 @@ internal class Bank
 		headers16.Add(name16, "");
 		WebHeaderCollection headers17 = httpWebRequest.Headers;
 		string name17 = "x-browser-fingerprint";
-		string value14 = "641c941b36b27e3f485118a04bd13bdd";
+		string value14 = "d18637fe447b1038bbaff0872e125da9";
 		headers17.Add(name17, value14);
 		WebHeaderCollection headers18 = httpWebRequest.Headers;
 		string name18 = "sec-ch-ua-platform";
@@ -39258,7 +39258,7 @@ internal class Bank
 		headers4.Add(name4, text4 + token);
 		WebHeaderCollection headers5 = httpWebRequest.Headers;
 		string name5 = "x-browser-fingerprint";
-		string value3 = "641c941b36b27e3f485118a04bd13bdd";
+		string value3 = "d18637fe447b1038bbaff0872e125da9";
 		headers5.Add(name5, value3);
 		WebHeaderCollection headers6 = httpWebRequest.Headers;
 		string name6 = "sec-ch-ua-platform";
@@ -39347,7 +39347,7 @@ internal class Bank
 		headers4.Add(name4, text4 + token);
 		WebHeaderCollection headers5 = httpWebRequest.Headers;
 		string name5 = "x-browser-fingerprint";
-		string value3 = "641c941b36b27e3f485118a04bd13bdd";
+		string value3 = "d18637fe447b1038bbaff0872e125da9";
 		headers5.Add(name5, value3);
 		WebHeaderCollection headers6 = httpWebRequest.Headers;
 		string name6 = "sec-ch-ua-platform";
@@ -39436,7 +39436,7 @@ internal class Bank
 		headers4.Add(name4, text4 + token);
 		WebHeaderCollection headers5 = httpWebRequest.Headers;
 		string name5 = "x-browser-fingerprint";
-		string value3 = "641c941b36b27e3f485118a04bd13bdd";
+		string value3 = "d18637fe447b1038bbaff0872e125da9";
 		headers5.Add(name5, value3);
 		WebHeaderCollection headers6 = httpWebRequest.Headers;
 		string name6 = "sec-ch-ua-platform";
@@ -39533,7 +39533,7 @@ internal class Bank
 		headers5.Add(name5, text4 + token);
 		WebHeaderCollection headers6 = httpWebRequest.Headers;
 		string name6 = "x-browser-fingerprint";
-		string value4 = "641c941b36b27e3f485118a04bd13bdd";
+		string value4 = "d18637fe447b1038bbaff0872e125da9";
 		headers6.Add(name6, value4);
 		WebHeaderCollection headers7 = httpWebRequest.Headers;
 		string name7 = "sec-ch-ua-platform";
@@ -39633,7 +39633,7 @@ internal class Bank
 		headers5.Add(name5, text4 + token);
 		WebHeaderCollection headers6 = httpWebRequest.Headers;
 		string name6 = "x-browser-fingerprint";
-		string value4 = "641c941b36b27e3f485118a04bd13bdd";
+		string value4 = "d18637fe447b1038bbaff0872e125da9";
 		headers6.Add(name6, value4);
 		WebHeaderCollection headers7 = httpWebRequest.Headers;
 		string name7 = "x-client";
@@ -39977,16 +39977,18 @@ internal class Bank
 				string value14 = "\"";
 				text39 = text52.Substring(0, text53.IndexOf(value14));
 				string text54 = string_88;
-				string value15 = "PHONEPE-QR";
-				if (text54.Contains(value15))
-				{
+                string value15 = "PHONEPE-QR";
+                bool isQrGw = text54.Contains(value15) || text54.Contains("PAYTM-QR");
+                if (isQrGw)
+                {
 					UpdateTStatus updateTStatus3 = updateTStatus_1;
 					string text55 = "PhonePe. ";
 					string text56 = text5;
 					string text57 = "(3/5)";
 					updateTStatus3.BeginInvoke(1, text55 + text56 + text57, tCntrlName_, null, null);
 					response = CallTxnDetails(text39);
-					string text58 = response;
+                    try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "qr_log.txt"), DateTime.Now.ToString("HH:mm:ss") + " TXN: " + response + Environment.NewLine); } catch { }
+                    string text58 = response;
 					string value16 = "amount";
 					if (text58.Contains(value16))
 					{
@@ -40003,7 +40005,8 @@ internal class Bank
 						class3_0.Txnamt = num.ToString();
 					}
 					response = GetUpiQr(text39);
-					string text63 = response;
+                    try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "qr_log.txt"), DateTime.Now.ToString("HH:mm:ss") + " QR: " + response + Environment.NewLine); } catch { }
+                    string text63 = response;
 					string value19 = "qrCode";
 					if (text63.Contains(value19))
 					{
@@ -40060,7 +40063,11 @@ internal class Bank
 							}
 						}
 					}
-					string text75 = "http://api.phonepe.com/apis/pg/checkout/ui/v2/transaction/details?t=";
+                    if (!response.Contains("qrCode"))
+                    {
+                        try { string_91 = "QR FAIL: " + (response ?? "").Trim(); } catch { }
+                    }
+                    string text75 = "http://api.phonepe.com/apis/pg/checkout/ui/v2/transaction/details?t=";
 					string text76 = method_14();
 					string text77 = "__5";
 					url = text75 + text76 + text77;
