@@ -5484,6 +5484,10 @@ internal class clsMain
                 else if (loginType == 3)
                 {
                     result = IRCTC_WEB_Login_Edge_3(control_2, rectangle_1, TktName, string_87, string_88, tCntrlName, ref string_90, bool_63, bool_64, bool_65, int_Slot, updTStatus, string_91, token);
+                    if (!result && !playwright_Automation.BrowserLoded)
+                    {
+                        updTStatus.BeginInvoke(2, "Edge load nahi hua — dobara click karo", tCntrlName, null, null);
+                    }
                     return result;
                 }
                 else if (loginType == 4)
@@ -18364,9 +18368,18 @@ internal class clsMain
                                 string status14 = "Checking System Files...";
                                 updTStatus.BeginInvoke(1, status14, tCntrlName, null, null);
                                 this.page = playwright_Automation.StartEdgeAndConnect_new_1(ref userDataDir00, directlogin, rect, ref this.page);
+
                                 if (!playwright_Automation.BrowserLoded)
                                 {
-                                    string status15 = "Microsoft Edge Loading Faield !";
+                                    updTStatus.BeginInvoke(1, "Edge ready nahi hua, dobara try...", tCntrlName, null, null);
+                                    try { playwright_Automation.KillOldEdgeByProfile(userDataDir00); } catch { }
+                                    Thread.Sleep(1500);
+                                    this.page = playwright_Automation.StartEdgeAndConnect_new_1(ref userDataDir00, directlogin, rect, ref this.page);
+                                }
+
+                                if (!playwright_Automation.BrowserLoded)
+                                {
+                                    string status15 = "Microsoft Edge Loading Failed !";
                                     updTStatus.BeginInvoke(2, status15, tCntrlName, null, null);
                                     return false;
                                 }
@@ -22313,10 +22326,10 @@ internal class clsMain
                                                                             ref DateTime reference6 = ref dateTime_1;
                                                                             string text510 = "hh:mm:ss";
                                                                             string text511 = reference6.ToString(text510);
-                                                                            string status79 = "Sucess PNR:0000000000";
+                                                                            string status79 = "Sucess PNR:" + foundPnr;
                                                                             updTStatus.BeginInvoke(203, status79, tCntrlName, null, null);
                                                                             string[] array48 = new string[10];
-                                                                            string text512 = "0000000000 - ";
+                                                                            string text512 = foundPnr + " - ";
                                                                             array48[0] = text512;
                                                                             array48[1] = text3;
                                                                             string text514;
@@ -51674,7 +51687,32 @@ internal class clsMain
                                                                 {
                                                                     string text509 = _response;
                                                                     string value125 = "BOOKED";
-                                                                    if (text509.Contains(value125))
+                                                                    string foundPnr = "";
+                                                                    bool pnrFresh = false;
+                                                                    bool dateOk = true;
+                                                                    for (int attempt = 1; attempt <= 4; attempt++)
+                                                                    {
+                                                                        text509 = _response;
+                                                                        try { foundPnr = GetString(text509, "pnrNumber"); } catch { foundPnr = ""; }
+                                                                        pnrFresh = !string.IsNullOrEmpty(foundPnr) && foundPnr.Length == 10 && foundPnr != "0000000000";
+                                                                        dateOk = true;
+                                                                        try
+                                                                        {
+                                                                            string bdDate = GetString(text509, "bookingDate");
+                                                                            if (!string.IsNullOrEmpty(bdDate)) dateOk = DateTime.Parse(bdDate).Date == DateTime.Today;
+                                                                        }
+                                                                        catch { dateOk = true; }
+                                                                        if (text509.Contains(value125) && pnrFresh && dateOk) break;
+                                                                        updTStatus.BeginInvoke(1, "Booking confirm hone ka intezaar (" + attempt + "/4)...", tCntrlName, null, null);
+                                                                        Thread.Sleep(3000);
+                                                                        _response = "";
+                                                                        try
+                                                                        {
+                                                                            _httpRequest(text439, null, Reffral, "Plain123Other", bool_63: false, Proxy_, ref cookie_, bool_64: true, bool_65: true, 180000, 180000, ref _response, ref errormsg, ref Exception_);
+                                                                        }
+                                                                        catch { }
+                                                                    }
+                                                                    if (text509.Contains(value125) && pnrFresh && dateOk)
                                                                     {
                                                                         lock (object_10)
                                                                         {

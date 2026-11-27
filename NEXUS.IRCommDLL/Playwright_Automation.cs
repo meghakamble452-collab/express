@@ -2723,8 +2723,10 @@ internal class Playwright_Automation
                     "--disable-features=msEdgeFirstRunExperience,msEdgeSync,PasswordManagerEnabled " +
                     "--app=about:blank";
 
+                int winH = rect.Height - random.Next(225, 250);
                 string windowPosition =
-                    " --window-position=" + rect.X + "," + (rect.Y + random.Next(900, 1550));
+                    " --window-position=" + rect.X + "," + rect.Y +
+                    " --window-size=" + rect.Width + "," + winH;
 
                 string text7 = text3 + text4 + text5 + text6 + windowPosition;
 
