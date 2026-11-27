@@ -22340,7 +22340,7 @@ internal class clsMain
                                                                             if (!string.IsNullOrEmpty(bdDate)) dateOk = DateTime.Parse(bdDate).Date == DateTime.Today;
                                                                         }
                                                                         catch { dateOk = true; }
-                                                                        try { File.WriteAllText(Path.Combine(Path.GetTempPath(), "recheck.txt"), text509); } catch { }
+                                                                        try { File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "recheck.txt"), text509); } catch { }
                                                                         if (text509.Contains(value125) && pnrFresh && dateOk && foundPnr != baselinePnr) break;
                                                                         updTStatus.BeginInvoke(1, "Booking confirm hone ka intezaar (" + attempt + "/4)...", tCntrlName, null, null);
                                                                         Thread.Sleep(3000);
