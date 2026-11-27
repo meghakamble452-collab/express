@@ -798,6 +798,7 @@ internal class TCntrl : UserControl
                             break;
                         }
                 }
+                try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "status_log.txt"), DateTime.Now.ToString("HH:mm:ss.fff") + " | " + int_4 + " | " + string_2 + Environment.NewLine); } catch { }
                 if (int_4 > 200)
                 {
                     if (int_4 == 202)
@@ -3961,9 +3962,24 @@ internal class TCntrl : UserControl
         int W = Width, M = 10, CW = W - M * 2;
 
         // ---------- values (same sources the old screen used) ----------
+        //string status = (_byteNovaFinalSuccessText ?? "").Trim();
+        //if (status.Length == 0 && lblStatus != null) status = (lblStatus.Text ?? "").Trim();
+        //if (status.Length == 0) status = "Ticket booked successfully";
         string status = (_byteNovaFinalSuccessText ?? "").Trim();
         if (status.Length == 0 && lblStatus != null) status = (lblStatus.Text ?? "").Trim();
-        if (status.Length == 0) status = "Ticket booked successfully";
+        string pnrSrc = ((lblStatus != null ? lblStatus.Text : "") ?? "") + " " + (_byteNovaFinalSuccessText ?? "");
+        bool hasRealPnr = false;
+        for (int pi = 0; pi + 10 <= pnrSrc.Length; pi++)
+        {
+            string cand = pnrSrc.Substring(pi, 10);
+            bool allDigits = true;
+            for (int pk = 0; pk < 10; pk++) if (!char.IsDigit(cand[pk])) { allDigits = false; break; }
+            if (allDigits && cand != "0000000000") { hasRealPnr = true; break; }
+        }
+        string hdrText = hasRealPnr ? "Ticket Booked" : "Processing";
+        Color ribA = hasRealPnr ? XT_SUCCESS : Color.FromArgb(217, 119, 6);
+        Color ribB = hasRealPnr ? XT_SUCCESS_L : Color.FromArgb(245, 158, 11);
+        if (status.Length == 0) status = hasRealPnr ? "Ticket booked successfully" : "Processing...";
         string time = lblTime != null && !string.IsNullOrWhiteSpace(lblTime.Text) ? lblTime.Text.Trim() : DateTime.Now.ToString("HH:mm:ss");
         string journey = lblJourney != null ? (lblJourney.Text ?? "").Trim() : "";
         string train = cboTrain != null ? (cboTrain.Text ?? "").Trim() : "";
@@ -3986,7 +4002,7 @@ internal class TCntrl : UserControl
         XtFill(g, new RectangleF(rib.X, rib.Y + 1.5f, rib.Width - 1, rib.Height - 1), 10, Color.FromArgb(60, 21, 128, 61), Color.Empty);
         using (GraphicsPath rp = XtRound(new RectangleF(rib.X, rib.Y, rib.Width - 1, rib.Height - 1), 10))
         {
-            using (LinearGradientBrush rb = new LinearGradientBrush(rib, XT_SUCCESS, XT_SUCCESS_L, LinearGradientMode.Horizontal))
+            using (LinearGradientBrush rb = new LinearGradientBrush(rib, ribA, ribB, LinearGradientMode.Horizontal))
                 g.FillPath(rb, rp);
             Region oc = g.Clip;
             g.SetClip(rp, CombineMode.Intersect);
@@ -3997,7 +4013,8 @@ internal class TCntrl : UserControl
         int rcy = rib.Y + rib.Height / 2;
         using (SolidBrush wb = new SolidBrush(Color.White))
             g.FillEllipse(wb, rib.X + 9, rcy - 12, 24, 24);
-        XtSIcon(g, "check", new RectangleF(rib.X + 14, rcy - 7, 14, 14), XT_SUCCESS, 2.2f);
+        //XtSIcon(g, "check", new RectangleF(rib.X + 14, rcy - 7, 14, 14), XT_SUCCESS, 2.2f);
+        XtSIcon(g, "check", new RectangleF(rib.X + 14, rcy - 7, 14, 14), ribA, 2.2f);
 
         // time chip on the right
         using (Font tf = XtPx("Segoe UI Semibold", 9.5F))
@@ -4011,7 +4028,7 @@ internal class TCntrl : UserControl
 
             Rectangle tr = new Rectangle(rib.X + 42, rib.Y, chip.X - rib.X - 50, rib.Height);
             using (Font hf = XtPx("Segoe UI Semibold", 12F))
-                TextRenderer.DrawText(g, "Ticket Booked", hf, tr, Color.White,
+                TextRenderer.DrawText(g, hdrText, hf, tr, Color.White,
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
         }
 
