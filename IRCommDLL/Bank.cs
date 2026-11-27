@@ -39993,7 +39993,8 @@ internal class Bank
                         int oe = response.IndexOf('"', os);
                         if (oe > os) ordId = response.Substring(os, oe - os);
                     }
-                    response = GetUpiQr(text39, ordId);
+                    try { response = GetUpiQr(text39, ordId); }
+                    catch (Exception qex) { response = "EXC " + qex.GetType().Name + ": " + qex.Message; }
                     string qrStr = "";
                     int qi = response.IndexOf("\"intentUrl\":\"");
                     if (qi >= 0)
