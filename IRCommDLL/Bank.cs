@@ -39021,7 +39021,7 @@ internal class Bank
 		headers5.Add(name5, text4 + token);
 		WebHeaderCollection headers6 = httpWebRequest.Headers;
 		string name6 = "x-browser-fingerprint";
-		string value4 = "d18637fe447b1038bbaff0872e125da9";
+		string value4 = "641c941b36b27e3f485118a04bd13bdd";
 		headers6.Add(name6, value4);
 		WebHeaderCollection headers7 = httpWebRequest.Headers;
 		string name7 = "sec-ch-ua-platform";
@@ -39153,7 +39153,7 @@ internal class Bank
 		headers16.Add(name16, "");
 		WebHeaderCollection headers17 = httpWebRequest.Headers;
 		string name17 = "x-browser-fingerprint";
-		string value14 = "d18637fe447b1038bbaff0872e125da9";
+		string value14 = "641c941b36b27e3f485118a04bd13bdd";
 		headers17.Add(name17, value14);
 		WebHeaderCollection headers18 = httpWebRequest.Headers;
 		string name18 = "sec-ch-ua-platform";
@@ -39230,11 +39230,10 @@ internal class Bank
 		ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 		string text = "https://api.phonepe.com/apis/pg/checkout/ui/v2/upi-qr?t=";
 		string text2 = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-		string text3 = "__5";
-		HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(text + text2 + text3);
-        string method = "POST";
+        string text3 = "__5&paymentMode=UPI_QR";
+        HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(text + text2 + text3);
+        string method = "GET";
         httpWebRequest.Method = method;
-        httpWebRequest.ContentType = "application/json";
         httpWebRequest.ProtocolVersion = HttpVersion.Version11;
 		httpWebRequest.KeepAlive = true;
 		httpWebRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
@@ -39257,23 +39256,10 @@ internal class Bank
 		string name4 = "Authorization";
 		string text4 = "Bearer ";
 		headers4.Add(name4, text4 + token);
-        httpWebRequest.Headers.Add("X-CLIENT", "browser");
-        httpWebRequest.Headers.Add("X-CLIENT-NAME", "Chrome");
-        httpWebRequest.Headers.Add("X-CLIENT-TYPE", "desktop");
-        httpWebRequest.Headers.Add("X-CLIENT-SUBTYPE", "dweb");
-        httpWebRequest.Headers.Add("X-CLIENT-MAJOR-VERSION", "141");
-        httpWebRequest.Headers.Add("X-CLIENT-VERSION", "141.0.0.0");
-        httpWebRequest.Headers.Add("X-SOURCE", "API");
-        httpWebRequest.Headers.Add("X-SOURCE-CHANNEL", "Windows");
-        httpWebRequest.Headers.Add("X-SOURCE-CHANNEL-VERSION", "10");
-        httpWebRequest.Headers.Add("X-SOURCE-INTEGRATION-MODE", "REDIRECTION");
-        httpWebRequest.Headers.Add("x-device-type", "desktop");
-        httpWebRequest.Headers.Add("checkoutType", "STANDARD_CHECKOUT");
-        httpWebRequest.Headers.Add("X-MERCHANT-DOMAIN", "https://www.wps.irctc.co.in/");
-        httpWebRequest.Headers.Add("X-APP-PACKAGE-NAME", "");
+        
         WebHeaderCollection headers5 = httpWebRequest.Headers;
 		string name5 = "x-browser-fingerprint";
-		string value3 = "d18637fe447b1038bbaff0872e125da9";
+		string value3 = "641c941b36b27e3f485118a04bd13bdd";
 		headers5.Add(name5, value3);
 		WebHeaderCollection headers6 = httpWebRequest.Headers;
 		string name6 = "sec-ch-ua-platform";
@@ -39305,13 +39291,7 @@ internal class Bank
 		headers12.Add(name12, value10);
 		string referer = "https://mercury-t2.phonepe.com/";
         httpWebRequest.Referer = referer;
-        string qrBody = "{\"paymentMode\":\"UPI_QR\",\"retryConsentGranted\":false}";
-        byte[] qrBytes = Encoding.UTF8.GetBytes(qrBody);
-        httpWebRequest.ContentLength = qrBytes.Length;
-        using (Stream qrStream = httpWebRequest.GetRequestStream())
-        {
-            qrStream.Write(qrBytes, 0, qrBytes.Length);
-        }
+        
         try
         {
 			using HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
@@ -39369,7 +39349,7 @@ internal class Bank
 		headers4.Add(name4, text4 + token);
 		WebHeaderCollection headers5 = httpWebRequest.Headers;
 		string name5 = "x-browser-fingerprint";
-		string value3 = "d18637fe447b1038bbaff0872e125da9";
+		string value3 = "641c941b36b27e3f485118a04bd13bdd";
 		headers5.Add(name5, value3);
 		WebHeaderCollection headers6 = httpWebRequest.Headers;
 		string name6 = "sec-ch-ua-platform";
@@ -39458,7 +39438,7 @@ internal class Bank
 		headers4.Add(name4, text4 + token);
 		WebHeaderCollection headers5 = httpWebRequest.Headers;
 		string name5 = "x-browser-fingerprint";
-		string value3 = "d18637fe447b1038bbaff0872e125da9";
+		string value3 = "641c941b36b27e3f485118a04bd13bdd";
 		headers5.Add(name5, value3);
 		WebHeaderCollection headers6 = httpWebRequest.Headers;
 		string name6 = "sec-ch-ua-platform";
@@ -39555,7 +39535,7 @@ internal class Bank
 		headers5.Add(name5, text4 + token);
 		WebHeaderCollection headers6 = httpWebRequest.Headers;
 		string name6 = "x-browser-fingerprint";
-		string value4 = "d18637fe447b1038bbaff0872e125da9";
+		string value4 = "641c941b36b27e3f485118a04bd13bdd";
 		headers6.Add(name6, value4);
 		WebHeaderCollection headers7 = httpWebRequest.Headers;
 		string name7 = "sec-ch-ua-platform";
@@ -39655,7 +39635,7 @@ internal class Bank
 		headers5.Add(name5, text4 + token);
 		WebHeaderCollection headers6 = httpWebRequest.Headers;
 		string name6 = "x-browser-fingerprint";
-		string value4 = "d18637fe447b1038bbaff0872e125da9";
+		string value4 = "641c941b36b27e3f485118a04bd13bdd";
 		headers6.Add(name6, value4);
 		WebHeaderCollection headers7 = httpWebRequest.Headers;
 		string name7 = "x-client";
@@ -39977,7 +39957,7 @@ internal class Bank
 				clsMain clsMain3 = this.clsMain;
 				string text43 = "x-auth-token#";
 				string text44 = text39;
-				string text45 = "&x-browser-fingerprint#d18637fe447b1038bbaff0872e125da9";
+				string text45 = "&x-browser-fingerprint#641c941b36b27e3f485118a04bd13bdd";
 				clsMain3.extraHeaders = text43 + text44 + text45;
 				UpdateTStatus updateTStatus2 = updateTStatus_1;
 				string text46 = "PhonePe. ";
@@ -40101,7 +40081,7 @@ internal class Bank
 					clsMain clsMain4 = this.clsMain;
 					string text79 = "x-auth-token#";
 					string text80 = text39;
-					string text81 = "&x-browser-fingerprint#d18637fe447b1038bbaff0872e125da9&Authorization#Bearer ";
+					string text81 = "&x-browser-fingerprint#641c941b36b27e3f485118a04bd13bdd&Authorization#Bearer ";
 					clsMain4.extraHeaders = text79 + text80 + text81 + text39;
 					UpdateTStatus updateTStatus4 = updateTStatus_1;
 					string text82 = "Init. ";
@@ -40135,7 +40115,7 @@ internal class Bank
 					clsMain clsMain5 = this.clsMain;
 					string text94 = "x-auth-token#";
 					string text95 = text39;
-					string text96 = "&x-browser-fingerprint#d18637fe447b1038bbaff0872e125da9&Authorization#Bearer ";
+					string text96 = "&x-browser-fingerprint#641c941b36b27e3f485118a04bd13bdd&Authorization#Bearer ";
 					clsMain5.extraHeaders = text94 + text95 + text96 + text39;
 					UpdateTStatus updateTStatus5 = updateTStatus_1;
 					string text97 = "Init. ";
