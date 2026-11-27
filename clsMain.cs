@@ -17662,6 +17662,7 @@ internal class clsMain
     }
     private bool IRCTC_WEB_Login_Edge_1(Control control_2, Rectangle rectangle_1, string TktName, string string_87, string string_88, string tCntrlName, ref string string_90, bool bool_63, bool bool_64, bool bool_65, int int_Slot, UpdateTStatus updTStatus, string string_91, CancellationToken token)
     {
+        string baselinePnr = "";
         Random randomsleep = new Random();
         const int maxRetry = 50;
         bool result = false;
@@ -18383,7 +18384,7 @@ internal class clsMain
                                     updTStatus.BeginInvoke(2, status15, tCntrlName, null, null);
                                     return false;
                                 }
-                                string baselinePnr = "";
+                                
                                 for (int b = 0; b < 3 && string.IsNullOrEmpty(baselinePnr); b++)
                                 {
                                     try
@@ -18395,18 +18396,7 @@ internal class clsMain
                                     catch { }
                                     if (string.IsNullOrEmpty(baselinePnr)) Thread.Sleep(1500);
                                 }
-                                string baselinePnr = "";
-                                for (int b = 0; b < 3 && string.IsNullOrEmpty(baselinePnr); b++)
-                                {
-                                    try
-                                    {
-                                        string baseResp = "";
-                                        _httpRequest("https://www.irctc.co.in/eticketing/protected/mapps1/recentTxnsDetails", null, Reffral, "Plain123Other", bool_63: false, Proxy_, ref cookie_, bool_64: true, bool_65: true, 180000, 180000, ref baseResp, ref errormsg, ref Exception_);
-                                        baselinePnr = GetString(baseResp, "pnrNumber");
-                                    }
-                                    catch { }
-                                    if (string.IsNullOrEmpty(baselinePnr)) Thread.Sleep(1500);
-                                }
+                                
                                 Thread.Sleep(500);
                                 Point point = new Point(0, 0);
                                 try
