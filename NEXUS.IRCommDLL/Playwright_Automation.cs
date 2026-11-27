@@ -2039,6 +2039,51 @@ internal class Playwright_Automation
         }
         return page;
     }
+
+    private void DismissIrctcLanguageAlert(IPage page)
+    {
+        try
+        {
+            bool seen = false;
+            for (int i = 0; i < 16; i++)
+            {
+                string b = page.ContentAsync().GetAwaiter().GetResult() ?? "";
+                if (b.Contains("Please select your preferred language") || b.Contains("Welcome to IRCTC"))
+                { seen = true; break; }
+                Thread.Sleep(500);
+            }
+            if (!seen) return;
+
+            try
+            {
+                ILocator en = page.GetByText("English").First;
+                if (en.CountAsync().GetAwaiter().GetResult() > 0)
+                {
+                    en.ClickAsync(new LocatorClickOptions { Timeout = 2500 }).GetAwaiter().GetResult();
+                    Thread.Sleep(250);
+                }
+                Thread.Sleep(5000);
+            }
+            catch { }
+
+            try
+            {
+                ILocator ok = page.Locator(
+                    "button:has-text('Continue'), button:has-text('CONTINUE'), " +
+                    "button:has-text('OK'), input[type=submit]").First;
+                if (ok.CountAsync().GetAwaiter().GetResult() > 0)
+                {
+                    ok.ClickAsync(new LocatorClickOptions { Timeout = 2500 }).GetAwaiter().GetResult();
+                    Thread.Sleep(500);
+                }
+            }
+            catch { }
+
+            try { page.Keyboard.PressAsync("Enter").GetAwaiter().GetResult(); } catch { }
+            Thread.Sleep(800);
+        }
+        catch { }
+    }
     internal IPage StartEdgeAndConnect_new_1( ref string userDataDir00, string directlogin, Rectangle rect, ref IPage page)
     {
         Random random = new Random();
@@ -2507,16 +2552,42 @@ internal class Playwright_Automation
                         "Status : " + statusCode);
                 }
 
-                // Full HTML Read
-                string html =
-                    page2
-                        .ContentAsync()
-                        .GetAwaiter()
-                        .GetResult();
+                // ===== IRCTC language alert dismiss (agar aaya ho) =====
+                DismissIrctcLanguageAlert(page2);
 
-                if (!html.Contains(
-                        "Book train tickets online instantly on IRCTC"))
+                // ===== page settle hone ka intezaar (max ~10 sec) =====
+                bool okPage = false;
+                string html = "";
+
+                for (int t = 0; t < 20; t++)
                 {
+                    try { html = page2.ContentAsync().GetAwaiter().GetResult() ?? ""; }
+                    catch { html = ""; }
+
+                    if ((page2.Url ?? "").Contains("/nget/") &&
+                        html.Contains("Book train tickets online instantly on IRCTC"))
+                    {
+                        okPage = true;
+                        break;
+                    }
+
+                    Thread.Sleep(500);
+                }
+
+                // ===== fail hone par: purana process band karo, phir retry =====
+                if (!okPage)
+                {
+                    num++;
+
+                    if (num >= 3)
+                    {
+                        BrowserLoded = false;
+                        break;
+                    }
+
+                    try { if (process != null && !process.HasExited) process.Kill(); } catch { }
+
+                    Thread.Sleep(1000);
                     continue;
                 }
 
