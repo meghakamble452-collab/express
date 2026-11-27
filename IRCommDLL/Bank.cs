@@ -39305,7 +39305,7 @@ internal class Bank
 		headers12.Add(name12, value10);
 		string referer = "https://mercury-t2.phonepe.com/";
         httpWebRequest.Referer = referer;
-        string qrBody = "{\"retryConsentGranted\":false}";
+        string qrBody = "{\"paymentMode\":\"UPI_QR\",\"retryConsentGranted\":false}";
         byte[] qrBytes = Encoding.UTF8.GetBytes(qrBody);
         httpWebRequest.ContentLength = qrBytes.Length;
         using (Stream qrStream = httpWebRequest.GetRequestStream())
