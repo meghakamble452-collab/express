@@ -1429,6 +1429,9 @@ internal class Playwright_Automation
         IntPtr hWnd
     );
 
+    [DllImport("user32.dll")]
+    static extern int GetSystemMetrics(int nIndex);
+
     internal void StartEdgeNormal(ref string userDataDir00, Rectangle rect)
     {
         Random random = new Random();
@@ -2724,10 +2727,15 @@ internal class Playwright_Automation
                     //"--app=about:blank";
                     "--app=https://www.irctc.co.in/nget/train-search";
 
-                int winH = rect.Height - random.Next(225, 250);
+                int scrW = GetSystemMetrics(0);
+                int scrH = GetSystemMetrics(1);
+                int winW = Math.Min(rect.Width, scrW);
+                int winH = Math.Min(rect.Height - random.Next(225, 250), scrH - 40);
+                int winX = Math.Max(0, Math.Min(rect.X, scrW - winW));
+                int winY = Math.Max(0, Math.Min(rect.Y, scrH - winH - 40));
                 string windowPosition =
-                    " --window-position=" + rect.X + "," + rect.Y +
-                    " --window-size=" + rect.Width + "," + winH;
+                    " --window-position=" + winX + "," + winY +
+                    " --window-size=" + winW + "," + winH;
 
                 string text7 = text3 + text4 + text5 + text6 + windowPosition;
 
@@ -2796,12 +2804,20 @@ internal class Playwright_Automation
                         : browserContext.NewPageAsync().GetAwaiter().GetResult();
                 }
 
-                foreach (IPage oldPg in browserContext.Pages.ToList())
+                for (int sweep = 0; sweep < 10; sweep++)
                 {
-                    if (oldPg != page)
+                    bool closedAny = false;
+                    foreach (IPage oldPg in browserContext.Pages.ToList())
                     {
-                        try { oldPg.CloseAsync().GetAwaiter().GetResult(); } catch { }
+                        if (oldPg == page) continue;
+                        try
+                        {
+                            oldPg.CloseAsync().GetAwaiter().GetResult();
+                            closedAny = true;
+                        }
+                        catch { }
                     }
+                    Thread.Sleep(closedAny ? 150 : 700);
                 }
 
                 IntPtr intPtr = IntPtr.Zero;
@@ -2815,6 +2831,7 @@ internal class Playwright_Automation
                         if (intPtr != IntPtr.Zero)
                         {
                             EdgeTaskbarHider.HideFromTaskbar(intPtr);
+                            try { SetForegroundWindow(intPtr); } catch { }
                             break;
                         }
 
@@ -2838,10 +2855,10 @@ internal class Playwright_Automation
                     if (result2.HasValue)
                     {
                         int @int = result2.Value.GetProperty("windowId").GetInt32();
-                        int width = rect.Width;
-                        int num4 = rect.Height - random.Next(225, 250);
-                        int x = rect.X;
-                        int y = rect.Y;
+                        int width = Math.Min(rect.Width, GetSystemMetrics(0));
+                        int num4 = Math.Min(rect.Height - random.Next(225, 250), GetSystemMetrics(1) - 40);
+                        int x = Math.Max(0, Math.Min(rect.X, GetSystemMetrics(0) - width));
+                        int y = Math.Max(0, Math.Min(rect.Y, GetSystemMetrics(1) - num4 - 40));
 
                         Dictionary<string, object> dictionary = new Dictionary<string, object>();
                         dictionary.Add("windowId", @int);
