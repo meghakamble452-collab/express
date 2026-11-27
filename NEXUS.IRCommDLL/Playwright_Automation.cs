@@ -2738,6 +2738,7 @@ internal class Playwright_Automation
                     ShowWindow(windowsTaskbar, SW_HIDE);
                 }
 
+                try { File.WriteAllText(Path.Combine(userDataDir00, "First Run"), ""); } catch { }
                 ProcessStartInfo edgePsi = new ProcessStartInfo();
                 edgePsi.FileName = edgePath;
                 edgePsi.Arguments = text7;
