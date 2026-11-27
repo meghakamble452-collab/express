@@ -39990,15 +39990,17 @@ internal class Bank
 					string_91 = text49;
 					return false;
 				}
-				string text50 = response;
-				string text51 = response;
+                try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "qr_log.txt"), DateTime.Now.ToString("HH:mm:ss") + " EXCH: " + response + Environment.NewLine); } catch { }
+                string text50 = response;
+                string text51 = response;
 				string value13 = "token=";
 				text28 = text50.Substring(text51.IndexOf(value13) + 11);
 				string text52 = text28;
 				string text53 = text28;
 				string value14 = "\"";
-				text39 = text52.Substring(0, text53.IndexOf(value14));
-				string text54 = string_88;
+                text39 = text52.Substring(0, text53.IndexOf(value14));
+                try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "qr_log.txt"), DateTime.Now.ToString("HH:mm:ss") + " TOKEN: [" + text39 + "]" + Environment.NewLine); } catch { }
+                string text54 = string_88;
                 string value15 = "PHONEPE-QR";
                 bool isQrGw = text54.Contains(value15) || text54.Contains("PAYTM-QR");
                 if (isQrGw)
