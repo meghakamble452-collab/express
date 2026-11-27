@@ -39226,97 +39226,73 @@ internal class Bank
 
     private string GetUpiQr(string token, string orderId)
     {
-		ServicePointManager.Expect100Continue = false;
-		ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-		string text = "https://api.phonepe.com/apis/pg/checkout/ui/v2/upi-qr?t=";
-		string text2 = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-        string text3 = "__5&paymentMode=UPI_QR";
-        if (!string.IsNullOrEmpty(orderId)) text3 = text3 + "&merchantOrderId=" + orderId;
+        ServicePointManager.Expect100Continue = false;
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+        string text = "https://api.phonepe.com/apis/pg/checkout/ui/v2/pay?t=";
+        string text2 = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+        string text3 = "__5";
         HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(text + text2 + text3);
-        string method = "GET";
-        httpWebRequest.Method = method;
+        httpWebRequest.Method = "POST";
         httpWebRequest.ProtocolVersion = HttpVersion.Version11;
-		httpWebRequest.KeepAlive = true;
-		httpWebRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-		string accept = "application/json, text/plain, */*";
-		httpWebRequest.Accept = accept;
-		string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
-		httpWebRequest.UserAgent = userAgent;
-		WebHeaderCollection headers = httpWebRequest.Headers;
-		string name = "Accept-Language";
-		string value = "en-IN,en;q=0.9";
-		headers.Add(name, value);
-		WebHeaderCollection headers2 = httpWebRequest.Headers;
-		string name2 = "Accept-Encoding";
-		string value2 = "gzip, deflate";
-		headers2.Add(name2, value2);
-		WebHeaderCollection headers3 = httpWebRequest.Headers;
-		string name3 = "x-auth-token";
-		headers3.Add(name3, token);
-		WebHeaderCollection headers4 = httpWebRequest.Headers;
-		string name4 = "Authorization";
-		string text4 = "Bearer ";
-		headers4.Add(name4, text4 + token);
-        
-        WebHeaderCollection headers5 = httpWebRequest.Headers;
-		string name5 = "x-browser-fingerprint";
-		string value3 = "641c941b36b27e3f485118a04bd13bdd";
-		headers5.Add(name5, value3);
-		WebHeaderCollection headers6 = httpWebRequest.Headers;
-		string name6 = "sec-ch-ua-platform";
-		string value4 = "\"Windows\"";
-		headers6.Add(name6, value4);
-		WebHeaderCollection headers7 = httpWebRequest.Headers;
-		string name7 = "sec-ch-ua";
-		string value5 = "\"Google Chrome\";v=\"141\", \"Not?A_Brand\";v=\"8\", \"Chromium\";v=\"141\"";
-		headers7.Add(name7, value5);
-		WebHeaderCollection headers8 = httpWebRequest.Headers;
-		string name8 = "sec-ch-ua-mobile";
-		string value6 = "?0";
-		headers8.Add(name8, value6);
-		WebHeaderCollection headers9 = httpWebRequest.Headers;
-		string name9 = "Sec-Fetch-Site";
-		string value7 = "same-site";
-		headers9.Add(name9, value7);
-		WebHeaderCollection headers10 = httpWebRequest.Headers;
-		string name10 = "Sec-Fetch-Mode";
-		string value8 = "cors";
-		headers10.Add(name10, value8);
-		WebHeaderCollection headers11 = httpWebRequest.Headers;
-		string name11 = "Sec-Fetch-Dest";
-		string value9 = "empty";
-		headers11.Add(name11, value9);
-		WebHeaderCollection headers12 = httpWebRequest.Headers;
-		string name12 = "Origin";
-		string value10 = "https://mercury-t2.phonepe.com";
-		headers12.Add(name12, value10);
-		string referer = "https://mercury-t2.phonepe.com/";
-        httpWebRequest.Referer = referer;
-        
+        httpWebRequest.KeepAlive = true;
+        httpWebRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+        httpWebRequest.Accept = "application/json, text/plain, */*";
+        httpWebRequest.ContentType = "application/json";
+        httpWebRequest.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
+        httpWebRequest.Headers.Add("Accept-Language", "en-IN,en;q=0.9");
+        httpWebRequest.Headers.Add("x-auth-token", token);
+        httpWebRequest.Headers.Add("Authorization", "Bearer " + token);
+        httpWebRequest.Headers.Add("X-CLIENT", "browser");
+        httpWebRequest.Headers.Add("X-CLIENT-NAME", "Chrome");
+        httpWebRequest.Headers.Add("X-CLIENT-TYPE", "desktop");
+        httpWebRequest.Headers.Add("X-CLIENT-SUBTYPE", "dweb");
+        httpWebRequest.Headers.Add("X-CLIENT-MAJOR-VERSION", "141");
+        httpWebRequest.Headers.Add("X-CLIENT-VERSION", "141.0.0.0");
+        httpWebRequest.Headers.Add("X-SOURCE", "API");
+        httpWebRequest.Headers.Add("X-SOURCE-CHANNEL", "Windows");
+        httpWebRequest.Headers.Add("X-SOURCE-CHANNEL-VERSION", "10");
+        httpWebRequest.Headers.Add("X-SOURCE-INTEGRATION-MODE", "REDIRECTION");
+        httpWebRequest.Headers.Add("x-device-type", "desktop");
+        httpWebRequest.Headers.Add("checkoutType", "STANDARD_CHECKOUT");
+        httpWebRequest.Headers.Add("X-MERCHANT-DOMAIN", "https://www.wps.irctc.co.in/");
+        httpWebRequest.Headers.Add("x-browser-fingerprint", "d18637fe447b1038bbaff0872e125da9");
+        httpWebRequest.Headers.Add("sec-ch-ua-platform", "\"Windows\"");
+        httpWebRequest.Headers.Add("sec-ch-ua", "\"Google Chrome\";v=\"141\", \"Not?A_Brand\";v=\"8\", \"Chromium\";v=\"141\"");
+        httpWebRequest.Headers.Add("sec-ch-ua-mobile", "?0");
+        httpWebRequest.Headers.Add("Sec-Fetch-Site", "same-site");
+        httpWebRequest.Headers.Add("Sec-Fetch-Mode", "cors");
+        httpWebRequest.Headers.Add("Sec-Fetch-Dest", "empty");
+        httpWebRequest.Headers.Add("Origin", "https://mercury-t2.phonepe.com");
+        httpWebRequest.Referer = "https://mercury-t2.phonepe.com/";
+        byte[] bodyBytes = Encoding.UTF8.GetBytes("{\"type\":\"UPI_QR\"}");
+        httpWebRequest.ContentLength = bodyBytes.Length;
+        using (Stream reqStream = httpWebRequest.GetRequestStream())
+        {
+            reqStream.Write(bodyBytes, 0, bodyBytes.Length);
+        }
         try
         {
-			using HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-			using Stream stream = httpWebResponse.GetResponseStream();
-			using StreamReader streamReader = new StreamReader(stream);
-			return streamReader.ReadToEnd();
-		}
-		catch (WebException ex)
-		{
-			if (ex.Response != null)
-			{
-				using (HttpWebResponse httpWebResponse2 = (HttpWebResponse)ex.Response)
-				{
-					using Stream stream2 = httpWebResponse2.GetResponseStream();
-					using StreamReader streamReader2 = new StreamReader(stream2);
-					string format = "ERROR {0}\n";
-					return string.Format(format, (int)httpWebResponse2.StatusCode) + streamReader2.ReadToEnd();
-				}
-			}
-			throw;
-		}
-	}
+            using HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+            using Stream stream = httpWebResponse.GetResponseStream();
+            using StreamReader streamReader = new StreamReader(stream);
+            return streamReader.ReadToEnd();
+        }
+        catch (WebException ex)
+        {
+            if (ex.Response != null)
+            {
+                using (HttpWebResponse httpWebResponse2 = (HttpWebResponse)ex.Response)
+                {
+                    using Stream stream2 = httpWebResponse2.GetResponseStream();
+                    using StreamReader streamReader2 = new StreamReader(stream2);
+                    return string.Format("ERROR {0}\n", (int)httpWebResponse2.StatusCode) + streamReader2.ReadToEnd();
+                }
+            }
+            throw;
+        }
+    }
 
-	private string GetStatus(string token)
+    private string GetStatus(string token)
 	{
 		ServicePointManager.Expect100Continue = false;
 		ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -40018,32 +39994,30 @@ internal class Bank
                         if (oe > os) ordId = response.Substring(os, oe - os);
                     }
                     response = GetUpiQr(text39, ordId);
-                    try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "qr_log.txt"), DateTime.Now.ToString("HH:mm:ss") + " QR: " + response + Environment.NewLine); } catch { }
-                    string text63 = response;
-					string value19 = "qrCode";
-					if (text63.Contains(value19))
-					{
-						frmShowQR frmShowQR = new frmShowQR();
-						frmShowQR.clsMain = this.clsMain;
-						frmShowQR.TopMost = true;
-						string text64 = response;
-						string text65 = response;
-						string value20 = "qrCode";
-						text28 = text64.Substring(text65.IndexOf(value20) + 9);
-						string text66 = text28;
-						string text67 = text28;
-						string value21 = "\"";
-						string text68 = text66.Substring(0, text67.IndexOf(value21));
-						string[] array3 = new string[5] { text68, null, null, null, null };
-						string text69 = "|||";
-						array3[1] = text69;
-						array3[2] = this.clsMain.TktName_;
-						string text70 = "|||";
-						array3[3] = text70;
-						array3[4] = class3_0.Txnamt;
-						string text71 = string.Concat(array3);
-						frmShowQR.method_1(text71);
-						DateTime dateTime = DateTime.Now.AddSeconds(62.0);
+                    string qrStr = "";
+                    int qi = response.IndexOf("\"intentUrl\":\"");
+                    if (qi >= 0)
+                    {
+                        int qs = response.IndexOf('"', qi + 9);
+                        int qe = response.IndexOf('"', qs + 1);
+                        if (qs >= 0 && qe > qs) qrStr = response.Substring(qs + 1, qe - qs - 1);
+                    }
+                    if (qrStr.Length > 5)
+                    {
+                        frmShowQR frmShowQR = new frmShowQR();
+                        frmShowQR.clsMain = this.clsMain;
+                        frmShowQR.TopMost = true;
+                        string text68 = qrStr;
+                        string[] array3 = new string[5] { text68, null, null, null, null };
+                        string text69 = "|||";
+                        array3[1] = text69;
+                        array3[2] = this.clsMain.TktName_;
+                        string text70 = "|||";
+                        array3[3] = text70;
+                        array3[4] = class3_0.Txnamt;
+                        string text71 = string.Concat(array3);
+                        frmShowQR.method_1(text71);
+                        DateTime dateTime = DateTime.Now.AddSeconds(62.0);
 						string text72;
 						string value22;
 						do
@@ -40076,7 +40050,7 @@ internal class Bank
 							}
 						}
 					}
-                    if (!response.Contains("qrCode"))
+                    if (!response.Contains("intentUrl"))
                     {
                         try { string_91 = "QR FAIL: " + (response ?? "").Trim(); } catch { }
                     }
