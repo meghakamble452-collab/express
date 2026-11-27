@@ -2084,11 +2084,601 @@ internal class Playwright_Automation
         }
         catch { }
     }
-    internal IPage StartEdgeAndConnect_new_1( ref string userDataDir00, string directlogin, Rectangle rect, ref IPage page)
+    //internal IPage StartEdgeAndConnect_new_1( ref string userDataDir00, string directlogin, Rectangle rect, ref IPage page)
+    //{
+    //    Random random = new Random();
+    //    int num = 0;
+    //    Process process = null;
+    //    while (true)
+    //    {
+    //        IntPtr windowsTaskbar = IntPtr.Zero;
+
+    //        try
+    //        {
+    //            int freeTcpPort = GetFreeTcpPort();
+
+    //            if (!string.IsNullOrEmpty(userDataDir00))
+    //            {
+    //                KillOldEdgeByProfile(userDataDir00);
+    //            }
+    //            else
+    //            {
+    //                string tempPath = Path.GetTempPath();
+    //                string path = "EdgeProfiles";
+    //                string path2 = Path.Combine(tempPath, path);
+    //                string text = "Profile_";
+    //                Guid guid = Guid.NewGuid();
+    //                string text2 = "N";
+
+    //                userDataDir00 =
+    //                    Path.Combine(
+    //                        path2,
+    //                        text + guid.ToString(text2));
+
+    //                userDataDir00 =
+    //                    Path.Combine(
+    //                        Path.GetTempPath(),
+    //                        "uc_" + Guid.NewGuid().ToString("N"));
+
+    //                if (!Directory.Exists(userDataDir00))
+    //                {
+    //                    Directory.CreateDirectory(userDataDir00);
+    //                }
+    //            }
+
+    //            Thread.Sleep(1000);
+
+    //            Convert.ToBase64String(
+    //                Encoding.UTF8.GetBytes(blankHtml));
+
+    //            string edgePath = GetEdgePath();
+
+    //            string format =
+    //                "--remote-debugging-port={0} ";
+
+    //            string text3 =
+    //                string.Format(
+    //                    format,
+    //                    freeTcpPort);
+
+    //            string text4 =
+    //                "--remote-debugging-address=127.0.0.1 --user-data-dir=\"";
+
+    //            string text5 =
+    //                userDataDir00;
+
+    //            DisableEdgePasswordManager(
+    //                userDataDir00);
+
+    //            //string text6 ="\" --no-first-run " +"--disable-session-crashed-bubble " +"--disable-save-password-bubble " +"--disable-infobars " +"--disable-sync " +"--disable-features=msEdgeSync " +"https://www.irctc.co.in/nget/assets/images/logo.png";
+    //            string text6 =
+    //"\" --no-first-run " +
+    //"--no-default-browser-check " +
+    //"--disable-session-crashed-bubble " +
+    //"--disable-save-password-bubble " +
+    //"--disable-infobars " +
+    //"--disable-sync " +
+    //"--password-store=basic " +
+    //"--disable-features=msEdgeFirstRunExperience,msEdgeSync,PasswordManagerEnabled " +
+    //"--app=https://www.irctc.co.in/nget/train-search";
+
+    //            string windowPosition =
+    //                " --window-position=" +
+    //                rect.X +
+    //                "," +
+    //                rect.Y +
+    //                random.Next(900, 1550);
+
+    //            string text7 =
+    //                text3 +
+    //                text4 +
+    //                text5 +
+    //                text6 +
+    //                windowPosition;
+
+    //            // =====================================================
+    //            // WINDOWS TASKBAR HIDE BEFORE EDGE LAUNCH
+    //            // =====================================================
+
+    //            windowsTaskbar =
+    //                FindWindow(
+    //                    "Shell_TrayWnd",
+    //                    null);
+
+    //            if (windowsTaskbar != IntPtr.Zero)
+    //            {
+    //                ShowWindow(
+    //                    windowsTaskbar,
+    //                    SW_HIDE);
+    //            }
+
+    //            // =====================================================
+    //            // EXISTING EDGE LAUNCH
+    //            // =====================================================
+
+    //            if (num == 0)
+    //            {
+    //                string text8 =
+    //                    "/c start \"\" \"";
+
+    //                string text9 =
+    //                    "\" ";
+
+    //                string arguments =
+    //                    text8 +
+    //                    edgePath +
+    //                    text9 +
+    //                    text7;
+
+    //                ProcessStartInfo processStartInfo =
+    //                    new ProcessStartInfo();
+
+    //                string fileName =
+    //                    "cmd.exe";
+
+    //                processStartInfo.FileName =
+    //                    fileName;
+
+    //                processStartInfo.Arguments =
+    //                    arguments;
+
+    //                processStartInfo.CreateNoWindow =
+    //                    true;
+
+    //                processStartInfo.UseShellExecute =
+    //                    false;
+
+    //                string verb =
+    //                    "runas";
+
+    //                processStartInfo.Verb =
+    //                    verb;
+
+    //                process =
+    //                    Process.Start(
+    //                        processStartInfo);
+    //            }
+    //            else
+    //            {
+    //                process =
+    //                    Process.Start(
+    //                        new ProcessStartInfo
+    //                        {
+    //                            FileName = edgePath,
+    //                            Arguments = text7,
+    //                            UseShellExecute = false,
+    //                            WindowStyle =
+    //                                ProcessWindowStyle.Normal
+    //                        });
+    //            }
+
+    //            Thread.Sleep(5000);
+
+    //            // =====================================================
+    //            // EXISTING EDGE PORT CHECK
+    //            // =====================================================
+
+    //            bool flag = false;
+    //            int num2 = 0;
+
+    //            string value =
+    //                "[Info] Waiting for Edge port to open...";
+
+    //            Console.WriteLine(value);
+
+    //            while (!flag && num2 < 5)
+    //            {
+    //                try
+    //                {
+    //                    using (TcpClient tcpClient =
+    //                        new TcpClient())
+    //                    {
+    //                        string hostname =
+    //                            "127.0.0.1";
+
+    //                        tcpClient.Connect(
+    //                            hostname,
+    //                            freeTcpPort);
+
+    //                        flag = true;
+    //                    }
+    //                }
+    //                catch
+    //                {
+    //                    Thread.Sleep(1000);
+    //                    num2++;
+    //                }
+    //            }
+
+    //            if (!flag)
+    //            {
+    //                string text10 =
+    //                    "Edge Connection Faield";
+
+    //                MessageBox.Show(text10);
+    //            }
+
+    //            // =====================================================
+    //            // EXISTING PLAYWRIGHT CDP CONNECTION
+    //            // =====================================================
+
+    //            IBrowserType chromium =
+    //                Playwright
+    //                    .CreateAsync()
+    //                    .GetAwaiter()
+    //                    .GetResult()
+    //                    .Chromium;
+
+    //            string format2 =
+    //                "http://127.0.0.1:{0}";
+
+    //            IBrowserContext browserContext =
+    //                chromium
+    //                    .ConnectOverCDPAsync(
+    //                        string.Format(
+    //                            format2,
+    //                            freeTcpPort))
+    //                    .GetAwaiter()
+    //                    .GetResult()
+    //                    .Contexts[0];
+
+    //            if (browserContext.Pages.Count <= 0)
+    //            {
+    //                page =
+    //                    browserContext
+    //                        .NewPageAsync()
+    //                        .GetAwaiter()
+    //                        .GetResult();
+    //            }
+    //            else
+    //            {
+    //                page =
+    //                    browserContext.Pages[0];
+    //            }
+
+    //            // =====================================================
+    //            // FIND EDGE WINDOW + REMOVE EDGE FROM TASKBAR
+    //            // =====================================================
+
+    //            IntPtr intPtr = IntPtr.Zero;
+
+    //            try
+    //            {
+    //                // Edge HWND milne tak short wait.
+    //                for (int h = 0; h < 50; h++)
+    //                {
+    //                    intPtr =
+    //                        EdgeTaskbarHider
+    //                            .FindEdgeWindowByUserDataDir(
+    //                                userDataDir00);
+
+    //                    if (intPtr != IntPtr.Zero)
+    //                    {
+    //                        // Existing Edge taskbar hiding.
+    //                        EdgeTaskbarHider
+    //                            .HideFromTaskbar(
+    //                                intPtr);
+
+    //                        break;
+    //                    }
+
+    //                    Thread.Sleep(100);
+    //                }
+    //            }
+    //            finally
+    //            {
+    //                // =================================================
+    //                // EDGE TASKBAR SE HIDE HO GAYA
+    //                // WINDOWS TASKBAR WAPAS SHOW
+    //                // =================================================
+
+    //                if (windowsTaskbar != IntPtr.Zero)
+    //                {
+    //                    ShowWindow(
+    //                        windowsTaskbar,
+    //                        SW_SHOW);
+
+    //                    windowsTaskbar =
+    //                        IntPtr.Zero;
+    //                }
+    //            }
+
+    //            // =====================================================
+    //            // EXISTING WINDOW POSITION CODE
+    //            // =====================================================
+
+    //            try
+    //            {
+    //                ICDPSession result =
+    //                    page.Context
+    //                        .NewCDPSessionAsync(page)
+    //                        .GetAwaiter()
+    //                        .GetResult();
+
+    //                string method =
+    //                    "Browser.getWindowForTarget";
+
+    //                JsonElement? result2 =
+    //                    result
+    //                        .SendAsync(method)
+    //                        .GetAwaiter()
+    //                        .GetResult();
+
+    //                if (result2.HasValue)
+    //                {
+    //                    JsonElement value2 =
+    //                        result2.Value;
+
+    //                    string propertyName =
+    //                        "windowId";
+
+    //                    int @int =
+    //                        value2
+    //                            .GetProperty(propertyName)
+    //                            .GetInt32();
+
+    //                    int width =
+    //                        rect.Width;
+
+    //                    int num4 =
+    //                        rect.Height;
+
+    //                    int x =
+    //                        rect.X;
+
+    //                    int y =
+    //                        rect.Y;
+
+    //                    Dictionary<string, object> dictionary =
+    //                        new Dictionary<string, object>();
+
+    //                    string key =
+    //                        "windowId";
+
+    //                    dictionary.Add(
+    //                        key,
+    //                        @int);
+
+    //                    string key2 =
+    //                        "bounds";
+
+    //                    Dictionary<string, object> dictionary2 =
+    //                        new Dictionary<string, object>();
+
+    //                    string key3 =
+    //                        "left";
+
+    //                    dictionary2.Add(
+    //                        key3,
+    //                        x);
+
+    //                    string key4 =
+    //                        "top";
+
+    //                    dictionary2.Add(
+    //                        key4,
+    //                        y + random.Next(900, 1550));
+
+    //                    string key5 =
+    //                        "width";
+
+    //                    dictionary2.Add(
+    //                        key5,
+    //                        width);
+
+    //                    string key6 =
+    //                        "height";
+
+    //                    dictionary2.Add(
+    //                        key6,
+    //                        num4);
+
+    //                    string key7 =
+    //                        "windowState";
+
+    //                    string value3 =
+    //                        "normal";
+
+    //                    dictionary2.Add(
+    //                        key7,
+    //                        value3);
+
+    //                    dictionary.Add(
+    //                        key2,
+    //                        dictionary2);
+
+    //                    Dictionary<string, object> args =
+    //                        dictionary;
+
+    //                    string method2 =
+    //                        "Browser.setWindowBounds";
+
+    //                    result
+    //                        .SendAsync(
+    //                            method2,
+    //                            args)
+    //                        .GetAwaiter()
+    //                        .GetResult();
+    //                }
+    //            }
+    //            catch (Exception ex)
+    //            {
+    //                MessageBox.Show(
+    //                    ex.ToString());
+    //            }
+
+    //            // =====================================================
+    //            // EXISTING REQUEST CAPTURE
+    //            // =====================================================
+
+    //            CaptureIRCTCRequests(page);
+
+    //            // =====================================================
+    //            // EXISTING IRCTC NAVIGATION
+    //            // =====================================================
+
+    //            IPage page2 =
+    //                page;
+
+    //            string url =
+    //                "https://www.irctc.co.in/nget/train-search";
+
+    //            var response =
+    //                page2
+    //                    .GotoAsync(
+    //                        url,
+    //                        new PageGotoOptions
+    //                        {
+    //                            WaitUntil =
+    //                                WaitUntilState.DOMContentLoaded
+    //                        })
+    //                    .GetAwaiter()
+    //                    .GetResult();
+
+    //            Thread.Sleep(5000);
+
+    //            if (response != null)
+    //            {
+    //                string finalUrl =
+    //                    response.Url;
+
+    //                int statusCode =
+    //                    response.Status;
+
+    //                Console.WriteLine(
+    //                    "URL : " + finalUrl);
+
+    //                Console.WriteLine(
+    //                    "Status : " + statusCode);
+    //            }
+
+    //            // ===== IRCTC language alert dismiss (agar aaya ho) =====
+    //            DismissIrctcLanguageAlert(page2);
+
+    //            // ===== page settle hone ka intezaar (max ~10 sec) =====
+    //            bool okPage = false;
+    //            string html = "";
+
+    //            for (int t = 0; t < 20; t++)
+    //            {
+    //                try { html = page2.ContentAsync().GetAwaiter().GetResult() ?? ""; }
+    //                catch { html = ""; }
+
+    //                if ((page2.Url ?? "").Contains("/nget/") &&
+    //                    html.Contains("Book train tickets online instantly on IRCTC"))
+    //                {
+    //                    okPage = true;
+    //                    break;
+    //                }
+
+    //                Thread.Sleep(500);
+    //            }
+
+    //            // ===== fail hone par: purana process band karo, phir retry =====
+    //            if (!okPage)
+    //            {
+    //                num++;
+
+    //                if (num >= 3)
+    //                {
+    //                    BrowserLoded = false;
+    //                    break;
+    //                }
+
+    //                try { if (process != null && !process.HasExited) process.Kill(); } catch { }
+
+    //                Thread.Sleep(1000);
+    //                continue;
+    //            }
+
+    //            BrowserLoded = true;
+    //        }
+    //        catch (Exception)
+    //        {
+    //            // =====================================================
+    //            // ERROR SAFETY - WINDOWS TASKBAR RESTORE
+    //            // =====================================================
+
+    //            try
+    //            {
+    //                if (windowsTaskbar != IntPtr.Zero)
+    //                {
+    //                    ShowWindow(
+    //                        windowsTaskbar,
+    //                        SW_SHOW);
+
+    //                    windowsTaskbar =
+    //                        IntPtr.Zero;
+    //                }
+    //                else
+    //                {
+    //                    IntPtr taskbar =
+    //                        FindWindow(
+    //                            "Shell_TrayWnd",
+    //                            null);
+
+    //                    if (taskbar != IntPtr.Zero)
+    //                    {
+    //                        ShowWindow(
+    //                            taskbar,
+    //                            SW_SHOW);
+    //                    }
+    //                }
+    //            }
+    //            catch
+    //            {
+    //            }
+
+    //            if (process != null &&
+    //                !process.HasExited)
+    //            {
+    //                try
+    //                {
+    //                    process.Kill();
+    //                }
+    //                catch
+    //                {
+    //                }
+    //            }
+
+    //            if (num == 0)
+    //            {
+    //                num++;
+    //                continue;
+    //            }
+
+    //            BrowserLoded = false;
+    //        }
+
+    //        break;
+    //    }
+    //    try
+    //    {
+    //        IntPtr taskbar =
+    //            FindWindow(
+    //                "Shell_TrayWnd",
+    //                null);
+
+    //        if (taskbar != IntPtr.Zero)
+    //        {
+    //            ShowWindow1(
+    //                taskbar,
+    //                SW_SHOW);
+    //        }
+    //    }
+    //    catch
+    //    {
+    //    }
+
+    //    return page;
+    //}
+
+    internal IPage StartEdgeAndConnect_new_1(ref string userDataDir00, string directlogin, Rectangle rect, ref IPage page)
     {
         Random random = new Random();
         int num = 0;
         Process process = null;
+
         while (true)
         {
             IntPtr windowsTaskbar = IntPtr.Zero;
@@ -2103,22 +2693,7 @@ internal class Playwright_Automation
                 }
                 else
                 {
-                    string tempPath = Path.GetTempPath();
-                    string path = "EdgeProfiles";
-                    string path2 = Path.Combine(tempPath, path);
-                    string text = "Profile_";
-                    Guid guid = Guid.NewGuid();
-                    string text2 = "N";
-
-                    userDataDir00 =
-                        Path.Combine(
-                            path2,
-                            text + guid.ToString(text2));
-
-                    userDataDir00 =
-                        Path.Combine(
-                            Path.GetTempPath(),
-                            "uc_" + Guid.NewGuid().ToString("N"));
+                    userDataDir00 = Path.Combine(Path.GetTempPath(), "uc_" + Guid.NewGuid().ToString("N"));
 
                     if (!Directory.Exists(userDataDir00))
                     {
@@ -2128,158 +2703,75 @@ internal class Playwright_Automation
 
                 Thread.Sleep(1000);
 
-                Convert.ToBase64String(
-                    Encoding.UTF8.GetBytes(blankHtml));
+                DisableEdgePasswordManager(userDataDir00);
 
                 string edgePath = GetEdgePath();
 
-                string format =
-                    "--remote-debugging-port={0} ";
+                string text3 = string.Format("--remote-debugging-port={0} ", freeTcpPort);
+                string text4 = "--remote-debugging-address=127.0.0.1 --user-data-dir=\"";
+                string text5 = userDataDir00;
 
-                string text3 =
-                    string.Format(
-                        format,
-                        freeTcpPort);
-
-                string text4 =
-                    "--remote-debugging-address=127.0.0.1 --user-data-dir=\"";
-
-                string text5 =
-                    userDataDir00;
-
-                DisableEdgePasswordManager(
-                    userDataDir00);
-
-                //string text6 ="\" --no-first-run " +"--disable-session-crashed-bubble " +"--disable-save-password-bubble " +"--disable-infobars " +"--disable-sync " +"--disable-features=msEdgeSync " +"https://www.irctc.co.in/nget/assets/images/logo.png";
+                // app mode + about:blank: New tab / first-run / language modal sab band
                 string text6 =
-    "\" --no-first-run " +
-    "--no-default-browser-check " +
-    "--disable-session-crashed-bubble " +
-    "--disable-save-password-bubble " +
-    "--disable-infobars " +
-    "--disable-sync " +
-    "--password-store=basic " +
-    "--disable-features=msEdgeFirstRunExperience,msEdgeSync,PasswordManagerEnabled " +
-    "--app=https://www.irctc.co.in/nget/train-search";
+                    "\" --no-first-run " +
+                    "--no-default-browser-check " +
+                    "--disable-session-crashed-bubble " +
+                    "--disable-save-password-bubble " +
+                    "--disable-infobars " +
+                    "--disable-sync " +
+                    "--password-store=basic " +
+                    "--disable-features=msEdgeFirstRunExperience,msEdgeSync,PasswordManagerEnabled " +
+                    "--app=about:blank";
 
                 string windowPosition =
-                    " --window-position=" +
-                    rect.X +
-                    "," +
-                    rect.Y +
-                    random.Next(900, 1550);
+                    " --window-position=" + rect.X + "," + (rect.Y + random.Next(900, 1550));
 
-                string text7 =
-                    text3 +
-                    text4 +
-                    text5 +
-                    text6 +
-                    windowPosition;
+                string text7 = text3 + text4 + text5 + text6 + windowPosition;
 
-                // =====================================================
-                // WINDOWS TASKBAR HIDE BEFORE EDGE LAUNCH
-                // =====================================================
-
-                windowsTaskbar =
-                    FindWindow(
-                        "Shell_TrayWnd",
-                        null);
+                windowsTaskbar = FindWindow("Shell_TrayWnd", null);
 
                 if (windowsTaskbar != IntPtr.Zero)
                 {
-                    ShowWindow(
-                        windowsTaskbar,
-                        SW_HIDE);
+                    ShowWindow(windowsTaskbar, SW_HIDE);
                 }
-
-                // =====================================================
-                // EXISTING EDGE LAUNCH
-                // =====================================================
 
                 if (num == 0)
                 {
-                    string text8 =
-                        "/c start \"\" \"";
-
-                    string text9 =
-                        "\" ";
-
                     string arguments =
-                        text8 +
-                        edgePath +
-                        text9 +
-                        text7;
+                        "/c start \"\" \"" + edgePath + "\" " + text7;
 
-                    ProcessStartInfo processStartInfo =
-                        new ProcessStartInfo();
+                    ProcessStartInfo processStartInfo = new ProcessStartInfo();
+                    processStartInfo.FileName = "cmd.exe";
+                    processStartInfo.Arguments = arguments;
+                    processStartInfo.CreateNoWindow = true;
+                    processStartInfo.UseShellExecute = false;
+                    processStartInfo.Verb = "runas";
 
-                    string fileName =
-                        "cmd.exe";
-
-                    processStartInfo.FileName =
-                        fileName;
-
-                    processStartInfo.Arguments =
-                        arguments;
-
-                    processStartInfo.CreateNoWindow =
-                        true;
-
-                    processStartInfo.UseShellExecute =
-                        false;
-
-                    string verb =
-                        "runas";
-
-                    processStartInfo.Verb =
-                        verb;
-
-                    process =
-                        Process.Start(
-                            processStartInfo);
+                    process = Process.Start(processStartInfo);
                 }
                 else
                 {
-                    process =
-                        Process.Start(
-                            new ProcessStartInfo
-                            {
-                                FileName = edgePath,
-                                Arguments = text7,
-                                UseShellExecute = false,
-                                WindowStyle =
-                                    ProcessWindowStyle.Normal
-                            });
+                    process = Process.Start(new ProcessStartInfo
+                    {
+                        FileName = edgePath,
+                        Arguments = text7,
+                        UseShellExecute = false,
+                        WindowStyle = ProcessWindowStyle.Normal
+                    });
                 }
 
                 Thread.Sleep(5000);
 
-                // =====================================================
-                // EXISTING EDGE PORT CHECK
-                // =====================================================
-
                 bool flag = false;
                 int num2 = 0;
-
-                string value =
-                    "[Info] Waiting for Edge port to open...";
-
-                Console.WriteLine(value);
 
                 while (!flag && num2 < 5)
                 {
                     try
                     {
-                        using (TcpClient tcpClient =
-                            new TcpClient())
+                        using (TcpClient tcpClient = new TcpClient())
                         {
-                            string hostname =
-                                "127.0.0.1";
-
-                            tcpClient.Connect(
-                                hostname,
-                                freeTcpPort);
-
+                            tcpClient.Connect("127.0.0.1", freeTcpPort);
                             flag = true;
                         }
                     }
@@ -2292,73 +2784,46 @@ internal class Playwright_Automation
 
                 if (!flag)
                 {
-                    string text10 =
-                        "Edge Connection Faield";
-
-                    MessageBox.Show(text10);
+                    MessageBox.Show("Edge Connection Faield");
                 }
-
-                // =====================================================
-                // EXISTING PLAYWRIGHT CDP CONNECTION
-                // =====================================================
 
                 IBrowserType chromium =
-                    Playwright
-                        .CreateAsync()
-                        .GetAwaiter()
-                        .GetResult()
-                        .Chromium;
-
-                string format2 =
-                    "http://127.0.0.1:{0}";
+                    Playwright.CreateAsync().GetAwaiter().GetResult().Chromium;
 
                 IBrowserContext browserContext =
-                    chromium
-                        .ConnectOverCDPAsync(
-                            string.Format(
-                                format2,
-                                freeTcpPort))
-                        .GetAwaiter()
-                        .GetResult()
-                        .Contexts[0];
+                    chromium.ConnectOverCDPAsync("http://127.0.0.1:" + freeTcpPort)
+                            .GetAwaiter().GetResult()
+                            .Contexts[0];
 
-                if (browserContext.Pages.Count <= 0)
+                // about:blank tab ko hi pakdo, restored tab nahi
+                page = browserContext.Pages.FirstOrDefault(p => (p.Url ?? "").StartsWith("about:blank"));
+
+                if (page == null)
                 {
-                    page =
-                        browserContext
-                            .NewPageAsync()
-                            .GetAwaiter()
-                            .GetResult();
-                }
-                else
-                {
-                    page =
-                        browserContext.Pages[0];
+                    page = browserContext.Pages.Count > 0
+                        ? browserContext.Pages[0]
+                        : browserContext.NewPageAsync().GetAwaiter().GetResult();
                 }
 
-                // =====================================================
-                // FIND EDGE WINDOW + REMOVE EDGE FROM TASKBAR
-                // =====================================================
+                foreach (IPage oldPg in browserContext.Pages.ToList())
+                {
+                    if (oldPg != page)
+                    {
+                        try { oldPg.CloseAsync().GetAwaiter().GetResult(); } catch { }
+                    }
+                }
 
                 IntPtr intPtr = IntPtr.Zero;
 
                 try
                 {
-                    // Edge HWND milne tak short wait.
                     for (int h = 0; h < 50; h++)
                     {
-                        intPtr =
-                            EdgeTaskbarHider
-                                .FindEdgeWindowByUserDataDir(
-                                    userDataDir00);
+                        intPtr = EdgeTaskbarHider.FindEdgeWindowByUserDataDir(userDataDir00);
 
                         if (intPtr != IntPtr.Zero)
                         {
-                            // Existing Edge taskbar hiding.
-                            EdgeTaskbarHider
-                                .HideFromTaskbar(
-                                    intPtr);
-
+                            EdgeTaskbarHider.HideFromTaskbar(intPtr);
                             break;
                         }
 
@@ -2367,195 +2832,81 @@ internal class Playwright_Automation
                 }
                 finally
                 {
-                    // =================================================
-                    // EDGE TASKBAR SE HIDE HO GAYA
-                    // WINDOWS TASKBAR WAPAS SHOW
-                    // =================================================
-
                     if (windowsTaskbar != IntPtr.Zero)
                     {
-                        ShowWindow(
-                            windowsTaskbar,
-                            SW_SHOW);
-
-                        windowsTaskbar =
-                            IntPtr.Zero;
+                        ShowWindow(windowsTaskbar, SW_SHOW);
+                        windowsTaskbar = IntPtr.Zero;
                     }
                 }
 
-                // =====================================================
-                // EXISTING WINDOW POSITION CODE
-                // =====================================================
-
                 try
                 {
-                    ICDPSession result =
-                        page.Context
-                            .NewCDPSessionAsync(page)
-                            .GetAwaiter()
-                            .GetResult();
-
-                    string method =
-                        "Browser.getWindowForTarget";
-
-                    JsonElement? result2 =
-                        result
-                            .SendAsync(method)
-                            .GetAwaiter()
-                            .GetResult();
+                    ICDPSession result = page.Context.NewCDPSessionAsync(page).GetAwaiter().GetResult();
+                    JsonElement? result2 = result.SendAsync("Browser.getWindowForTarget").GetAwaiter().GetResult();
 
                     if (result2.HasValue)
                     {
-                        JsonElement value2 =
-                            result2.Value;
+                        int @int = result2.Value.GetProperty("windowId").GetInt32();
+                        int width = rect.Width;
+                        int num4 = rect.Height;
+                        int x = rect.X;
+                        int y = rect.Y + random.Next(900, 1550);
 
-                        string propertyName =
-                            "windowId";
+                        Dictionary<string, object> dictionary = new Dictionary<string, object>();
+                        dictionary.Add("windowId", @int);
 
-                        int @int =
-                            value2
-                                .GetProperty(propertyName)
-                                .GetInt32();
+                        Dictionary<string, object> dictionary2 = new Dictionary<string, object>();
+                        dictionary2.Add("left", x);
+                        dictionary2.Add("top", y);
+                        dictionary2.Add("width", width);
+                        dictionary2.Add("height", num4);
+                        dictionary2.Add("windowState", "normal");
 
-                        int width =
-                            rect.Width;
+                        dictionary.Add("bounds", dictionary2);
 
-                        int num4 =
-                            rect.Height;
-
-                        int x =
-                            rect.X;
-
-                        int y =
-                            rect.Y;
-
-                        Dictionary<string, object> dictionary =
-                            new Dictionary<string, object>();
-
-                        string key =
-                            "windowId";
-
-                        dictionary.Add(
-                            key,
-                            @int);
-
-                        string key2 =
-                            "bounds";
-
-                        Dictionary<string, object> dictionary2 =
-                            new Dictionary<string, object>();
-
-                        string key3 =
-                            "left";
-
-                        dictionary2.Add(
-                            key3,
-                            x);
-
-                        string key4 =
-                            "top";
-
-                        dictionary2.Add(
-                            key4,
-                            y + random.Next(900, 1550));
-
-                        string key5 =
-                            "width";
-
-                        dictionary2.Add(
-                            key5,
-                            width);
-
-                        string key6 =
-                            "height";
-
-                        dictionary2.Add(
-                            key6,
-                            num4);
-
-                        string key7 =
-                            "windowState";
-
-                        string value3 =
-                            "normal";
-
-                        dictionary2.Add(
-                            key7,
-                            value3);
-
-                        dictionary.Add(
-                            key2,
-                            dictionary2);
-
-                        Dictionary<string, object> args =
-                            dictionary;
-
-                        string method2 =
-                            "Browser.setWindowBounds";
-
-                        result
-                            .SendAsync(
-                                method2,
-                                args)
-                            .GetAwaiter()
-                            .GetResult();
+                        result.SendAsync("Browser.setWindowBounds", dictionary).GetAwaiter().GetResult();
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(
-                        ex.ToString());
+                    Console.WriteLine("Window bounds error: " + ex.ToString());
                 }
-
-                // =====================================================
-                // EXISTING REQUEST CAPTURE
-                // =====================================================
 
                 CaptureIRCTCRequests(page);
 
-                // =====================================================
-                // EXISTING IRCTC NAVIGATION
-                // =====================================================
+                try { LoadCookiesFromJsonToBrowser(browserContext); } catch { }
 
-                IPage page2 =
-                    page;
+                IPage page2 = page;
 
-                string url =
-                    "https://www.irctc.co.in/nget/train-search";
+                IResponse response = null;
 
-                var response =
-                    page2
-                        .GotoAsync(
-                            url,
-                            new PageGotoOptions
-                            {
-                                WaitUntil =
-                                    WaitUntilState.DOMContentLoaded
-                            })
-                        .GetAwaiter()
-                        .GetResult();
+                try
+                {
+                    response = page2.GotoAsync(
+                        "https://www.irctc.co.in/nget/train-search",
+                        new PageGotoOptions
+                        {
+                            WaitUntil = WaitUntilState.Load,
+                            Timeout = 60000
+                        }).GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("IRCTC navigation error: " + ex.Message);
+                }
 
-                Thread.Sleep(5000);
+                Thread.Sleep(3000);
 
                 if (response != null)
                 {
-                    string finalUrl =
-                        response.Url;
-
-                    int statusCode =
-                        response.Status;
-
-                    Console.WriteLine(
-                        "URL : " + finalUrl);
-
-                    Console.WriteLine(
-                        "Status : " + statusCode);
+                    Console.WriteLine("URL : " + response.Url);
+                    Console.WriteLine("Status : " + response.Status);
                 }
 
-                // ===== IRCTC language alert dismiss (agar aaya ho) =====
+                // language alert (agar aaya ho) band karo
                 DismissIrctcLanguageAlert(page2);
 
-                // ===== page settle hone ka intezaar (max ~10 sec) =====
+                // page settle hone ka intezaar (max ~10 sec)
                 bool okPage = false;
                 string html = "";
 
@@ -2574,7 +2925,6 @@ internal class Playwright_Automation
                     Thread.Sleep(500);
                 }
 
-                // ===== fail hone par: purana process band karo, phir retry =====
                 if (!okPage)
                 {
                     num++;
@@ -2587,58 +2937,39 @@ internal class Playwright_Automation
 
                     try { if (process != null && !process.HasExited) process.Kill(); } catch { }
 
-                    Thread.Sleep(1000);
+                    Thread.Sleep(1500);
                     continue;
                 }
 
+                // login trigger aane tak wait — clsMain ko ready page mile
+                try
+                {
+                    page2.WaitForSelectorAsync(
+                        "a.loginText, #loginStart, .search_btn",
+                        new PageWaitForSelectorOptions { Timeout = 12000 })
+                        .GetAwaiter().GetResult();
+                }
+                catch { }
+
                 BrowserLoded = true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // =====================================================
-                // ERROR SAFETY - WINDOWS TASKBAR RESTORE
-                // =====================================================
+                Console.WriteLine("[Edge Launch Error] " + ex.ToString());
 
                 try
                 {
                     if (windowsTaskbar != IntPtr.Zero)
                     {
-                        ShowWindow(
-                            windowsTaskbar,
-                            SW_SHOW);
-
-                        windowsTaskbar =
-                            IntPtr.Zero;
-                    }
-                    else
-                    {
-                        IntPtr taskbar =
-                            FindWindow(
-                                "Shell_TrayWnd",
-                                null);
-
-                        if (taskbar != IntPtr.Zero)
-                        {
-                            ShowWindow(
-                                taskbar,
-                                SW_SHOW);
-                        }
+                        ShowWindow(windowsTaskbar, SW_SHOW);
+                        windowsTaskbar = IntPtr.Zero;
                     }
                 }
-                catch
-                {
-                }
+                catch { }
 
-                if (process != null &&
-                    !process.HasExited)
+                if (process != null && !process.HasExited)
                 {
-                    try
-                    {
-                        process.Kill();
-                    }
-                    catch
-                    {
-                    }
+                    try { process.Kill(); } catch { }
                 }
 
                 if (num == 0)
@@ -2651,23 +2982,6 @@ internal class Playwright_Automation
             }
 
             break;
-        }
-        try
-        {
-            IntPtr taskbar =
-                FindWindow(
-                    "Shell_TrayWnd",
-                    null);
-
-            if (taskbar != IntPtr.Zero)
-            {
-                ShowWindow1(
-                    taskbar,
-                    SW_SHOW);
-            }
-        }
-        catch
-        {
         }
 
         return page;
