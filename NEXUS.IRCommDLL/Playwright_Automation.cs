@@ -2105,14 +2105,17 @@ internal class Playwright_Automation
                 DisableEdgePasswordManager(
                     userDataDir00);
 
+                //string text6 ="\" --no-first-run " +"--disable-session-crashed-bubble " +"--disable-save-password-bubble " +"--disable-infobars " +"--disable-sync " +"--disable-features=msEdgeSync " +"https://www.irctc.co.in/nget/assets/images/logo.png";
                 string text6 =
-                    "\" --no-first-run " +
-                    "--disable-session-crashed-bubble " +
-                    "--disable-save-password-bubble " +
-                    "--disable-infobars " +
-                    "--disable-sync " +
-                    "--disable-features=msEdgeSync " +
-                    "https://www.irctc.co.in/nget/assets/images/logo.png";
+    "\" --no-first-run " +
+    "--no-default-browser-check " +
+    "--disable-session-crashed-bubble " +
+    "--disable-save-password-bubble " +
+    "--disable-infobars " +
+    "--disable-sync " +
+    "--password-store=basic " +
+    "--disable-features=msEdgeFirstRunExperience,msEdgeSync,PasswordManagerEnabled " +
+    "--app=https://www.irctc.co.in/nget/train-search";
 
                 string windowPosition =
                     " --window-position=" +
