@@ -18383,6 +18383,30 @@ internal class clsMain
                                     updTStatus.BeginInvoke(2, status15, tCntrlName, null, null);
                                     return false;
                                 }
+                                string baselinePnr = "";
+                                for (int b = 0; b < 3 && string.IsNullOrEmpty(baselinePnr); b++)
+                                {
+                                    try
+                                    {
+                                        string baseResp = "";
+                                        _httpRequest("https://www.irctc.co.in/eticketing/protected/mapps1/recentTxnsDetails", null, Reffral, "Plain123Other", bool_63: false, Proxy_, ref cookie_, bool_64: true, bool_65: true, 180000, 180000, ref baseResp, ref errormsg, ref Exception_);
+                                        baselinePnr = GetString(baseResp, "pnrNumber");
+                                    }
+                                    catch { }
+                                    if (string.IsNullOrEmpty(baselinePnr)) Thread.Sleep(1500);
+                                }
+                                string baselinePnr = "";
+                                for (int b = 0; b < 3 && string.IsNullOrEmpty(baselinePnr); b++)
+                                {
+                                    try
+                                    {
+                                        string baseResp = "";
+                                        _httpRequest("https://www.irctc.co.in/eticketing/protected/mapps1/recentTxnsDetails", null, Reffral, "Plain123Other", bool_63: false, Proxy_, ref cookie_, bool_64: true, bool_65: true, 180000, 180000, ref baseResp, ref errormsg, ref Exception_);
+                                        baselinePnr = GetString(baseResp, "pnrNumber");
+                                    }
+                                    catch { }
+                                    if (string.IsNullOrEmpty(baselinePnr)) Thread.Sleep(1500);
+                                }
                                 Thread.Sleep(500);
                                 Point point = new Point(0, 0);
                                 try
@@ -22326,7 +22350,8 @@ internal class clsMain
                                                                             if (!string.IsNullOrEmpty(bdDate)) dateOk = DateTime.Parse(bdDate).Date == DateTime.Today;
                                                                         }
                                                                         catch { dateOk = true; }
-                                                                        if (text509.Contains(value125) && pnrFresh && dateOk) break;
+                                                                        try { File.WriteAllText(Path.Combine(Path.GetTempPath(), "recheck.txt"), text509); } catch { }
+                                                                        if (text509.Contains(value125) && pnrFresh && dateOk && foundPnr != baselinePnr) break;
                                                                         updTStatus.BeginInvoke(1, "Booking confirm hone ka intezaar (" + attempt + "/4)...", tCntrlName, null, null);
                                                                         Thread.Sleep(3000);
                                                                         _response = "";
@@ -22336,7 +22361,7 @@ internal class clsMain
                                                                         }
                                                                         catch { }
                                                                     }
-                                                                    if (text509.Contains(value125) && pnrFresh && dateOk)
+                                                                    if (text509.Contains(value125) && pnrFresh && dateOk && foundPnr != baselinePnr)
                                                                     {
                                                                         lock (object_10)
                                                                         {
@@ -51727,8 +51752,8 @@ internal class clsMain
                                                                             if (!string.IsNullOrEmpty(bdDate)) dateOk = DateTime.Parse(bdDate).Date == DateTime.Today;
                                                                         }
                                                                         catch { dateOk = true; }
-                                                                        if (text509.Contains(value125) && pnrFresh && dateOk) break;
-                                                                        updTStatus.BeginInvoke(1, "Booking confirm hone ka intezaar (" + attempt + "/4)...", tCntrlName, null, null);
+                                                                        if (text509.Contains(value125) && pnrFresh && dateOk)
+                                                                            updTStatus.BeginInvoke(1, "Booking confirm hone ka intezaar (" + attempt + "/4)...", tCntrlName, null, null);
                                                                         Thread.Sleep(3000);
                                                                         _response = "";
                                                                         try

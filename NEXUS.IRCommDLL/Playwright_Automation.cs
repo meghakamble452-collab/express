@@ -2721,7 +2721,8 @@ internal class Playwright_Automation
                     "--disable-sync " +
                     "--password-store=basic " +
                     "--disable-features=msEdgeFirstRunExperience,msEdgeSync,PasswordManagerEnabled " +
-                    "--app=about:blank";
+                    //"--app=about:blank";
+                    "--app=https://www.irctc.co.in/nget/train-search";
 
                 int winH = rect.Height - random.Next(225, 250);
                 string windowPosition =
@@ -2737,30 +2738,12 @@ internal class Playwright_Automation
                     ShowWindow(windowsTaskbar, SW_HIDE);
                 }
 
-                if (num == 0)
-                {
-                    string arguments =
-                        "/c start \"\" \"" + edgePath + "\" " + text7;
-
-                    ProcessStartInfo processStartInfo = new ProcessStartInfo();
-                    processStartInfo.FileName = "cmd.exe";
-                    processStartInfo.Arguments = arguments;
-                    processStartInfo.CreateNoWindow = true;
-                    processStartInfo.UseShellExecute = false;
-                    processStartInfo.Verb = "runas";
-
-                    process = Process.Start(processStartInfo);
-                }
-                else
-                {
-                    process = Process.Start(new ProcessStartInfo
-                    {
-                        FileName = edgePath,
-                        Arguments = text7,
-                        UseShellExecute = false,
-                        WindowStyle = ProcessWindowStyle.Normal
-                    });
-                }
+                ProcessStartInfo edgePsi = new ProcessStartInfo();
+                edgePsi.FileName = edgePath;
+                edgePsi.Arguments = text7;
+                edgePsi.CreateNoWindow = true;
+                edgePsi.UseShellExecute = false;
+                process = Process.Start(edgePsi);
 
                 Thread.Sleep(5000);
 
@@ -2798,7 +2781,12 @@ internal class Playwright_Automation
                             .Contexts[0];
 
                 // about:blank tab ko hi pakdo, restored tab nahi
-                page = browserContext.Pages.FirstOrDefault(p => (p.Url ?? "").StartsWith("about:blank"));
+                page = browserContext.Pages.FirstOrDefault(p => (p.Url ?? "").Contains("irctc.co.in"));
+
+                if (page == null)
+                {
+                    page = browserContext.Pages.FirstOrDefault(p => !(p.Url ?? "").StartsWith("about:blank"));
+                }
 
                 if (page == null)
                 {
@@ -2850,9 +2838,9 @@ internal class Playwright_Automation
                     {
                         int @int = result2.Value.GetProperty("windowId").GetInt32();
                         int width = rect.Width;
-                        int num4 = rect.Height;
+                        int num4 = rect.Height - random.Next(225, 250);
                         int x = rect.X;
-                        int y = rect.Y + random.Next(900, 1550);
+                        int y = rect.Y;
 
                         Dictionary<string, object> dictionary = new Dictionary<string, object>();
                         dictionary.Add("windowId", @int);
@@ -2884,13 +2872,16 @@ internal class Playwright_Automation
 
                 try
                 {
-                    response = page2.GotoAsync(
-                        "https://www.irctc.co.in/nget/train-search",
-                        new PageGotoOptions
-                        {
-                            WaitUntil = WaitUntilState.Load,
-                            Timeout = 60000
-                        }).GetAwaiter().GetResult();
+                    if (!(page2.Url ?? "").Contains("irctc.co.in"))
+                    {
+                        response = page2.GotoAsync(
+                            "https://www.irctc.co.in/nget/train-search",
+                            new PageGotoOptions
+                            {
+                                WaitUntil = WaitUntilState.Load,
+                                Timeout = 60000
+                            }).GetAwaiter().GetResult();
+                    }
                 }
                 catch (Exception ex)
                 {
