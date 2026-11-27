@@ -39997,46 +39997,70 @@ internal class Bank
                     catch (Exception qex) { response = "EXC " + qex.GetType().Name + ": " + qex.Message; }
                     try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "qr_log.txt"), DateTime.Now.ToString("HH:mm:ss") + " QR: " + response + Environment.NewLine); } catch { }
                     string qrStr = "";
-                    int qi = response.IndexOf("\"intentUrl\":\"");
+                    int qi = response.IndexOf("upi://pay", StringComparison.Ordinal);
                     if (qi >= 0)
                     {
-                        int qs = response.IndexOf('"', qi + 9);
-                        int qe = response.IndexOf('"', qs + 1);
-                        if (qs >= 0 && qe > qs) qrStr = response.Substring(qs + 1, qe - qs - 1);
+                        int qe = response.IndexOf('"', qi);
+                        if (qe > qi) qrStr = response.Substring(qi, qe - qi).Replace("\\/", "/").Replace("|", "%7C");
                     }
+                    try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "qr_log.txt"), DateTime.Now.ToString("HH:mm:ss") + " QRS len=" + qrStr.Length + " head=" + (qrStr.Length > 60 ? qrStr.Substring(0, 60) : qrStr) + Environment.NewLine); } catch { }
                     if (qrStr.Length > 5)
                     {
-                        frmShowQR frmShowQR = new frmShowQR();
-                        frmShowQR.clsMain = this.clsMain;
-                        frmShowQR.TopMost = true;
-                        string text68 = qrStr;
-                        string[] array3 = new string[5] { text68, null, null, null, null };
-                        string text69 = "|||";
-                        array3[1] = text69;
-                        array3[2] = this.clsMain.TktName_;
-                        string text70 = "|||";
-                        array3[3] = text70;
-                        array3[4] = class3_0.Txnamt;
-                        string text71 = string.Concat(array3);
-                        frmShowQR.method_1(text71);
+                        frmShowQR frmShowQR = null;
+                        try
+                        {
+                            frmShowQR = new frmShowQR();
+                            frmShowQR.clsMain = this.clsMain;
+                            frmShowQR.TopMost = true;
+                            string text68 = qrStr;
+                            string[] array3 = new string[5] { text68, null, null, null, null };
+                            string text69 = "|||";
+                            array3[1] = text69;
+                            array3[2] = this.clsMain.TktName_;
+                            string text70 = "|||";
+                            array3[3] = text70;
+                            array3[4] = class3_0.Txnamt;
+                            string text71 = string.Concat(array3);
+                            try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "qr_log.txt"), DateTime.Now.ToString("HH:mm:ss") + " QRSHOW pre len=" + text71.Length + Environment.NewLine); } catch { }
+                            frmShowQR.method_1(text71);
+                            try { frmShowQR.Show(); frmShowQR.BringToFront(); Application.DoEvents(); } catch { }
+                            try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "qr_log.txt"), DateTime.Now.ToString("HH:mm:ss") + " QRSHOW shown" + Environment.NewLine); } catch { }
+                        }
+                        catch (Exception exQ)
+                        {
+                            try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "qr_log.txt"), DateTime.Now.ToString("HH:mm:ss") + " QRSHOW EXC " + exQ.GetType().Name + ": " + exQ.Message + Environment.NewLine); } catch { }
+                        }
                         DateTime dateTime = DateTime.Now.AddSeconds(62.0);
-						string text72;
-						string value22;
-						do
-						{
-							Application.DoEvents();
-							Thread.Sleep(500);
-							if (DateTime.Now > dateTime)
-							{
-								break;
-							}
-							response = GetStatus(text39);
-							text72 = response;
-							value22 = "state\":\"COMPLETED";
-						}
-						while (!text72.Contains(value22));
-						frmShowQR.Close();
-						string text73 = response;
+                        string text72;
+                        string value22;
+                        do
+                        {
+                            Application.DoEvents();
+                            Thread.Sleep(500);
+                            if (DateTime.Now > dateTime) break;
+                            response = GetStatus(text39);
+                            text72 = response;
+                            value22 = "state\":\"COMPLETED";
+                        }
+                        while (!text72.Contains(value22));
+                        try { if (frmShowQR != null) frmShowQR.Close(); } catch { }
+                        string text73 = response;
+                        string value23 = "state\":\"COMPLETED";
+                        if (text73.Contains(value23))
+                        {
+                            response = GetRedirectUrl(text39);
+                            string text74 = response;
+                            string value24 = "redirectUrl";
+                            if (text74.Contains(value24))
+                            {
+                                string_91 = url;
+                                string_90 = response;
+                                result = true;
+                                return true;
+                            }
+                        }
+                    }
+                    string text73 = response;
 						string value23 = "state\":\"COMPLETED";
 						if (text73.Contains(value23))
 						{
