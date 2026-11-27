@@ -2729,10 +2729,10 @@ internal class Playwright_Automation
 
                 int scrW = GetSystemMetrics(0);
                 int scrH = GetSystemMetrics(1);
-                int winW = Math.Min(rect.Width, scrW);
-                int winH = Math.Min(rect.Height - random.Next(225, 250), scrH - 40);
-                int winX = Math.Max(0, Math.Min(rect.X, scrW - winW));
-                int winY = Math.Max(0, Math.Min(rect.Y, scrH - winH - 40));
+                int winW = rect.Width >= 400 ? rect.Width : Math.Max(430, Math.Min(700, scrW / 3));
+                int winH = Math.Min(rect.Height - random.Next(225, 250), scrH - 70);
+                int winX = (rect.X > 0 && rect.X + winW <= scrW) ? rect.X : Math.Max(0, scrW - winW - 8);
+                int winY = Math.Max(0, Math.Min(rect.Y, 20));
                 string windowPosition =
                     " --window-position=" + winX + "," + winY +
                     " --window-size=" + winW + "," + winH;
@@ -2855,10 +2855,10 @@ internal class Playwright_Automation
                     if (result2.HasValue)
                     {
                         int @int = result2.Value.GetProperty("windowId").GetInt32();
-                        int width = Math.Min(rect.Width, GetSystemMetrics(0));
-                        int num4 = Math.Min(rect.Height - random.Next(225, 250), GetSystemMetrics(1) - 40);
-                        int x = Math.Max(0, Math.Min(rect.X, GetSystemMetrics(0) - width));
-                        int y = Math.Max(0, Math.Min(rect.Y, GetSystemMetrics(1) - num4 - 40));
+                        int width = rect.Width >= 400 ? rect.Width : Math.Max(430, Math.Min(700, GetSystemMetrics(0) / 3));
+                        int num4 = Math.Min(rect.Height - random.Next(225, 250), GetSystemMetrics(1) - 70);
+                        int x = (rect.X > 0 && rect.X + width <= GetSystemMetrics(0)) ? rect.X : Math.Max(0, GetSystemMetrics(0) - width - 8);
+                        int y = Math.Max(0, Math.Min(rect.Y, 20));
 
                         Dictionary<string, object> dictionary = new Dictionary<string, object>();
                         dictionary.Add("windowId", @int);
