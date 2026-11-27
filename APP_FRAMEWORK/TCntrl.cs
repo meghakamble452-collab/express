@@ -2548,52 +2548,49 @@ internal class TCntrl : UserControl
 
         // ---- status strip (same rectangle the blink timer repaints) ----
         bool statusBlinking = timer_1 != null && timer_1.Enabled;
-        // Dark glossy LED panel like the header clock: subtle bezel, glowing bhagwa DS-Digital text.
-        // While blinking, the "hot" phase turns the bezel bhagwa with an outer glow and brightens the text glow.
+        // Light frosted-glass strip (warm off-white) with soft shadow; deep bhagwa LED text is the focal point.
+        // While blinking, the "hot" phase turns the border bhagwa with an outer glow and the text glow pulses stronger.
         bool hotPhase = statusBlinking && !_byteNovaStatusBlinkOn;
         Rectangle sr = XT_STATUS;
         RectangleF srf = new RectangleF(sr.X, sr.Y, sr.Width - 1, sr.Height - 1);
-        // soft shadow (fits inside XtStatusRepaintRect)
-        XtFill(g, new RectangleF(srf.X - 1, srf.Y + 1, srf.Width + 2, srf.Height + 2.5f), 10, Color.FromArgb(30, 15, 23, 42), Color.Empty);
-        XtFill(g, new RectangleF(srf.X, srf.Y + 1.5f, srf.Width, srf.Height), 9, Color.FromArgb(55, 15, 23, 42), Color.Empty);
-        if (hotPhase)   // bhagwa outer glow around the bezel
+        // soft drop shadow (fits inside XtStatusRepaintRect)
+        XtFill(g, new RectangleF(srf.X - 1, srf.Y + 1, srf.Width + 2, srf.Height + 2.5f), 10, Color.FromArgb(26, 120, 60, 10), Color.Empty);
+        XtFill(g, new RectangleF(srf.X, srf.Y + 1.5f, srf.Width, srf.Height), 9, Color.FromArgb(46, 150, 80, 20), Color.Empty);
+        if (hotPhase)   // bhagwa outer glow around the glass
             using (GraphicsPath gp = XtRound(RectangleF.Inflate(srf, 1.5f, 1.5f), 10.5f))
-            using (Pen glowPen = new Pen(Color.FromArgb(110, 245, 146, 28), 3F))
+            using (Pen glowPen = new Pen(Color.FromArgb(120, 245, 146, 28), 3F))
                 g.DrawPath(glowPen, gp);
         using (GraphicsPath body = XtRound(srf, 9))
         {
-            // bezel ring
-            using (LinearGradientBrush bz = new LinearGradientBrush(sr, Color.FromArgb(74, 66, 60), Color.FromArgb(22, 20, 18), LinearGradientMode.Vertical))
-                g.FillPath(bz, body);
-            // recessed screen
-            RectangleF scr = RectangleF.Inflate(srf, -2f, -2f);
-            using (GraphicsPath sp = XtRound(scr, 7))
-            {
-                using (LinearGradientBrush sb = new LinearGradientBrush(scr, Color.FromArgb(30, 26, 23), Color.FromArgb(8, 7, 6), LinearGradientMode.Vertical))
-                    g.FillPath(sb, sp);
-                // glass reflection on the upper half
-                Region oc = g.Clip;
-                g.SetClip(sp, CombineMode.Intersect);
-                using (LinearGradientBrush gl = new LinearGradientBrush(new RectangleF(scr.X, scr.Y, scr.Width, scr.Height / 2f + 1),
-                    Color.FromArgb(34, 255, 255, 255), Color.FromArgb(4, 255, 255, 255), LinearGradientMode.Vertical))
-                    g.FillRectangle(gl, scr.X, scr.Y, scr.Width, scr.Height / 2f);
-                g.Clip = oc;
-            }
-            Color rim = hotPhase ? Color.FromArgb(245, 146, 28) : statusBlinking ? Color.FromArgb(150, 92, 40) : Color.FromArgb(96, 88, 80);
+            using (LinearGradientBrush gb2 = new LinearGradientBrush(sr, Color.FromArgb(255, 253, 249), Color.FromArgb(253, 246, 236), LinearGradientMode.Vertical))
+                g.FillPath(gb2, body);
+            // subtle top sheen
+            Region oc = g.Clip;
+            g.SetClip(body, CombineMode.Intersect);
+            using (LinearGradientBrush sh = new LinearGradientBrush(new RectangleF(srf.X, srf.Y, srf.Width, srf.Height / 2f + 1),
+                Color.FromArgb(160, 255, 255, 255), Color.FromArgb(0, 255, 255, 255), LinearGradientMode.Vertical))
+                g.FillRectangle(sh, srf.X, srf.Y, srf.Width, srf.Height / 2f);
+            g.Clip = oc;
+            // 1px white inner highlight
+            using (GraphicsPath ip = XtRound(RectangleF.Inflate(srf, -1f, -1f), 8))
+            using (Pen ipen = new Pen(Color.FromArgb(220, 255, 255, 255), 1F))
+                g.DrawPath(ipen, ip);
+            // thin warm border (bhagwa when hot)
+            Color rim = hotPhase ? Color.FromArgb(234, 108, 0) : statusBlinking ? Color.FromArgb(240, 170, 100) : Color.FromArgb(240, 205, 165);
             using (Pen rp = new Pen(rim, hotPhase ? 1.6F : 1F))
                 g.DrawPath(rp, body);
         }
 
-        // live LED dot with glow
+        // live LED dot with glow (green when ready, bhagwa / red while blinking)
         int dcx = sr.X + 20, dcy = sr.Y + sr.Height / 2;
-        Color dotC = !statusBlinking ? Color.FromArgb(34, 197, 94) : hotPhase ? Color.FromArgb(239, 68, 68) : Color.FromArgb(251, 146, 60);
-        using (SolidBrush halo2 = new SolidBrush(Color.FromArgb(40, dotC)))
+        Color dotC = !statusBlinking ? Color.FromArgb(22, 163, 74) : hotPhase ? Color.FromArgb(220, 38, 38) : Color.FromArgb(234, 108, 0);
+        using (SolidBrush halo2 = new SolidBrush(Color.FromArgb(36, dotC)))
             g.FillEllipse(halo2, dcx - 9, dcy - 9, 18, 18);
-        using (SolidBrush halo = new SolidBrush(Color.FromArgb(90, dotC)))
+        using (SolidBrush halo = new SolidBrush(Color.FromArgb(70, dotC)))
             g.FillEllipse(halo, dcx - 6, dcy - 6, 12, 12);
         using (SolidBrush dot = new SolidBrush(dotC))
             g.FillEllipse(dot, dcx - 4, dcy - 4, 8, 8);
-        using (SolidBrush spec = new SolidBrush(Color.FromArgb(170, 255, 255, 255)))
+        using (SolidBrush spec = new SolidBrush(Color.FromArgb(200, 255, 255, 255)))
             g.FillEllipse(spec, dcx - 2.5f, dcy - 3, 3, 2.5f);
 
         string liveStatus = (lblStatus != null && !string.IsNullOrWhiteSpace(lblStatus.Text))
@@ -3951,35 +3948,26 @@ internal class TCntrl : UserControl
     // Express theme - BOOKING SUCCESS screen (visual only).
     // Shows every value the old golden screen showed, plus login type / user+slot.
     // =====================================================================
+    // Success-view design switch:
+    //   false = option A (default): "SUCCESS BY EXPRESS" LED phrase in its own clear band under the ribbon.
+    //   true  = option B: the LED phrase glows BEHIND the frosted-glass details card and fare strip.
+    private const bool XT_SUCCESS_PHRASE_BEHIND_GLASS = false;
     private static readonly Color XT_SUCCESS = Color.FromArgb(22, 163, 74);
     private static readonly Color XT_SUCCESS_L = Color.FromArgb(34, 197, 94);
 
     private void XtDrawSuccess(Graphics g)
     {
         g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.PixelOffsetMode = PixelOffsetMode.HighQuality;
         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
         g.Clear(XT_BG);
         int W = Width, M = 10, CW = W - M * 2;
 
         // ---------- values (same sources the old screen used) ----------
-        //string status = (_byteNovaFinalSuccessText ?? "").Trim();
-        //if (status.Length == 0 && lblStatus != null) status = (lblStatus.Text ?? "").Trim();
-        //if (status.Length == 0) status = "Ticket booked successfully";
         string status = (_byteNovaFinalSuccessText ?? "").Trim();
         if (status.Length == 0 && lblStatus != null) status = (lblStatus.Text ?? "").Trim();
-        string pnrSrc = ((lblStatus != null ? lblStatus.Text : "") ?? "") + " " + (_byteNovaFinalSuccessText ?? "");
-        bool hasRealPnr = false;
-        for (int pi = 0; pi + 10 <= pnrSrc.Length; pi++)
-        {
-            string cand = pnrSrc.Substring(pi, 10);
-            bool allDigits = true;
-            for (int pk = 0; pk < 10; pk++) if (!char.IsDigit(cand[pk])) { allDigits = false; break; }
-            if (allDigits && cand != "0000000000") { hasRealPnr = true; break; }
-        }
-        string hdrText = hasRealPnr ? "Ticket Booked" : "Processing";
-        Color ribA = hasRealPnr ? XT_SUCCESS : Color.FromArgb(217, 119, 6);
-        Color ribB = hasRealPnr ? XT_SUCCESS_L : Color.FromArgb(245, 158, 11);
-        if (status.Length == 0) status = hasRealPnr ? "Ticket booked successfully" : "Processing...";
+        // The generic "Success by Express" phrase becomes the watermark backdrop instead of a front card.
+        bool generic = status.Length == 0 || status.IndexOf("success by", StringComparison.OrdinalIgnoreCase) >= 0;
         string time = lblTime != null && !string.IsNullOrWhiteSpace(lblTime.Text) ? lblTime.Text.Trim() : DateTime.Now.ToString("HH:mm:ss");
         string journey = lblJourney != null ? (lblJourney.Text ?? "").Trim() : "";
         string train = cboTrain != null ? (cboTrain.Text ?? "").Trim() : "";
@@ -3997,101 +3985,163 @@ internal class TCntrl : UserControl
         string login = lblLoginType != null ? (lblLoginType.Text ?? "").Trim() : "";
         string userSlot = lbl_slot != null ? (lbl_slot.Text ?? "").Trim() : "";
 
-        // ---------- 1. success ribbon ----------
-        Rectangle rib = new Rectangle(M, M, CW, 40);
-        XtFill(g, new RectangleF(rib.X, rib.Y + 1.5f, rib.Width - 1, rib.Height - 1), 10, Color.FromArgb(60, 21, 128, 61), Color.Empty);
-        using (GraphicsPath rp = XtRound(new RectangleF(rib.X, rib.Y, rib.Width - 1, rib.Height - 1), 10))
+        // ---------- geometry (generic phrase -> no PNR card, everything gets taller) ----------
+        Rectangle rib, pnr, band, det, strip, foot;
+        int gap;
+        // Everything is laid out from the REAL client height, with a guaranteed bottom margin,
+        // so the footer row can never touch or cross the popup's bottom border (any DPI / size).
+        int clientH = Math.Max(120, ClientSize.Height);
+        const int BOTTOM_MARGIN = 8;
+        if (!XT_SUCCESS_PHRASE_BEHIND_GLASS)
         {
-            using (LinearGradientBrush rb = new LinearGradientBrush(rib, ribA, ribB, LinearGradientMode.Horizontal))
-                g.FillPath(rb, rp);
-            Region oc = g.Clip;
-            g.SetClip(rp, CombineMode.Intersect);
-            using (SolidBrush gl = new SolidBrush(Color.FromArgb(36, 255, 255, 255)))
-                g.FillRectangle(gl, rib.X, rib.Y, rib.Width, rib.Height / 2);
-            g.Clip = oc;
+            // Option A (default): a clear band under the ribbon (or PNR card) carries the LED phrase.
+            gap = 6;
+            int footH = generic ? 26 : 22;
+            // desired heights of the flexible bands
+            float ribD = generic ? 62 : 50, pnrD = generic ? 0 : 34, bandD = generic ? 36 : 26;
+            float detD = generic ? 58 : 48, stripD = generic ? 42 : 34;
+            int gaps = (generic ? 0 : gap) + 2 + 2 + gap + 4;            // rib|pnr, ->band, band->det, det->strip, strip->foot
+            float availH = clientH - M - BOTTOM_MARGIN - footH - gaps;
+            float want = ribD + pnrD + bandD + detD + stripD;
+            float f = want > availH ? Math.Max(0.6f, availH / want) : 1f;  // shrink proportionally only when needed
+            rib = new Rectangle(M, M, CW, (int)(ribD * f));
+            pnr = generic ? Rectangle.Empty : new Rectangle(M, rib.Bottom + gap, CW, (int)(pnrD * f));
+            int bandTop = (generic ? rib.Bottom : pnr.Bottom) + 2;
+            band = new Rectangle(0, bandTop, Width, (int)(bandD * f));
+            det = new Rectangle(M, band.Bottom + 2, CW, (int)(detD * f));
+            strip = new Rectangle(M, det.Bottom + gap, CW, (int)(stripD * f));
+            int footTop = strip.Bottom + 4;
+            footH = Math.Max(16, Math.Min(footH, clientH - BOTTOM_MARGIN - footTop));
+            foot = new Rectangle(M, footTop, CW, footH);
         }
+        else
+        {
+            // Option B: original card heights, the LED phrase glows BEHIND the frosted details card + fare strip.
+            int ribH = generic ? 64 : 54;
+            gap = generic ? 8 : 6;
+            rib = new Rectangle(M, M, CW, ribH);
+            pnr = generic ? Rectangle.Empty : new Rectangle(M, rib.Bottom + gap, CW, 40);
+            det = new Rectangle(M, (generic ? rib.Bottom : pnr.Bottom) + gap, CW, generic ? 68 : 58);
+            strip = new Rectangle(M, det.Bottom + gap, CW, generic ? 48 : 40);
+            band = new Rectangle(0, det.Y, Width, strip.Bottom - det.Y);
+            foot = new Rectangle(M, strip.Bottom + 4, CW, Math.Max(16, clientH - BOTTOM_MARGIN - strip.Bottom - 4));
+        }
+
+        // ---------- backdrop: bold "SUCCESS BY / EXPRESS" (cached bitmap), cards are frosted glass over it ----------
+        XtEnsureSuccessBackdrop(rib.Bottom, band);
+        if (_xtBack != null) g.DrawImageUnscaled(_xtBack, 0, 0);
+
+        // ---------- 1. green ribbon ----------
+        XtSuccessRibbon(g, rib);
         int rcy = rib.Y + rib.Height / 2;
+        int disc = generic ? 38 : 32;
+        Rectangle dr = new Rectangle(rib.X + 12, rcy - disc / 2, disc, disc);
+        using (SolidBrush sh = new SolidBrush(Color.FromArgb(50, 6, 78, 36)))
+            g.FillEllipse(sh, dr.X, dr.Y + 2, dr.Width, dr.Height);
         using (SolidBrush wb = new SolidBrush(Color.White))
-            g.FillEllipse(wb, rib.X + 9, rcy - 12, 24, 24);
-        //XtSIcon(g, "check", new RectangleF(rib.X + 14, rcy - 7, 14, 14), XT_SUCCESS, 2.2f);
-        XtSIcon(g, "check", new RectangleF(rib.X + 14, rcy - 7, 14, 14), ribA, 2.2f);
+            g.FillEllipse(wb, dr);
+        XtSIcon(g, "check", new RectangleF(dr.X + disc * 0.24f, dr.Y + disc * 0.26f, disc * 0.52f, disc * 0.48f), XT_SUCCESS, generic ? 3.2f : 2.8f);
 
-        // time chip on the right
-        using (Font tf = XtPx("Segoe UI Semibold", 9.5F))
+        // LED time panel on the right; its digits are bigger than the title
+        // 12-hour display with a smaller glowing AM/PM suffix (display only; lblTime itself is untouched)
+        string ampm;
+        string time12 = XtTo12h(time, out ampm);
+        float ledPx = generic ? 38f : 32f;
+        int sufW = ampm.Length > 0 ? (generic ? 38 : 33) : 0;
+        int panelW = (generic ? 166 : 148) + sufW, panelH = rib.Height - (generic ? 14 : 12);
+        Rectangle lp = new Rectangle(rib.Right - 10 - panelW, rcy - panelH / 2, panelW, panelH);
+        XtLed3DPanel(g, lp);
+        Rectangle digits = new Rectangle(lp.X + 11, lp.Y + 7, lp.Width - 20 - sufW, lp.Height - 14);
+        XtDrawLed3D(g, time12, digits, ledPx, 20f, false);
+        if (sufW > 0)
+            XtDrawLed3D(g, ampm, new Rectangle(lp.Right - 8 - sufW, lp.Y + 7, sufW, lp.Height - 15), generic ? 21f : 18f, 10f, true);
+        XtLed3DGlass(g, lp);
+
+        // title + subtitle
+        int tx = dr.Right + 12, tw = lp.X - 10 - tx;
+        float titlePx = generic ? 20f : 18f;
+        using (Font tf = new Font("Segoe UI", titlePx, FontStyle.Bold, GraphicsUnit.Pixel))
+        using (Font sf = new Font("Segoe UI Semibold", generic ? 12f : 11f, FontStyle.Regular, GraphicsUnit.Pixel))
         {
-            Size ts = TextRenderer.MeasureText(g, time, tf, Size.Empty, TextFormatFlags.NoPadding);
-            Rectangle chip = new Rectangle(rib.Right - 12 - (ts.Width + 34), rcy - 13, ts.Width + 34, 26);
-            XtFill(g, chip, 13, Color.White, Color.Empty);
-            XtGlyph(g, "clock", new Rectangle(chip.X + 9, rcy - 6, 12, 12), XT_SUCCESS);
-            TextRenderer.DrawText(g, time, tf, new Rectangle(chip.X + 26, chip.Y, chip.Width - 28, chip.Height), Color.FromArgb(21, 128, 61),
-                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
-
-            Rectangle tr = new Rectangle(rib.X + 42, rib.Y, chip.X - rib.X - 50, rib.Height);
-            using (Font hf = XtPx("Segoe UI Semibold", 12F))
-                TextRenderer.DrawText(g, hdrText, hf, tr, Color.White,
-                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
+            Size ts = TextRenderer.MeasureText(g, "Ticket Booked", tf, Size.Empty, TextFormatFlags.NoPadding);
+            Size ss = TextRenderer.MeasureText(g, "Booking confirmed", sf, Size.Empty, TextFormatFlags.NoPadding);
+            int blockH = ts.Height + 1 + ss.Height;
+            int ty = rcy - blockH / 2;
+            TextRenderer.DrawText(g, "Ticket Booked", tf, new Rectangle(tx + 1, ty + 1, tw, ts.Height), Color.FromArgb(70, 5, 60, 30),
+                TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
+            TextRenderer.DrawText(g, "Ticket Booked", tf, new Rectangle(tx, ty, tw, ts.Height), Color.White,
+                TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
+            TextRenderer.DrawText(g, "Booking confirmed", sf, new Rectangle(tx, ty + ts.Height + 1, tw, ss.Height), Color.FromArgb(220, 252, 231),
+                TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
         }
 
-        // ---------- 2. status / PNR line ----------
-        Rectangle st = new Rectangle(M, rib.Bottom + 6, CW, 44);
-        XtCard(g, st);
-        XtSIcon(g, "ticket", new RectangleF(st.X + 14, st.Y + st.Height / 2f - 8, 18, 16), XT_ORANGE, 1.8f);
-        XtFitText(g, status, "Segoe UI", FontStyle.Bold, 13f, 8.5f,
-            new Rectangle(st.X + 40, st.Y + 3, st.Width - 50, st.Height - 6), XT_NAVY, true);
+        // option B: card text gets a thin white halo so it stays crisp over the glowing sign behind the glass
+        _xtTextHalo = XT_SUCCESS_PHRASE_BEHIND_GLASS;
+        // ---------- 2. PNR / booking message (only when it is a real message) ----------
+        if (!generic)
+        {
+            XtGlassCard(g, pnr);
+            XtSIcon(g, "ticket", new RectangleF(pnr.X + 14, pnr.Y + pnr.Height / 2f - 9, 20, 18), XT_ORANGE, 2f);
+            XtFitPx(g, status, "Segoe UI", FontStyle.Bold, 17f, 11f,
+                new Rectangle(pnr.X + 44, pnr.Y + 2, pnr.Width - 54, pnr.Height - 4), XT_NAVY, true);
+        }
 
-        // ---------- 3. details grid ----------
-        Rectangle dg = new Rectangle(M, st.Bottom + 6, CW, 54);
-        XtCard(g, dg);
+        // ---------- 3. details card ----------
+        XtGlassCard(g, det);
         string[] caps = { "JOURNEY", "TRAIN", "CLASS", "DATE" };
         string[] vals = { journey, train, cls, date };
         string[] icons = { "pin", "train", "seat", "calendar" };
-        float[] weights = { 1.45f, 0.95f, 0.75f, 1.0f };
+        float[] weights = { 1.5f, 0.95f, 0.75f, 0.95f };
         float wsum = 0; foreach (float wv in weights) wsum += wv;
-        float cx = dg.X + 12, avail = dg.Width - 18;
+        float cx = det.X + 14, avail = det.Width - 20;
+        int capY = det.Y + (int)(det.Height * 0.16f), valY = det.Y + (int)(det.Height * 0.45f), valH = (int)(det.Height * 0.44f);
         for (int i = 0; i < 4; i++)
         {
             int colW = (int)(avail * weights[i] / wsum);
-            Rectangle col = new Rectangle((int)cx, dg.Y, colW, dg.Height);
+            Rectangle col = new Rectangle((int)cx, det.Y, colW, det.Height);
             if (i > 0)
-                using (Pen sp = new Pen(Color.FromArgb(230, 236, 245)))
-                    g.DrawLine(sp, col.X - 4, dg.Y + 10, col.X - 4, dg.Bottom - 10);
-            XtSIcon(g, icons[i], new RectangleF(col.X + 2, dg.Y + 10, 12, 12), XT_ORANGE, 1.5f);
-            using (Font cf = XtPx("Segoe UI Semibold", 7.5F))
-                TextRenderer.DrawText(g, caps[i], cf, new Rectangle(col.X + 18, dg.Y + 8, col.Width - 20, 16), XT_MUTED,
+                using (Pen sp = new Pen(Color.FromArgb(226, 232, 242)))
+                    g.DrawLine(sp, col.X - 6, det.Y + 12, col.X - 6, det.Bottom - 12);
+            XtSIcon(g, icons[i], new RectangleF(col.X, capY, 15, 15), XT_ORANGE, 1.8f);
+            using (Font cf = new Font("Segoe UI Semibold", 10.5f, FontStyle.Regular, GraphicsUnit.Pixel))
+                TextRenderer.DrawText(g, caps[i], cf, new Rectangle(col.X + 20, capY - 1, col.Width - 22, 17), Color.FromArgb(51, 65, 85),
                     TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
             string v = string.IsNullOrEmpty(vals[i]) ? "-" : vals[i];
-            XtFitText(g, v, "Segoe UI", FontStyle.Bold, 10.5f, 7.5f,
-                new Rectangle(col.X + 2, dg.Y + 26, col.Width - 8, 24), XT_TEXT, false);
+            XtFitPx(g, v, "Segoe UI", FontStyle.Bold, generic ? 19f : 17f, 11f,
+                new Rectangle(col.X, valY, col.Width - 10, valH), XT_NAVY, false);
             cx += colW;
         }
 
         // ---------- 4. availability / fare + bank + login badges ----------
-        Rectangle bs = new Rectangle(M, dg.Bottom + 6, CW, 46);
-        XtCard(g, bs);
-        int bcy = bs.Y + bs.Height / 2;
-        int right = bs.Right - 10;
-        using (Font bf = XtPx("Segoe UI Semibold", 8.5F))
-        {
-            if (login.Length > 0)
-                right = XtBadge(g, login, bf, right, bcy, Color.FromArgb(219, 234, 254), XT_BLUE, "globe") - 6;
-            if (bank.Length > 0)
-                right = XtBadge(g, bank, bf, right, bcy, Color.FromArgb(255, 237, 213), Color.FromArgb(194, 65, 12), "card") - 6;
-        }
-        XtSIcon(g, "train", new RectangleF(bs.X + 14, bcy - 7, 14, 14), XT_SUCCESS, 1.6f);
-        XtFitText(g, avl.Length > 0 ? XtWithRupee(avl) : "-", "Segoe UI", FontStyle.Bold, 10f, 7.5f,
-            new Rectangle(bs.X + 34, bs.Y + 2, Math.Max(20, right - (bs.X + 34) - 4), bs.Height - 4), Color.FromArgb(21, 128, 61), true);
+        XtGlassCard(g, strip);
+        int scy = strip.Y + strip.Height / 2;
+        int right = strip.Right - 10;
+        int badgeH = generic ? 28 : 24;
+        if (login.Length > 0)
+            right = XtBadgeL(g, login, right, scy, badgeH, Color.FromArgb(219, 234, 254), XT_BLUE, "globe", 120) - 8;
+        if (bank.Length > 0)
+            right = XtBadgeL(g, bank, right, scy, badgeH, Color.FromArgb(255, 237, 213), Color.FromArgb(194, 65, 12), "card", 190) - 8;
+        XtSIcon(g, "train", new RectangleF(strip.X + 14, scy - 9, 18, 18), XT_SUCCESS, 1.9f);
+        XtFitPx(g, avl.Length > 0 ? XtWithRupee(avl) : "-", "Segoe UI", FontStyle.Bold, generic ? 18f : 16f, 10f,
+            new Rectangle(strip.X + 40, strip.Y + 2, Math.Max(20, right - (strip.X + 40) - 4), strip.Height - 4),
+            Color.FromArgb(21, 128, 61), true);
 
-        // ---------- 5. footer: user / slot + brand ----------
-        Rectangle ft = new Rectangle(M, bs.Bottom + 4, CW, Height - bs.Bottom - 4 - 4);
-        int fcy = ft.Y + ft.Height / 2;
-        int brandW = 0;
-        using (Font nf = XtPx("Segoe UI", 9.5F, FontStyle.Bold | FontStyle.Italic))
+        _xtTextHalo = false;
+
+        // ---------- 5. footer: user / slot + Express mark ----------
+        int fcy = foot.Y + foot.Height / 2;
+        int brandW;
+        using (Font nf = new Font("Segoe UI", generic ? 15f : 13.5f, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Pixel))
         {
             Size ns = TextRenderer.MeasureText(g, "Express", nf, Size.Empty, TextFormatFlags.NoPadding);
-            brandW = 18 + 5 + ns.Width;
-            int bx = ft.Right - brandW;
+            int ls = generic ? 22 : 18;
+            brandW = ls + 6 + ns.Width;
+            int bx = foot.Right - brandW - 8;
+            // small frosted-glass pill behind the brand mark so it reads over the backdrop
+            int pillH = Math.Min(foot.Height - 2, ls + 8);
+            XtGlassPill(g, new Rectangle(bx - 8, fcy - pillH / 2, brandW + 16, pillH));
             Image logo = LoadBrandLogo();
-            Rectangle lr = new Rectangle(bx, fcy - 9, 18, 18);
+            Rectangle lr = new Rectangle(bx, fcy - ls / 2, ls, ls);
             if (logo != null)
             {
                 InterpolationMode im = g.InterpolationMode;
@@ -4101,23 +4151,494 @@ internal class TCntrl : UserControl
             }
             else
             {
-                XtFill(g, lr, 4, Color.FromArgb(132, 204, 22), Color.Empty);
-                using (Font ef = XtPx("Segoe UI", 8F, FontStyle.Bold))
+                XtFill(g, lr, 5, Color.FromArgb(132, 204, 22), Color.Empty);
+                using (Font ef = new Font("Segoe UI", ls * 0.6f, FontStyle.Bold, GraphicsUnit.Pixel))
                     TextRenderer.DrawText(g, "E", ef, lr, Color.FromArgb(46, 16, 101),
                         TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
             }
-            TextRenderer.DrawText(g, "Express", nf, new Rectangle(bx + 23, ft.Y, ns.Width + 4, ft.Height), XT_NAVY,
-                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+            TextRenderer.DrawText(g, "Express", nf, new Rectangle(bx + ls + 6, fcy - ns.Height / 2, ns.Width + 4, ns.Height + 2), XT_NAVY,
+                TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
         }
         if (userSlot.Length > 0)
         {
-            XtGlyph(g, "user", new Rectangle(ft.X + 4, fcy - 6, 12, 12), XT_MUTED);
-            XtFitText(g, userSlot, "Segoe UI", FontStyle.Regular, 8.5f, 7f,
-                new Rectangle(ft.X + 20, ft.Y, ft.Width - brandW - 30, ft.Height), XT_MUTED, false);
+            // glass pill sized to the slot text (max: up to the brand pill)
+            int maxTextW = foot.Width - brandW - 70;
+            int textW;
+            using (Font sfm = new Font("Segoe UI Semibold", generic ? 14f : 13f, FontStyle.Regular, GraphicsUnit.Pixel))
+                textW = Math.Min(maxTextW, TextRenderer.MeasureText(g, userSlot, sfm, Size.Empty, TextFormatFlags.NoPadding).Width + 4);
+            int pillH = Math.Min(foot.Height - 2, generic ? 30 : 24);
+            XtGlassPill(g, new Rectangle(foot.X, fcy - pillH / 2, textW + 40, pillH));
+            XtGlyph(g, "user", new Rectangle(foot.X + 12, fcy - 7, 14, 14), XT_NAVY);
+            XtFitPx(g, userSlot, "Segoe UI Semibold", FontStyle.Regular, generic ? 14f : 13f, 10f,
+                new Rectangle(foot.X + 32, foot.Y, textW + 4, foot.Height), XT_NAVY, false);
         }
 
         using (Pen fr = new Pen(XT_FRAME))
             g.DrawRectangle(fr, 0, 0, Width - 1, Height - 1);
+    }
+
+    // Rich green ribbon: 3-stop gradient, glossy top, a soft diagonal shine.
+    private static void XtSuccessRibbon(Graphics g, Rectangle rib)
+    {
+        RectangleF rf = new RectangleF(rib.X, rib.Y, rib.Width - 1, rib.Height - 1);
+        XtFill(g, new RectangleF(rf.X, rf.Y + 2, rf.Width, rf.Height), 12, Color.FromArgb(70, 21, 128, 61), Color.Empty);
+        using (GraphicsPath rp = XtRound(rf, 12))
+        {
+            using (LinearGradientBrush rb = new LinearGradientBrush(rib, Color.White, Color.Black, LinearGradientMode.Horizontal))
+            {
+                ColorBlend cb = new ColorBlend();
+                cb.Positions = new[] { 0f, 0.55f, 1f };
+                cb.Colors = new[] { Color.FromArgb(21, 128, 61), Color.FromArgb(22, 163, 74), Color.FromArgb(52, 211, 113) };
+                rb.InterpolationColors = cb;
+                g.FillPath(rb, rp);
+            }
+            Region oc = g.Clip;
+            g.SetClip(rp, CombineMode.Intersect);
+            using (LinearGradientBrush gl = new LinearGradientBrush(new RectangleF(rf.X, rf.Y, rf.Width, rf.Height / 2f + 1),
+                Color.FromArgb(60, 255, 255, 255), Color.FromArgb(8, 255, 255, 255), LinearGradientMode.Vertical))
+                g.FillRectangle(gl, rf.X, rf.Y, rf.Width, rf.Height / 2f);
+            // diagonal shine streak
+            using (GraphicsPath sh = new GraphicsPath())
+            {
+                float sx = rf.X + rf.Width * 0.42f;
+                sh.AddPolygon(new[] { new PointF(sx, rf.Y), new PointF(sx + 46, rf.Y), new PointF(sx + 16, rf.Bottom), new PointF(sx - 30, rf.Bottom) });
+                using (SolidBrush sb = new SolidBrush(Color.FromArgb(16, 255, 255, 255))) g.FillPath(sb, sh);
+            }
+            g.Clip = oc;
+            using (Pen ep = new Pen(Color.FromArgb(90, 255, 255, 255), 1f)) g.DrawPath(ep, rp);
+        }
+    }
+
+    // Small dark glossy LED panel (same body as the status strip).
+    private static void XtLedPanel(Graphics g, Rectangle r)
+    {
+        RectangleF rf = new RectangleF(r.X, r.Y, r.Width - 1, r.Height - 1);
+        XtFill(g, new RectangleF(rf.X, rf.Y + 1.5f, rf.Width, rf.Height), 9, Color.FromArgb(70, 5, 46, 22), Color.Empty);
+        using (GraphicsPath body = XtRound(rf, 9))
+        {
+            using (LinearGradientBrush bz = new LinearGradientBrush(r, Color.FromArgb(74, 66, 60), Color.FromArgb(22, 20, 18), LinearGradientMode.Vertical))
+                g.FillPath(bz, body);
+            RectangleF scr = RectangleF.Inflate(rf, -2f, -2f);
+            using (GraphicsPath sp = XtRound(scr, 7))
+            {
+                using (LinearGradientBrush sb = new LinearGradientBrush(scr, Color.FromArgb(30, 26, 23), Color.FromArgb(8, 7, 6), LinearGradientMode.Vertical))
+                    g.FillPath(sb, sp);
+                Region oc = g.Clip;
+                g.SetClip(sp, CombineMode.Intersect);
+                using (LinearGradientBrush gl = new LinearGradientBrush(new RectangleF(scr.X, scr.Y, scr.Width, scr.Height / 2f + 1),
+                    Color.FromArgb(30, 255, 255, 255), Color.FromArgb(3, 255, 255, 255), LinearGradientMode.Vertical))
+                    g.FillRectangle(gl, scr.X, scr.Y, scr.Width, scr.Height / 2f);
+                g.Clip = oc;
+            }
+            using (Pen rp = new Pen(Color.FromArgb(110, 100, 92), 1f)) g.DrawPath(rp, body);
+        }
+    }
+
+    // ---------- success backdrop + frosted glass (cached bitmaps) ----------
+    private Bitmap _xtBack, _xtBackBlur;
+    private string _xtBackKey;
+    private bool _xtBackDisposeHooked;
+
+    // Builds (once per size / layout) a crisp "SUCCESS BY / EXPRESS" backdrop and a blurred copy of it.
+    private void XtEnsureSuccessBackdrop(int bodyTop, Rectangle band)
+    {
+        int w = Math.Max(1, Width), h = Math.Max(1, Height);
+        string key = w + "x" + h + "@" + bodyTop + "|" + band;
+        if (_xtBack != null && _xtBackKey == key) return;
+        XtDisposeBackdrop();
+        if (!_xtBackDisposeHooked)
+        {
+            _xtBackDisposeHooked = true;
+            Disposed += delegate { XtDisposeBackdrop(); };
+        }
+
+        Bitmap back = new Bitmap(w, h, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+        using (Graphics g = Graphics.FromImage(back))
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            g.CompositingQuality = CompositingQuality.HighQuality;
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+
+            // soft background gradient (mint -> sky), matches the green ribbon
+            using (LinearGradientBrush bg = new LinearGradientBrush(new Rectangle(0, 0, w, h),
+                Color.FromArgb(236, 253, 243), Color.FromArgb(224, 238, 252), LinearGradientMode.ForwardDiagonal))
+                g.FillRectangle(bg, 0, 0, w, h);
+
+            // ONE straight row "SUCCESS BY EXPRESS" in the LED clock font (DS-Digital), bold + glowing bhagwa,
+            // as large as fits the body width, vertically centred in the body.
+            Rectangle body = new Rectangle(4, band.Y, w - 8, Math.Max(10, band.Height));
+            FontStyle st; bool digital;
+            FontFamily fam = XtLedFamily(out st, out digital);      // shared cached family - not disposed here
+            using (StringFormat sf = (StringFormat)StringFormat.GenericTypographic.Clone())
+            using (GraphicsPath p = new GraphicsPath())
+            {
+                p.AddString("SUCCESS BY EXPRESS", fam, (int)st, 100f, new PointF(0, 0), sf);
+                RectangleF b = p.GetBounds();
+                float scale = (body.Width - 16f) / Math.Max(1f, b.Width);
+                scale = Math.Min(scale, (body.Height * 0.80f) / Math.Max(1f, b.Height));
+                // option B: a tall LED sign behind the glass (vertical stretch fills the details + fare area)
+                float scaleY = XT_SUCCESS_PHRASE_BEHIND_GLASS ? (body.Height * 0.80f) / Math.Max(1f, b.Height) : scale;
+                using (Matrix m = new Matrix())
+                {
+                    m.Translate(body.X + body.Width / 2f, body.Y + body.Height / 2f);
+                    m.Scale(scale, scaleY);
+                    m.Translate(-(b.X + b.Width / 2f), -(b.Y + b.Height / 2f));
+                    p.Transform(m);
+                }
+                RectangleF pb = p.GetBounds();
+                float em = 100f * scale;
+
+                // LED glow
+                float[] gw = { em * 0.20f, em * 0.12f, em * 0.06f };
+                int[] ga = { 20, 34, 58 };
+                for (int i = 0; i < gw.Length; i++)
+                    using (Pen gp = new Pen(Color.FromArgb(ga[i], 255, 140, 20), Math.Max(1f, gw[i])))
+                    {
+                        gp.LineJoin = LineJoin.Round;
+                        g.DrawPath(gp, p);
+                    }
+
+                // bhagwa gradient face, made BOLD with a same-colour outline stroke
+                using (LinearGradientBrush fb = new LinearGradientBrush(
+                    new RectangleF(pb.X, pb.Y - 1, Math.Max(1, pb.Width), Math.Max(2, pb.Height + 2)),
+                    Color.White, Color.Black, LinearGradientMode.Vertical))
+                {
+                    ColorBlend cb = new ColorBlend();
+                    cb.Positions = new[] { 0f, 0.5f, 1f };
+                    cb.Colors = new[] { Color.FromArgb(251, 166, 60), Color.FromArgb(234, 108, 0), Color.FromArgb(214, 96, 4) };
+                    fb.InterpolationColors = cb;
+                    g.FillPath(fb, p);
+                    using (Pen bold = new Pen(fb, Math.Max(1.2f, em * 0.045f)))
+                    {
+                        bold.LineJoin = LineJoin.Round;
+                        g.DrawPath(bold, p);
+                    }
+                }
+
+                // thin top highlight so the LED segments look lit
+                Region old = g.Clip;
+                using (Region clip = new Region(p))
+                {
+                    clip.Intersect(new RectangleF(pb.X - 2, pb.Y - 2, pb.Width + 4, pb.Height * 0.4f + 2));
+                    g.Clip = clip;
+                    using (LinearGradientBrush hb = new LinearGradientBrush(
+                        new RectangleF(pb.X, pb.Y - 2, Math.Max(1, pb.Width), Math.Max(2, pb.Height * 0.4f + 3)),
+                        Color.FromArgb(110, 255, 240, 200), Color.FromArgb(0, 255, 240, 200), LinearGradientMode.Vertical))
+                        g.FillRectangle(hb, pb.X - 2, pb.Y - 2, pb.Width + 4, pb.Height * 0.4f + 2);
+                }
+                g.Clip = old;
+            }
+        }
+
+        // blurred copy: downscale x6 then back up with high-quality bilinear (two passes = smoother frost)
+        Bitmap blur = new Bitmap(w, h, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+        int blurDiv = XT_SUCCESS_PHRASE_BEHIND_GLASS ? 2 : 3;   // B: lighter blur so the sign stays readable
+        int sw = Math.Max(1, w / blurDiv), sh2 = Math.Max(1, h / blurDiv);
+        using (Bitmap small = new Bitmap(sw, sh2, System.Drawing.Imaging.PixelFormat.Format32bppPArgb))
+        {
+            using (Graphics gs = Graphics.FromImage(small))
+            {
+                gs.InterpolationMode = InterpolationMode.HighQualityBilinear;
+                gs.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                gs.DrawImage(back, new Rectangle(0, 0, sw, sh2));
+            }
+            using (Graphics gb = Graphics.FromImage(blur))
+            {
+                gb.InterpolationMode = InterpolationMode.HighQualityBilinear;
+                gb.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                using (System.Drawing.Imaging.ImageAttributes ia = new System.Drawing.Imaging.ImageAttributes())
+                {
+                    ia.SetWrapMode(WrapMode.TileFlipXY);   // no dark fringes at the edges
+                    gb.DrawImage(small, new Rectangle(0, 0, w, h), 0, 0, sw, sh2, GraphicsUnit.Pixel, ia);
+                }
+            }
+        }
+
+        _xtBack = back;
+        _xtBackBlur = blur;
+        _xtBackKey = key;
+    }
+
+    private void XtDisposeBackdrop()
+    {
+        if (_xtBack != null) { _xtBack.Dispose(); _xtBack = null; }
+        if (_xtBackBlur != null) { _xtBackBlur.Dispose(); _xtBackBlur = null; }
+        _xtBackKey = null;
+    }
+
+    // Frosted glass card: blurred backdrop clipped to the card, ~60% white veil, top highlight, subtle border.
+    private void XtGlassCard(Graphics g, Rectangle r)
+    {
+        RectangleF rf = new RectangleF(r.X, r.Y, r.Width - 1, r.Height - 1);
+        XtFill(g, new RectangleF(rf.X, rf.Y + 2, rf.Width, rf.Height), 11, Color.FromArgb(38, 15, 23, 42), Color.Empty);
+        using (GraphicsPath p = XtRound(rf, 11))
+        {
+            GraphicsState gs = g.Save();
+            g.SetClip(p, CombineMode.Intersect);
+            if (_xtBackBlur != null) g.DrawImageUnscaled(_xtBackBlur, 0, 0);
+            using (SolidBrush veil = new SolidBrush(Color.FromArgb(XT_SUCCESS_PHRASE_BEHIND_GLASS ? 104 : 102, 255, 255, 255)))
+                g.FillRectangle(veil, r);
+            using (LinearGradientBrush sheen = new LinearGradientBrush(new RectangleF(rf.X, rf.Y, rf.Width, rf.Height / 2f + 1),
+                Color.FromArgb(70, 255, 255, 255), Color.FromArgb(0, 255, 255, 255), LinearGradientMode.Vertical))
+                g.FillRectangle(sheen, rf.X, rf.Y, rf.Width, rf.Height / 2f);
+            using (Pen hl = new Pen(Color.FromArgb(230, 255, 255, 255), 1f))
+                g.DrawLine(hl, rf.X + 10, rf.Y + 1, rf.Right - 10, rf.Y + 1);
+            g.Restore(gs);
+            using (Pen bp = new Pen(Color.FromArgb(150, 148, 163, 184), 1f)) g.DrawPath(bp, p);
+        }
+        XtFill(g, new RectangleF(r.X + 1, r.Y + 10, 3.5f, r.Height - 20), 1.75f, XT_ORANGE, Color.Empty);
+    }
+
+    // Small frosted pill (footer items).
+    private void XtGlassPill(Graphics g, Rectangle r)
+    {
+        RectangleF rf = new RectangleF(r.X, r.Y, r.Width - 1, r.Height - 1);
+        using (GraphicsPath p = XtRound(rf, rf.Height / 2f))
+        {
+            GraphicsState gs = g.Save();
+            g.SetClip(p, CombineMode.Intersect);
+            if (_xtBackBlur != null) g.DrawImageUnscaled(_xtBackBlur, 0, 0);
+            using (SolidBrush veil = new SolidBrush(Color.FromArgb(135, 255, 255, 255)))
+                g.FillRectangle(veil, r);
+            g.Restore(gs);
+            using (Pen bp = new Pen(Color.FromArgb(140, 148, 163, 184), 1f)) g.DrawPath(bp, p);
+        }
+    }
+
+    // "07:50:10" -> "07:50:10" + "AM"; "18:26:23" -> "06:26:23" + "PM". Unparseable text is returned as-is.
+    private static string XtTo12h(string t, out string ampm)
+    {
+        ampm = "";
+        if (string.IsNullOrEmpty(t)) return t;
+        System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(t.Trim(),
+            @"^(\d{1,2})\s*[:.]\s*(\d{2})(?:\s*[:.]\s*(\d{2}))?\s*(am|pm)?$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (!m.Success) return t;
+        int hh;
+        if (!int.TryParse(m.Groups[1].Value, out hh) || hh > 23) return t;
+        if (m.Groups[4].Success) { ampm = m.Groups[4].Value.ToUpperInvariant(); return t.Trim().Substring(0, m.Groups[4].Index).Trim(); }
+        ampm = hh >= 12 ? "PM" : "AM";
+        int h12 = hh % 12; if (h12 == 0) h12 = 12;
+        string res = h12.ToString("00") + ":" + m.Groups[2].Value;
+        if (m.Groups[3].Success) res += ":" + m.Groups[3].Value;
+        return res;
+    }
+
+    // ---------- 3D LED wall-clock panel + digits (success view) ----------
+
+    // Bevelled dark bezel with a bhagwa/metal rim, recessed screen (inner shadow top-left,
+    // highlight bottom-right) and a glass reflection arc across the top half.
+    private static void XtLed3DPanel(Graphics g, Rectangle r)
+    {
+        RectangleF rf = new RectangleF(r.X, r.Y, r.Width - 1, r.Height - 1);
+        // drop shadow under the clock body
+        XtFill(g, new RectangleF(rf.X + 1, rf.Y + 3, rf.Width, rf.Height), 11, Color.FromArgb(80, 4, 40, 20), Color.Empty);
+        using (GraphicsPath rim = XtRound(rf, 11))
+        {
+            // outer rim: bhagwa-to-bronze metallic gradient
+            using (LinearGradientBrush rb = new LinearGradientBrush(rf, Color.White, Color.Black, LinearGradientMode.Vertical))
+            {
+                ColorBlend cb = new ColorBlend();
+                cb.Positions = new[] { 0f, 0.45f, 1f };
+                cb.Colors = new[] { Color.FromArgb(255, 196, 110), Color.FromArgb(214, 110, 14), Color.FromArgb(120, 56, 6) };
+                rb.InterpolationColors = cb;
+                g.FillPath(rb, rim);
+            }
+            using (Pen rp = new Pen(Color.FromArgb(160, 255, 236, 200), 1f)) g.DrawPath(rp, rim);
+        }
+        // bevel ring (dark)
+        RectangleF bez = RectangleF.Inflate(rf, -2.5f, -2.5f);
+        using (GraphicsPath bp = XtRound(bez, 9))
+        using (LinearGradientBrush bb = new LinearGradientBrush(bez, Color.FromArgb(70, 62, 56), Color.FromArgb(14, 12, 10), LinearGradientMode.Vertical))
+            g.FillPath(bb, bp);
+        // recessed screen
+        RectangleF scr = RectangleF.Inflate(bez, -3f, -3f);
+        using (GraphicsPath sp = XtRound(scr, 7))
+        {
+            using (LinearGradientBrush sb = new LinearGradientBrush(scr, Color.FromArgb(8, 6, 5), Color.FromArgb(26, 20, 16), LinearGradientMode.Vertical))
+                g.FillPath(sb, sp);
+            GraphicsState gs = g.Save();
+            g.SetClip(sp, CombineMode.Intersect);
+            // inner shadow top-left
+            using (Pen ish = new Pen(Color.FromArgb(150, 0, 0, 0), 3f))
+            {
+                g.DrawLine(ish, scr.X, scr.Y + 1, scr.Right, scr.Y + 1);
+                g.DrawLine(ish, scr.X + 1, scr.Y, scr.X + 1, scr.Bottom);
+            }
+            // highlight bottom-right
+            using (Pen ihl = new Pen(Color.FromArgb(55, 255, 190, 120), 1.2f))
+            {
+                g.DrawLine(ihl, scr.X + 6, scr.Bottom - 1, scr.Right - 2, scr.Bottom - 1);
+                g.DrawLine(ihl, scr.Right - 1, scr.Y + 6, scr.Right - 1, scr.Bottom - 2);
+            }
+            g.Restore(gs);
+        }
+    }
+
+    // Glass reflection arc drawn AFTER the digits so it sits on top of them.
+    private static void XtLed3DGlass(Graphics g, Rectangle r)
+    {
+        RectangleF scr = RectangleF.Inflate(new RectangleF(r.X, r.Y, r.Width - 1, r.Height - 1), -5.5f, -5.5f);
+        using (GraphicsPath sp = XtRound(scr, 7))
+        {
+            GraphicsState gs = g.Save();
+            g.SetClip(sp, CombineMode.Intersect);
+            using (GraphicsPath arc = new GraphicsPath())
+            {
+                arc.AddEllipse(scr.X - scr.Width * 0.15f, scr.Y - scr.Height * 1.25f, scr.Width * 1.3f, scr.Height * 1.75f);
+                using (LinearGradientBrush gb = new LinearGradientBrush(new RectangleF(scr.X, scr.Y, scr.Width, scr.Height * 0.55f),
+                    Color.FromArgb(48, 255, 255, 255), Color.FromArgb(6, 255, 255, 255), LinearGradientMode.Vertical))
+                    g.FillPath(gb, arc);
+            }
+            g.Restore(gs);
+        }
+    }
+
+    // 3D LED digits: faint unlit 8s ghost, extruded depth layer, gradient face, top highlight, soft glow.
+    // Fits inside r (shrinks from maxPx to minPx); left-aligned and vertically centred, or bottom-aligned.
+    private static void XtDrawLed3D(Graphics g, string text, Rectangle r, float maxPx, float minPx, bool bottomAlign)
+    {
+        if (string.IsNullOrEmpty(text) || r.Width < 6 || r.Height < 6) return;
+        FontStyle st; bool digital;
+        FontFamily fam = XtLedFamily(out st, out digital);
+
+        float px = maxPx;
+        GraphicsPath face = null;
+        RectangleF b = RectangleF.Empty;
+        for (; ; px -= 0.5f)
+        {
+            if (face != null) face.Dispose();
+            face = XtLedPath(text, fam, st, px);
+            b = face.GetBounds();
+            if ((b.Width + 2 <= r.Width && b.Height + 2 <= r.Height) || px <= minPx) break;
+        }
+
+        // ghost "8" layer only for the DS-Digital monospace digits (letters such as AM/PM are not ghosted)
+        bool ghostOk = digital && System.Text.RegularExpressions.Regex.IsMatch(text, @"^[0-9:]+$");
+        GraphicsPath ghost = ghostOk
+            ? XtLedPath(System.Text.RegularExpressions.Regex.Replace(text, "[0-9]", "8"), fam, st, px)
+            : null;
+
+        using (face)
+        using (ghost)
+        {
+            float dx = (float)Math.Round(r.X + 1 - b.X);
+            float dy = bottomAlign
+                ? (float)Math.Round(r.Bottom - 1 - b.Bottom)
+                : (float)Math.Round(r.Y + (r.Height - b.Height) / 2f - b.Y);
+            using (Matrix m = new Matrix())
+            {
+                m.Translate(dx, dy);
+                face.Transform(m);
+                if (ghost != null) ghost.Transform(m);
+            }
+            b = face.GetBounds();
+
+            SmoothingMode sm = g.SmoothingMode;
+            PixelOffsetMode pm = g.PixelOffsetMode;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+            // unlit segments
+            if (ghost != null)
+                using (SolidBrush gb = new SolidBrush(Color.FromArgb(26, 255, 140, 20)))
+                    g.FillPath(gb, ghost);
+
+            // soft outer glow
+            float[] widths = { 8f, 5.5f, 3.2f };
+            int[] alphas = { 14, 26, 44 };
+            for (int i = 0; i < widths.Length; i++)
+                using (Pen gp = new Pen(Color.FromArgb(alphas[i], 255, 140, 20), widths[i]))
+                {
+                    gp.LineJoin = LineJoin.Round;
+                    g.DrawPath(gp, face);
+                }
+
+            // extruded depth: two offset layers in darker amber
+            float depth = Math.Max(1.2f, px / 22f);
+            using (GraphicsPath ex = (GraphicsPath)face.Clone())
+            using (Matrix em = new Matrix())
+            {
+                em.Translate(depth * 0.5f, depth * 0.5f);
+                ex.Transform(em);
+                using (SolidBrush eb = new SolidBrush(Color.FromArgb(150, 70, 14))) g.FillPath(eb, ex);
+                ex.Transform(em);
+                using (SolidBrush eb2 = new SolidBrush(Color.FromArgb(96, 40, 4))) g.FillPath(eb2, ex);
+            }
+
+            // main face: bright yellow-amber -> bhagwa
+            RectangleF fbr = new RectangleF(b.X, b.Y - 1, Math.Max(1, b.Width), Math.Max(2, b.Height + 2));
+            using (LinearGradientBrush fb = new LinearGradientBrush(fbr, Color.White, Color.Black, LinearGradientMode.Vertical))
+            {
+                ColorBlend cb = new ColorBlend();
+                cb.Positions = new[] { 0f, 0.45f, 1f };
+                cb.Colors = new[] { Color.FromArgb(255, 236, 150), Color.FromArgb(255, 176, 48), Color.FromArgb(240, 120, 10) };
+                fb.InterpolationColors = cb;
+                g.FillPath(fb, face);
+                using (Pen fp = new Pen(fb, 0.6f)) { fp.LineJoin = LineJoin.Round; g.DrawPath(fp, face); }
+            }
+
+            // thin top highlight on the upper half of the glyphs
+            Region old = g.Clip;
+            using (Region clip = new Region(face))
+            {
+                clip.Intersect(new RectangleF(b.X - 1, b.Y - 1, b.Width + 2, b.Height * 0.38f + 1));
+                g.Clip = clip;
+                using (LinearGradientBrush hb = new LinearGradientBrush(
+                    new RectangleF(b.X, b.Y - 1, Math.Max(1, b.Width), Math.Max(2, b.Height * 0.38f + 2)),
+                    Color.FromArgb(150, 255, 255, 235), Color.FromArgb(0, 255, 255, 235), LinearGradientMode.Vertical))
+                    g.FillRectangle(hb, b.X - 1, b.Y - 1, b.Width + 2, b.Height * 0.38f + 1);
+            }
+            g.Clip = old;
+
+            g.SmoothingMode = sm;
+            g.PixelOffsetMode = pm;
+        }
+    }
+
+    // When set, XtFitText draws a thin white halo under the text (used by success option B only).
+    private static bool _xtTextHalo;
+
+    private static void XtHalo(Graphics g, string text, Font f, Rectangle r, TextFormatFlags flags)
+    {
+        Color halo = Color.FromArgb(235, 255, 255, 255);
+        for (int dx = -1; dx <= 1; dx++)
+            for (int dy = -1; dy <= 1; dy++)
+                if (dx != 0 || dy != 0)
+                    TextRenderer.DrawText(g, text, f, new Rectangle(r.X + dx, r.Y + dy, r.Width, r.Height), halo, flags);
+    }
+
+    // Pixel-size wrapper around XtFitText (which takes points).
+    private static void XtFitPx(Graphics g, string text, string family, FontStyle style, float maxPx, float minPx,
+        Rectangle r, Color color, bool allowWrap)
+    {
+        XtFitText(g, text, family, style, maxPx * 0.75f, minPx * 0.75f, r, color, allowWrap);
+    }
+
+    // Larger pill badge (right-aligned, ending at `right`); shrinks font before ever cutting text.
+    private static int XtBadgeL(Graphics g, string text, int right, int cy, int h, Color fill, Color fg, string icon, int maxW)
+    {
+        float px = h >= 30 ? 13.5f : 12.5f;
+        Font f = new Font("Segoe UI Semibold", px, FontStyle.Regular, GraphicsUnit.Pixel);
+        int pad = h / 2 + 18;
+        Size ts = TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding);
+        while (ts.Width + pad + 10 > maxW && px > 9.5f)
+        {
+            f.Dispose();
+            px -= 0.5f;
+            f = new Font("Segoe UI Semibold", px, FontStyle.Regular, GraphicsUnit.Pixel);
+            ts = TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding);
+        }
+        int w = Math.Min(maxW, ts.Width + pad + 10);
+        Rectangle r = new Rectangle(right - w, cy - h / 2, w, h);
+        XtFill(g, r, h / 2f, fill, Color.FromArgb(60, fg));
+        float isz = h * 0.48f;
+        XtSIcon(g, icon, new RectangleF(r.X + h * 0.38f, cy - isz / 2f, isz, isz), fg, 1.7f);
+        TextRenderer.DrawText(g, text, f, new Rectangle(r.X + pad, r.Y, r.Width - pad - 8, r.Height), fg,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding |
+            TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
+        f.Dispose();
+        return r.X;
     }
 
     // Width of the after-login time card: always room for a full "HH:mm:ss" plus the clock icon padding.
@@ -4207,19 +4728,28 @@ internal class TCntrl : UserControl
     // All runs share one baseline; each run is measured for exact spacing. Shrinks to fit; ellipsis last.
     private static void XtDrawLedText(Graphics g, string text, Rectangle r, bool hot, bool blinking)
     {
+        XtDrawLedText(g, text, r, hot, blinking, 0f, 0f);
+    }
+
+    // maxPxWanted / minPxWanted = 0 -> defaults (22 / 13 px for DS-Digital).
+    private static void XtDrawLedText(Graphics g, string text, Rectangle r, bool hot, bool blinking, float maxPxWanted, float minPxWanted)
+    {
         if (string.IsNullOrEmpty(text) || r.Width < 10 || r.Height < 8) return;
         FontStyle st; bool digital;
         FontFamily fam = XtLedFamily(out st, out digital);
 
-        float maxPx = digital ? 22f : 17f, minPx = digital ? 13f : 11f;
+        float maxPx = maxPxWanted > 0 ? maxPxWanted : (digital ? 25f : 18f);
+        float minPx = minPxWanted > 0 ? minPxWanted : (digital ? 13f : 11f);
         string s = text;
         GraphicsPath words = null, nums = null;
         RectangleF b = RectangleF.Empty;
-        for (float px = maxPx; ; px -= 0.5f)
+        float usedPx = maxPx;
+        for (float px = (float)Math.Round(maxPx); ; px -= 1f)   // whole-pixel em sizes keep DS-Digital segments crisp
         {
             if (words != null) words.Dispose();
             if (nums != null) nums.Dispose();
             XtLedRuns(g, s, fam, st, px, out words, out nums);
+            usedPx = px;
             b = XtUnionBounds(words, nums);
             if (b.Width <= r.Width - 6 && b.Height <= r.Height - 4) break;
             if (px <= minPx)
@@ -4227,7 +4757,7 @@ internal class TCntrl : UserControl
                 if (s.Length <= 2) break;
                 string core = s.EndsWith("...") ? s.Substring(0, s.Length - 3) : s;
                 s = core.Substring(0, core.Length - 1).TrimEnd() + "...";
-                px = minPx + 0.5f;
+                px = minPx + 1f;
             }
         }
 
@@ -4236,7 +4766,7 @@ internal class TCntrl : UserControl
         {
             // place: left aligned, vertically centred on the glyph box (pixel-snapped); same shift for both runs
             float dx = (float)Math.Round(r.X + 3 - b.X);
-            float dy = (float)Math.Round(r.Y + (r.Height - b.Height) / 2f - b.Y);
+            float dy = (float)Math.Round(r.Y + (r.Height - b.Height - 2) / 2f - b.Y);   // leave room for the depth layers
             using (Matrix m = new Matrix())
             {
                 m.Translate(dx, dy);
@@ -4252,55 +4782,103 @@ internal class TCntrl : UserControl
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
             g.CompositingQuality = CompositingQuality.HighQuality;
 
-            float boost = hot ? 1.6f : blinking ? 1.2f : 1f;
-            Color glowC = hot ? Color.FromArgb(255, 160, 40) : Color.FromArgb(255, 140, 20);
+            // ===== 3D letters sitting ON the glass; every glyph edge stays hard (no glow / blur over the face) =====
+            Color glowC = Color.FromArgb(255, 140, 0);
 
-            // glow: soft for words, stronger for numbers
-            XtGlow(g, words, glowC, new[] { 5f, 3f, 1.4f }, new[] { 12, 22, 38 }, boost);
-            XtGlow(g, nums, glowC, new[] { 6f, 4f, 2.4f }, new[] { 16, 28, 50 }, boost);
-
-            // gradient fill shared by both runs
-            RectangleF gb = new RectangleF(b.X, b.Y - 1, Math.Max(1, b.Width), Math.Max(2, b.Height + 2));
-            using (LinearGradientBrush fb = new LinearGradientBrush(gb, Color.White, Color.Black, LinearGradientMode.Vertical))
+            // (1) soft contact shadow on the glass, BEHIND everything (only the shadow is soft)
+            using (GraphicsPath sh = new GraphicsPath())
             {
-                ColorBlend cb = new ColorBlend();
-                cb.Positions = new[] { 0f, 0.5f, 1f };
-                cb.Colors = hot
-                    ? new[] { Color.FromArgb(255, 214, 130), Color.FromArgb(255, 150, 36), Color.FromArgb(236, 104, 10) }
-                    : new[] { Color.FromArgb(255, 196, 90), Color.FromArgb(245, 130, 20), Color.FromArgb(214, 96, 4) };
-                fb.InterpolationColors = cb;
+                if (words.PointCount > 0) sh.AddPath(words, false);
+                if (nums.PointCount > 0) sh.AddPath(nums, false);
+                int[] ox = { -1, 0, 1, 0, 0 };
+                int[] oy = { 3, 3, 3, 2, 4 };
+                using (SolidBrush shb = new SolidBrush(Color.FromArgb(12, 90, 40, 0)))
+                    for (int i = 0; i < ox.Length; i++)
+                        using (GraphicsPath s1 = (GraphicsPath)sh.Clone())
+                        using (Matrix mm = new Matrix())
+                        {
+                            mm.Translate(ox[i] + 1, oy[i]);
+                            s1.Transform(mm);
+                            g.FillPath(shb, s1);
+                        }
+            }
 
+            // (2) faint outer glow strictly behind the letters (the opaque face covers its inner half)
+            int ga = hot ? 34 : blinking ? 24 : 16;
+            XtGlow(g, words, glowC, new[] { 5f, 3f }, new[] { ga, ga * 2 }, 1f);
+            XtGlow(g, nums, glowC, new[] { 6f, 3.5f }, new[] { ga, ga * 2 }, 1f);
+
+            // (3) solid extruded depth: 3 -> 1 px down-right, darkest farthest
+            Color[] depth = { Color.FromArgb(120, 45, 0), Color.FromArgb(145, 57, 0), Color.FromArgb(170, 70, 0) };
+            int depthPx = usedPx >= 22f ? 2 : 1;   // depth scaled to the glyph size so thin segments stay clean
+            for (int k = depthPx; k >= 1; k--)
+            {
+                Color dc = k == 1 ? depth[2] : depth[0];
+                using (Matrix em = new Matrix())
+                using (GraphicsPath dw = (GraphicsPath)words.Clone())
+                using (GraphicsPath dn = (GraphicsPath)nums.Clone())
+                using (SolidBrush db = new SolidBrush(dc))
+                using (Pen dp = new Pen(dc, 1.2f))
+                {
+                    em.Translate(k, k);
+                    dw.Transform(em);
+                    dn.Transform(em);
+                    g.FillPath(db, dw);
+                    g.FillPath(db, dn);
+                    dp.LineJoin = LineJoin.Round;
+                    g.DrawPath(dp, dn);          // numbers' depth matches their heavier face
+                }
+            }
+
+            // (4) opaque face: bright bhagwa top -> deep bhagwa bottom (hotter in the blink phase)
+            RectangleF gb = new RectangleF(b.X, b.Y - 1, Math.Max(1, b.Width), Math.Max(2, b.Height + 2));
+            using (LinearGradientBrush fb = new LinearGradientBrush(gb,
+                hot ? Color.FromArgb(255, 172, 60) : Color.FromArgb(255, 150, 30),
+                hot ? Color.FromArgb(232, 84, 0) : Color.FromArgb(214, 96, 4), LinearGradientMode.Vertical))
+            {
                 g.FillPath(fb, words);
                 g.FillPath(fb, nums);
-
-                // NUMBERS heavier: same-colour outline thickens the strokes
-                using (Pen heavy = new Pen(fb, 0.75f))
+                // NUMBERS heavier: opaque same-colour stroke thickens them
+                using (Pen heavy = new Pen(fb, 1.2f))
                 {
                     heavy.LineJoin = LineJoin.Round;
                     g.DrawPath(heavy, nums);
                 }
             }
 
-            // WORDS lighter: a hairline in the panel colour erodes the strokes slightly
-            using (Pen thin = new Pen(Color.FromArgb(150, 14, 12, 10), 0.55f))
-            {
-                thin.LineJoin = LineJoin.Round;
-                g.DrawPath(thin, words);
-            }
-
-            // shiny highlight on the top half of all glyphs
+            // (5) crisp 1px light-amber highlight on the upper edges
             Region old = g.Clip;
-            using (Region clip = new Region(words))
+            using (Region top = new Region(new RectangleF(b.X - 3, b.Y - 3, b.Width + 6, b.Height * 0.45f + 3)))
             {
-                clip.Union(nums);
-                clip.Intersect(new RectangleF(b.X - 2, b.Y - 2, b.Width + 4, b.Height * 0.45f + 2));
-                g.Clip = clip;
-                using (LinearGradientBrush hb = new LinearGradientBrush(
-                    new RectangleF(b.X, b.Y - 2, Math.Max(1, b.Width), Math.Max(2, b.Height * 0.45f + 3)),
-                    Color.FromArgb(80, 255, 255, 255), Color.FromArgb(0, 255, 255, 255), LinearGradientMode.Vertical))
-                    g.FillRectangle(hb, b.X - 2, b.Y - 2, b.Width + 4, b.Height * 0.45f + 2);
+                g.Clip = top;
+                using (Pen hl = new Pen(Color.FromArgb(usedPx >= 20f ? 210 : 0, 255, 222, 160), 0.8f))
+                {
+                    hl.LineJoin = LineJoin.Round;
+                    using (GraphicsPath hw = (GraphicsPath)words.Clone())
+                    using (GraphicsPath hn = (GraphicsPath)nums.Clone())
+                    using (Matrix hm = new Matrix())
+                    {
+                        hm.Translate(0, 0.6f);     // sit just inside the top edge
+                        hw.Transform(hm);
+                        hn.Transform(hm);
+                        g.DrawPath(hl, hw);
+                        g.DrawPath(hl, hn);
+                    }
+                }
             }
             g.Clip = old;
+
+            // (6) crisp opaque dark outline for edge definition (heavier on numbers)
+            using (Pen ow = new Pen(Color.FromArgb(140, 45, 0), 0.6f))
+            {
+                ow.LineJoin = LineJoin.Round;
+                g.DrawPath(ow, words);
+            }
+            using (Pen on = new Pen(Color.FromArgb(140, 45, 0), 0.8f))
+            {
+                on.LineJoin = LineJoin.Round;
+                g.DrawPath(on, nums);
+            }
 
             g.SmoothingMode = sm;
             g.PixelOffsetMode = pm;
@@ -4414,6 +4992,7 @@ internal class TCntrl : UserControl
                 Size s = TextRenderer.MeasureText(g, text, f, Size.Empty, TextFormatFlags.NoPadding);
                 if (s.Width <= r.Width && s.Height <= r.Height)
                 {
+                    if (_xtTextHalo) XtHalo(g, text, f, r, one);
                     TextRenderer.DrawText(g, text, f, r, color, one);
                     return;
                 }
