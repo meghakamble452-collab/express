@@ -505,7 +505,7 @@ internal class Playwright_Automation
             Console.WriteLine("[Cleanup Error]: " + ex.ToString());
         }
     }
-    private void KillOldEdgeByProfile(string profilePath)
+    internal void KillOldEdgeByProfile(string profilePath)
     {
         if (string.IsNullOrEmpty(profilePath))
         {

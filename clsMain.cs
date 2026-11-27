@@ -5484,7 +5484,7 @@ internal class clsMain
                 else if (loginType == 3)
                 {
                     result = IRCTC_WEB_Login_Edge_3(control_2, rectangle_1, TktName, string_87, string_88, tCntrlName, ref string_90, bool_63, bool_64, bool_65, int_Slot, updTStatus, string_91, token);
-                    if (!result && !playwright_Automation.BrowserLoded)
+                    if (!result)
                     {
                         updTStatus.BeginInvoke(2, "Edge load nahi hua — dobara click karo", tCntrlName, null, null);
                     }
@@ -22311,7 +22311,32 @@ internal class clsMain
                                                                 {
                                                                     string text509 = _response;
                                                                     string value125 = "BOOKED";
-                                                                    if (text509.Contains(value125))
+                                                                    string foundPnr = "";
+                                                                    bool pnrFresh = false;
+                                                                    bool dateOk = true;
+                                                                    for (int attempt = 1; attempt <= 4; attempt++)
+                                                                    {
+                                                                        text509 = _response;
+                                                                        try { foundPnr = GetString(text509, "pnrNumber"); } catch { foundPnr = ""; }
+                                                                        pnrFresh = !string.IsNullOrEmpty(foundPnr) && foundPnr.Length == 10 && foundPnr != "0000000000";
+                                                                        dateOk = true;
+                                                                        try
+                                                                        {
+                                                                            string bdDate = GetString(text509, "bookingDate");
+                                                                            if (!string.IsNullOrEmpty(bdDate)) dateOk = DateTime.Parse(bdDate).Date == DateTime.Today;
+                                                                        }
+                                                                        catch { dateOk = true; }
+                                                                        if (text509.Contains(value125) && pnrFresh && dateOk) break;
+                                                                        updTStatus.BeginInvoke(1, "Booking confirm hone ka intezaar (" + attempt + "/4)...", tCntrlName, null, null);
+                                                                        Thread.Sleep(3000);
+                                                                        _response = "";
+                                                                        try
+                                                                        {
+                                                                            _httpRequest(text439, null, Reffral, "Plain123Other", bool_63: false, Proxy_, ref cookie_, bool_64: true, bool_65: true, 180000, 180000, ref _response, ref errormsg, ref Exception_);
+                                                                        }
+                                                                        catch { }
+                                                                    }
+                                                                    if (text509.Contains(value125) && pnrFresh && dateOk)
                                                                     {
                                                                         lock (object_10)
                                                                         {
