@@ -39232,9 +39232,10 @@ internal class Bank
 		string text2 = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
 		string text3 = "__5";
 		HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(text + text2 + text3);
-		string method = "GET";
-		httpWebRequest.Method = method;
-		httpWebRequest.ProtocolVersion = HttpVersion.Version11;
+        string method = "POST";
+        httpWebRequest.Method = method;
+        httpWebRequest.ContentType = "application/json";
+        httpWebRequest.ProtocolVersion = HttpVersion.Version11;
 		httpWebRequest.KeepAlive = true;
 		httpWebRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 		string accept = "application/json, text/plain, */*";
@@ -39289,9 +39290,16 @@ internal class Bank
 		string value10 = "https://mercury-t2.phonepe.com";
 		headers12.Add(name12, value10);
 		string referer = "https://mercury-t2.phonepe.com/";
-		httpWebRequest.Referer = referer;
-		try
-		{
+        httpWebRequest.Referer = referer;
+        string qrBody = "{\"retryConsentGranted\":false}";
+        byte[] qrBytes = Encoding.UTF8.GetBytes(qrBody);
+        httpWebRequest.ContentLength = qrBytes.Length;
+        using (Stream qrStream = httpWebRequest.GetRequestStream())
+        {
+            qrStream.Write(qrBytes, 0, qrBytes.Length);
+        }
+        try
+        {
 			using HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
 			using Stream stream = httpWebResponse.GetResponseStream();
 			using StreamReader streamReader = new StreamReader(stream);
