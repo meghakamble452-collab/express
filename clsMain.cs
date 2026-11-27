@@ -23447,7 +23447,7 @@ internal class clsMain
                                 num2 = GetAvailableSlot();
                                 rect = GetSlotRectangle(num2);
                                 string status14 = "Checking System Files...";
-                                updTStatus.BeginInvoke(5, status14, tCntrlName, null, null);
+                                updTStatus.BeginInvoke(1, status14, tCntrlName, null, null);
                                 this.page = playwright_Automation.StartEdgeAndConnect(ref userDataDir00, directlogin, rect, ref this.page);
                                 if (!playwright_Automation.BrowserLoded)
                                 {
